@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار زر الصورة</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-md mx-auto bg-white rounded-lg shadow-lg p-6">
+        <h2 class="text-lg font-semibold mb-4">اختبار زر رفع الصور</h2>
+        
+        <!-- التخطيط الجديد -->
+        <div class="flex gap-2 items-end">
+          <!-- منطقة النص -->
+          <div class="flex-1">
+            <textarea 
+                placeholder="اكتب رسالتك هنا..."
+                class="w-full min-h-[60px] max-h-32 resize-none p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            ></textarea>
+          </div>
+
+          <!-- أزرار الإجراءات -->
+          <div class="flex gap-2">
+            <!-- زر رفع الصور -->
+            <button 
+                onclick="alert('تم الضغط على زر الصورة!')"
+                class="h-[60px] w-16 flex-shrink-0 transition-colors flex items-center justify-center border rounded-lg hover:bg-gray-50"
+                title="رفع صورة (PNG, JPG, GIF - حد أقصى 10MB)"
+            >
+              <!-- أيقونة الصورة واضحة -->
+              <span class="text-lg">📷</span>
+            </button>
+
+            <!-- زر الإرسال -->
+            <button 
+                onclick="alert('تم الضغط على زر الإرسال!')"
+                class="bg-blue-500 hover:bg-blue-600 h-[60px] w-12 flex-shrink-0 rounded-lg flex items-center justify-center text-white"
+                title="إرسال"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M22 2L11 13M22 2L15 22L11 13L2 9L22 2Z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="mt-4 p-4 bg-blue-50 rounded-lg">
+            <h3 class="font-semibold text-blue-800 mb-2">التعديلات المطبقة:</h3>
+            <ul class="text-sm text-blue-700 space-y-1">
+                <li>✅ زر الصورة: emoji 📷 واضح</li>
+                <li>✅ حجم الزر: 60px × 16px</li>
+                <li>✅ تخطيط محسن: flex gap-2</li>
+                <li>✅ tooltip مفيد</li>
+                <li>✅ تأثيرات hover</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

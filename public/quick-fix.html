@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>حل سريع</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #28a745;
+            margin: 0;
+            padding: 20px;
+            direction: rtl;
+            color: white;
+        }
+        
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            color: black;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            width: 80%;
+        }
+        
+        .btn:hover {
+            background: #c82333;
+        }
+        
+        .btn.success { background: #28a745; }
+        .btn.success:hover { background: #1e7e34; }
+        
+        .result {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: monospace;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 حل سريع للمشكلة</h1>
+        <p>إضافة صفحة تجريبية وحل المشكلة نهائياً</p>
+        
+        <button class="btn success" onclick="addTestPage()">إضافة صفحة تجريبية</button>
+        
+        <button class="btn" onclick="goToSettings()">فتح الإعدادات</button>
+        
+        <div class="result" id="result">
+            اضغط "إضافة صفحة تجريبية" أولاً
+        </div>
+    </div>
+
+    <script>
+        async function addTestPage() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = 'جاري إضافة صفحة تجريبية...';
+            
+            try {
+                const testPage = {
+                    pageId: 'test_page_' + Date.now(),
+                    pageName: 'صفحة تجريبية للاختبار',
+                    accessToken: 'test_token_' + Date.now()
+                };
+                
+                const response = await fetch('/api/facebook/add-page', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testPage)
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    resultDiv.innerHTML = `✅ تم إضافة الصفحة بنجاح!
+📋 اسم الصفحة: ${testPage.pageName}
+🆔 معرف الصفحة: ${testPage.pageId}
+
+🎯 الآن اضغط "فتح الإعدادات" لرؤية الصفحة`;
+                } else {
+                    const error = await response.text();
+                    resultDiv.innerHTML = `❌ فشل في إضافة الصفحة: ${error}`;
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML = `💥 خطأ: ${error.message}`;
+            }
+        }
+        
+        function goToSettings() {
+            window.open('/settings', '_blank');
+        }
+    </script>
+</body>
+</html>

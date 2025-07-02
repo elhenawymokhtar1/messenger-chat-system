@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار عرض التوقيت</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        .time-display {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2563eb;
+            margin: 10px 0;
+        }
+        .settings-info {
+            background: #e0f2fe;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #1d4ed8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🕐 اختبار عرض التوقيت</h1>
+        
+        <div class="test-section">
+            <h3>⚙️ إعدادات المنطقة الزمنية الحالية</h3>
+            <div class="settings-info">
+                <div id="current-settings">جاري التحميل...</div>
+            </div>
+            <button onclick="updateTimezone('Africa/Cairo')">تعيين القاهرة</button>
+            <button onclick="updateTimezone('Asia/Riyadh')">تعيين الرياض</button>
+            <button onclick="updateTimezone('Europe/London')">تعيين لندن</button>
+        </div>
+
+        <div class="test-section">
+            <h3>🕐 الوقت الحالي</h3>
+            <div class="time-display" id="current-time">جاري التحميل...</div>
+        </div>
+
+        <div class="test-section">
+            <h3>📨 اختبار تنسيق أوقات الرسائل</h3>
+            <div id="message-times">جاري التحميل...</div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔄 اختبار الوقت النسبي</h3>
+            <div id="relative-times">جاري التحميل...</div>
+        </div>
+    </div>
+
+    <script>
+        // محاكاة دوال التوقيت من التطبيق
+        function getUserTimezone() {
+            const savedSettings = localStorage.getItem('systemSettings');
+            if (savedSettings) {
+                const settings = JSON.parse(savedSettings);
+                return settings.timezone || 'Africa/Cairo';
+            }
+            return 'Africa/Cairo';
+        }
+
+        function convertToLocalTime(timeString, timezone) {
+            if (!timeString) return new Date();
+            
+            try {
+                const date = new Date(timeString);
+                if (isNaN(date.getTime())) {
+                    return new Date();
+                }
+                return date;
+            } catch (error) {
+                console.error('خطأ في تحويل الوقت:', error);
+                return new Date();
+            }
+        }
+
+        function formatTime(timeString, timezone) {
+            const userTimezone = timezone || getUserTimezone();
+            if (!timeString) return '';
+            
+            try {
+                const date = convertToLocalTime(timeString, userTimezone);
+                return date.toLocaleTimeString('ar-EG', {
+                    timeZone: userTimezone,
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                });
+            } catch (error) {
+                console.error('خطأ في تنسيق الوقت:', error);
+                return timeString;
+            }
+        }
+
+        function formatRelativeTime(timeString, timezone) {
+            const userTimezone = timezone || getUserTimezone();
+            if (!timeString) return '';
+            
+            try {
+                const date = convertToLocalTime(timeString, userTimezone);
+                const now = new Date();
+                const diffMs = now.getTime() - date.getTime();
+                const diffMins = Math.floor(diffMs / 60000);
+                const diffHours = Math.floor(diffMs / 3600000);
+                const diffDays = Math.floor(diffMs / 86400000);
+
+                if (diffMins < 1) return "الآن";
+                if (diffMins < 60) return `منذ ${diffMins} دقيقة`;
+                if (diffHours < 24) return `منذ ${diffHours} ساعة`;
+                if (diffDays < 7) return `منذ ${diffDays} يوم`;
+
+                return date.toLocaleDateString('ar-EG', { timeZone: userTimezone });
+            } catch (error) {
+                console.error('خطأ في حساب الوقت النسبي:', error);
+                return timeString;
+            }
+        }
+
+        function updateTimezone(timezone) {
+            const settings = {
+                timezone: timezone,
+                language: 'ar',
+                theme: 'light'
+            };
+            localStorage.setItem('systemSettings', JSON.stringify(settings));
+            updateDisplay();
+            alert(`تم تعيين المنطقة الزمنية إلى: ${timezone}`);
+        }
+
+        function updateDisplay() {
+            // عرض الإعدادات الحالية
+            const currentTimezone = getUserTimezone();
+            document.getElementById('current-settings').innerHTML = `
+                <strong>المنطقة الزمنية:</strong> ${currentTimezone}<br>
+                <strong>الوقت المحلي للجهاز:</strong> ${new Date().toLocaleString('ar-EG')}<br>
+                <strong>الوقت بالمنطقة المحددة:</strong> ${new Date().toLocaleString('ar-EG', { timeZone: currentTimezone })}
+            `;
+
+            // عرض الوقت الحالي
+            document.getElementById('current-time').textContent = 
+                new Date().toLocaleString('ar-EG', { timeZone: currentTimezone });
+
+            // اختبار أوقات الرسائل
+            const testTimes = [
+                new Date().toISOString(), // الآن
+                new Date(Date.now() - 5 * 60 * 1000).toISOString(), // منذ 5 دقائق
+                new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // منذ ساعتين
+                new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // أمس
+            ];
+
+            let messageTimesHtml = '';
+            testTimes.forEach((time, index) => {
+                messageTimesHtml += `
+                    <div style="margin: 10px 0; padding: 10px; background: white; border-radius: 5px;">
+                        <strong>رسالة ${index + 1}:</strong><br>
+                        <strong>الوقت الأصلي:</strong> ${time}<br>
+                        <strong>الوقت المنسق:</strong> ${formatTime(time)}<br>
+                        <strong>الوقت النسبي:</strong> ${formatRelativeTime(time)}
+                    </div>
+                `;
+            });
+            document.getElementById('message-times').innerHTML = messageTimesHtml;
+
+            // اختبار الوقت النسبي
+            const relativeTimes = [
+                { label: 'الآن', time: new Date().toISOString() },
+                { label: 'منذ دقيقة', time: new Date(Date.now() - 60 * 1000).toISOString() },
+                { label: 'منذ 30 دقيقة', time: new Date(Date.now() - 30 * 60 * 1000).toISOString() },
+                { label: 'منذ 3 ساعات', time: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString() },
+                { label: 'منذ يومين', time: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString() },
+            ];
+
+            let relativeTimesHtml = '';
+            relativeTimes.forEach(item => {
+                relativeTimesHtml += `
+                    <div style="margin: 10px 0; padding: 10px; background: white; border-radius: 5px;">
+                        <strong>${item.label}:</strong> ${formatRelativeTime(item.time)}
+                    </div>
+                `;
+            });
+            document.getElementById('relative-times').innerHTML = relativeTimesHtml;
+        }
+
+        // تحديث العرض كل ثانية
+        setInterval(updateDisplay, 1000);
+        
+        // تحديث أولي
+        updateDisplay();
+    </script>
+</body>
+</html>

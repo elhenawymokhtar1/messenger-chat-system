@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تشخيص المشكلة</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+            direction: rtl;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            background: #dc3545;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        
+        .btn:hover {
+            background: #0056b3;
+        }
+        
+        .btn.success { background: #28a745; }
+        .btn.danger { background: #dc3545; }
+        
+        .debug-info {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        
+        .test-result {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 تشخيص مشكلة الصفحات</h1>
+            <p>اختبار مباشر للـ API</p>
+        </div>
+        
+        <div>
+            <h3>🧪 اختبار الـ API مباشرة:</h3>
+            <button class="btn" onclick="testAPI()">اختبار جلب الصفحات</button>
+            <button class="btn success" onclick="testWithCompany('company-1')">اختبار Swan Shop</button>
+            <button class="btn success" onclick="testWithCompany('company-2')">اختبار سولا 127</button>
+            <button class="btn danger" onclick="clearResults()">مسح النتائج</button>
+        </div>
+        
+        <div class="test-result">
+            <h4>📊 الشركة الحالية:</h4>
+            <div id="currentCompany">لا توجد</div>
+        </div>
+        
+        <div class="debug-info" id="debugInfo">
+جاري التحميل...
+        </div>
+        
+        <div>
+            <h3>🔧 أدوات التحكم:</h3>
+            <button class="btn" onclick="setCompany('company-1')">تعيين Swan Shop</button>
+            <button class="btn" onclick="setCompany('company-2')">تعيين سولا 127</button>
+            <button class="btn" onclick="setCompany('company-new')">تعيين شركة جديدة</button>
+            <button class="btn" onclick="setCompany('new-company-123')">تعيين الشركة التجريبية</button>
+            <button class="btn danger" onclick="clearCompany()">مسح الشركة</button>
+        </div>
+
+        <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 5px; padding: 15px; margin: 15px 0;">
+            <h4>🎯 لحل المشكلة:</h4>
+            <p><strong>المشكلة:</strong> الشركة الحالية (new-company-123) كانت غير معرفة في النظام</p>
+            <p><strong>الحل:</strong> تم إضافتها للنظام الآن</p>
+            <p><strong>اختبر:</strong> اضغط "تعيين Swan Shop" ثم اذهب للإعدادات</p>
+        </div>
+        
+        <div>
+            <h3>🌐 روابط مفيدة:</h3>
+            <a href="/settings" target="_blank" style="margin: 5px; padding: 10px; background: #17a2b8; color: white; text-decoration: none; border-radius: 5px;">فتح الإعدادات</a>
+            <a href="http://localhost:5173/settings" target="_blank" style="margin: 5px; padding: 10px; background: #6f42c1; color: white; text-decoration: none; border-radius: 5px;">إعدادات Vite</a>
+        </div>
+    </div>
+
+    <script>
+        function updateCurrentCompany() {
+            const companyData = localStorage.getItem('company');
+            const div = document.getElementById('currentCompany');
+            
+            if (companyData) {
+                try {
+                    const company = JSON.parse(companyData);
+                    div.innerHTML = `${company.name} (${company.id})`;
+                } catch (error) {
+                    div.innerHTML = 'خطأ في قراءة البيانات';
+                }
+            } else {
+                div.innerHTML = 'لا توجد شركة محددة';
+            }
+        }
+
+        async function testAPI() {
+            const debugDiv = document.getElementById('debugInfo');
+            debugDiv.innerHTML = '🔍 جاري اختبار الـ API...\n';
+            
+            try {
+                // اختبار الـ API بدون فلترة
+                const response = await fetch('/api/facebook/settings');
+                const data = await response.json();
+                
+                debugDiv.innerHTML += `✅ نجح الاتصال بالـ API\n`;
+                debugDiv.innerHTML += `📊 عدد الصفحات: ${data.length}\n`;
+                debugDiv.innerHTML += `📋 الصفحات:\n`;
+                
+                data.forEach((page, index) => {
+                    debugDiv.innerHTML += `   ${index + 1}. ${page.page_name || 'بدون اسم'} (${page.page_id})\n`;
+                });
+                
+            } catch (error) {
+                debugDiv.innerHTML += `❌ خطأ في الاتصال: ${error.message}\n`;
+            }
+        }
+
+        async function testWithCompany(companyId) {
+            const debugDiv = document.getElementById('debugInfo');
+            debugDiv.innerHTML = `🔍 جاري اختبار الشركة ${companyId}...\n`;
+            
+            try {
+                // اختبار الـ API مع فلترة الشركة
+                const response = await fetch(`/api/facebook/settings?company_id=${companyId}`);
+                const data = await response.json();
+                
+                debugDiv.innerHTML += `✅ نجح الاتصال بالـ API\n`;
+                debugDiv.innerHTML += `🏢 الشركة: ${companyId}\n`;
+                debugDiv.innerHTML += `📊 عدد الصفحات المفلترة: ${data.length}\n`;
+                debugDiv.innerHTML += `📋 الصفحات المفلترة:\n`;
+                
+                if (data.length > 0) {
+                    data.forEach((page, index) => {
+                        debugDiv.innerHTML += `   ${index + 1}. ${page.page_name || 'بدون اسم'} (${page.page_id})\n`;
+                    });
+                } else {
+                    debugDiv.innerHTML += `   لا توجد صفحات لهذه الشركة\n`;
+                }
+                
+            } catch (error) {
+                debugDiv.innerHTML += `❌ خطأ في الاتصال: ${error.message}\n`;
+            }
+        }
+
+        function setCompany(companyId) {
+            const companies = {
+                'company-1': { id: 'company-1', name: 'Swan Shop' },
+                'company-2': { id: 'company-2', name: 'سولا 127' },
+                'company-new': { id: 'company-new', name: 'شركة جديدة' },
+                'new-company-123': { id: 'new-company-123', name: 'شركة تجريبية جديدة' }
+            };
+            
+            localStorage.setItem('company', JSON.stringify(companies[companyId]));
+            updateCurrentCompany();
+            
+            const debugDiv = document.getElementById('debugInfo');
+            debugDiv.innerHTML = `✅ تم تعيين الشركة: ${companies[companyId].name}\n`;
+        }
+
+        function clearCompany() {
+            localStorage.removeItem('company');
+            updateCurrentCompany();
+            
+            const debugDiv = document.getElementById('debugInfo');
+            debugDiv.innerHTML = `🧹 تم مسح بيانات الشركة\n`;
+        }
+
+        function clearResults() {
+            document.getElementById('debugInfo').innerHTML = 'تم مسح النتائج\n';
+        }
+
+        // تحديث العرض عند تحميل الصفحة
+        document.addEventListener('DOMContentLoaded', () => {
+            updateCurrentCompany();
+            testAPI(); // اختبار تلقائي عند التحميل
+        });
+        
+        console.log('🔍 تم تحميل صفحة التشخيص');
+    </script>
+</body>
+</html>

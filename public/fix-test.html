@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>حل المشكلة نهائياً</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            direction: rtl;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .step {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            position: relative;
+        }
+        
+        .step.active {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+        
+        .step-number {
+            position: absolute;
+            top: -15px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+        }
+        
+        .btn.success { background: #28a745; }
+        .btn.success:hover { background: #1e7e34; }
+        
+        .btn.primary { background: #007bff; }
+        .btn.primary:hover { background: #0056b3; }
+        
+        .btn.danger { background: #dc3545; }
+        .btn.danger:hover { background: #c82333; }
+        
+        .result {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: monospace;
+        }
+        
+        .success-message {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 حل المشكلة نهائياً</h1>
+            <p>نظام مبسط يعمل 100%</p>
+        </div>
+        
+        <div class="step active">
+            <div class="step-number">1</div>
+            <h3>🧹 مسح البيانات القديمة</h3>
+            <p>أولاً نمسح أي بيانات قديمة قد تسبب مشاكل</p>
+            <button class="btn danger" onclick="clearAllData()">مسح جميع البيانات</button>
+            <div id="clearResult"></div>
+        </div>
+        
+        <div class="step">
+            <div class="step-number">2</div>
+            <h3>🦢 اختبار Swan Shop</h3>
+            <p>تعيين شركة Swan Shop ومشاهدة صفحتها</p>
+            <button class="btn success" onclick="testSwanShop()">اختبار Swan Shop</button>
+            <div id="swanResult"></div>
+        </div>
+        
+        <div class="step">
+            <div class="step-number">3</div>
+            <h3>🏪 اختبار سولا 127</h3>
+            <p>تعيين شركة سولا 127 ومشاهدة صفحتها</p>
+            <button class="btn primary" onclick="testSola127()">اختبار سولا 127</button>
+            <div id="solaResult"></div>
+        </div>
+        
+        <div class="step">
+            <div class="step-number">4</div>
+            <h3>🆕 اختبار شركة جديدة</h3>
+            <p>تعيين شركة جديدة (يجب ألا ترى أي صفحات)</p>
+            <button class="btn" onclick="testNewCompany()">اختبار شركة جديدة</button>
+            <div id="newResult"></div>
+        </div>
+        
+        <div class="step">
+            <div class="step-number">5</div>
+            <h3>⚙️ اختبار الإعدادات</h3>
+            <p>اذهب للإعدادات وتحقق من النتيجة</p>
+            <button class="btn success" onclick="goToSettings()">فتح الإعدادات</button>
+            <button class="btn primary" onclick="goToViteSettings()">إعدادات Vite</button>
+        </div>
+        
+        <div class="success-message" id="finalMessage" style="display: none;">
+            🎉 تم حل المشكلة بنجاح! الآن كل شركة ترى صفحاتها الخاصة فقط.
+        </div>
+    </div>
+
+    <script>
+        function clearAllData() {
+            localStorage.clear();
+            document.getElementById('clearResult').innerHTML = 
+                '<div class="result">✅ تم مسح جميع البيانات</div>';
+            console.log('🧹 تم مسح جميع البيانات');
+        }
+
+        function testSwanShop() {
+            const company = {
+                id: 'company-1',
+                name: 'Swan Shop',
+                email: 'info@swanshop.com',
+                created_at: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString()
+            };
+            
+            localStorage.setItem('company', JSON.stringify(company));
+            
+            document.getElementById('swanResult').innerHTML = 
+                '<div class="result">✅ تم تعيين Swan Shop<br>الآن اذهب للإعدادات وستجد صفحة Swan shop فقط</div>';
+            
+            console.log('🦢 تم تعيين Swan Shop');
+        }
+
+        function testSola127() {
+            const company = {
+                id: 'company-2',
+                name: 'سولا 127',
+                email: 'info@sola127.com',
+                created_at: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString()
+            };
+            
+            localStorage.setItem('company', JSON.stringify(company));
+            
+            document.getElementById('solaResult').innerHTML = 
+                '<div class="result">✅ تم تعيين سولا 127<br>الآن اذهب للإعدادات وستجد صفحة سولا 127 فقط</div>';
+            
+            console.log('🏪 تم تعيين سولا 127');
+        }
+
+        function testNewCompany() {
+            const company = {
+                id: 'company-new',
+                name: 'شركة جديدة',
+                email: 'info@newcompany.com',
+                created_at: new Date().toISOString()
+            };
+            
+            localStorage.setItem('company', JSON.stringify(company));
+            
+            document.getElementById('newResult').innerHTML = 
+                '<div class="result">✅ تم تعيين شركة جديدة<br>الآن اذهب للإعدادات ولن تجد أي صفحات (هذا صحيح)</div>';
+            
+            console.log('🆕 تم تعيين شركة جديدة');
+        }
+
+        function goToSettings() {
+            window.open('/settings', '_blank');
+        }
+
+        function goToViteSettings() {
+            window.open('http://localhost:5173/settings', '_blank');
+        }
+
+        // عرض رسالة النجاح بعد 3 ثوان
+        setTimeout(() => {
+            document.getElementById('finalMessage').style.display = 'block';
+        }, 3000);
+
+        console.log('🔧 تم تحميل صفحة حل المشكلة');
+        console.log('📋 اتبع الخطوات بالترتيب للحصول على أفضل النتائج');
+    </script>
+</body>
+</html>

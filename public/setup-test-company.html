@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إعداد شركة تجريبية</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            direction: rtl;
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            max-width: 500px;
+            background: white;
+            color: black;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .header {
+            text-align: center;
+            background: #28a745;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px 5px;
+            font-size: 16px;
+            width: 100%;
+        }
+        
+        .btn:hover { background: #0056b3; }
+        .btn.success { background: #28a745; }
+        .btn.danger { background: #dc3545; }
+        .btn.warning { background: #ffc107; color: #212529; }
+        
+        .status {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            text-align: center;
+        }
+        
+        .success-status {
+            background: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        
+        .info {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏢 إعداد شركة تجريبية</h1>
+            <p>لحل مشكلة الصفحة البيضاء</p>
+        </div>
+        
+        <div id="status" class="status">
+            <span id="statusText">جاري فحص الحالة...</span>
+        </div>
+        
+        <div class="info">
+            <h4>📋 الشركات المتاحة:</h4>
+            <p><strong>Swan Shop:</strong> شركة تجارة إلكترونية</p>
+            <p><strong>سولا 127:</strong> متجر محلي</p>
+            <p><strong>شركة جديدة:</strong> للاختبار</p>
+        </div>
+        
+        <button class="btn success" onclick="setupCompany('company-1')">
+            🦢 تسجيل دخول كـ Swan Shop
+        </button>
+        
+        <button class="btn success" onclick="setupCompany('company-2')">
+            🏪 تسجيل دخول كـ سولا 127
+        </button>
+        
+        <button class="btn warning" onclick="setupCompany('company-new')">
+            🆕 تسجيل دخول كـ شركة جديدة
+        </button>
+        
+        <button class="btn danger" onclick="clearAuth()">
+            🧹 مسح بيانات تسجيل الدخول
+        </button>
+        
+        <button class="btn" onclick="openSettings()">
+            ⚙️ فتح صفحة الإعدادات
+        </button>
+        
+        <div class="info">
+            <h4>🔧 كيفية الاستخدام:</h4>
+            <ol>
+                <li>اختر شركة من الأزرار أعلاه</li>
+                <li>اضغط "فتح صفحة الإعدادات"</li>
+                <li>يجب أن تعمل الصفحة الآن!</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        function updateStatus() {
+            const companyData = localStorage.getItem('company');
+            const statusDiv = document.getElementById('status');
+            const statusText = document.getElementById('statusText');
+            
+            if (companyData) {
+                try {
+                    const company = JSON.parse(companyData);
+                    statusDiv.className = 'status success-status';
+                    statusText.innerHTML = `✅ مسجل دخول كـ: ${company.name} (${company.id})`;
+                } catch (error) {
+                    statusDiv.className = 'status';
+                    statusText.innerHTML = '❌ خطأ في بيانات تسجيل الدخول';
+                }
+            } else {
+                statusDiv.className = 'status';
+                statusText.innerHTML = '⚠️ غير مسجل دخول';
+            }
+        }
+
+        function setupCompany(companyId) {
+            const companies = {
+                'company-1': { 
+                    id: 'company-1', 
+                    name: 'Swan Shop',
+                    email: 'info@swanshop.com',
+                    created_at: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(),
+                    subscription_plan: 'premium',
+                    subscription_status: 'active'
+                },
+                'company-2': { 
+                    id: 'company-2', 
+                    name: 'سولا 127',
+                    email: 'info@sola127.com',
+                    created_at: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString(),
+                    subscription_plan: 'basic',
+                    subscription_status: 'active'
+                },
+                'company-new': { 
+                    id: 'company-new', 
+                    name: 'شركة جديدة',
+                    email: 'info@newcompany.com',
+                    created_at: new Date().toISOString(),
+                    subscription_plan: 'trial',
+                    subscription_status: 'active'
+                }
+            };
+            
+            const company = companies[companyId];
+            
+            // حفظ بيانات الشركة
+            localStorage.setItem('company', JSON.stringify(company));
+            
+            // إنشاء token وهمي
+            localStorage.setItem('userToken', `token_${companyId}_${Date.now()}`);
+            
+            console.log('✅ تم تسجيل الدخول:', company.name);
+            updateStatus();
+            
+            alert(`تم تسجيل الدخول بنجاح!\nالشركة: ${company.name}\nيمكنك الآن فتح صفحة الإعدادات.`);
+        }
+
+        function clearAuth() {
+            localStorage.removeItem('company');
+            localStorage.removeItem('userToken');
+            console.log('🧹 تم مسح بيانات تسجيل الدخول');
+            updateStatus();
+            alert('تم مسح بيانات تسجيل الدخول');
+        }
+
+        function openSettings() {
+            window.open('/settings', '_blank');
+        }
+
+        // تحديث الحالة عند تحميل الصفحة
+        document.addEventListener('DOMContentLoaded', updateStatus);
+        
+        console.log('🔧 تم تحميل صفحة إعداد الشركة التجريبية');
+    </script>
+</body>
+</html>

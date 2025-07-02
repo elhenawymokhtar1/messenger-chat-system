@@ -1,0 +1,95 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Additional ignores for Facebook Reply System
+production-build/
+*.zip
+backups/
+test-*.mjs
+check-*.mjs
+fix-*.mjs
+system-health-check.mjs
+build-for-production.sh
+hostinger-config.js
+facebook-reply-hostinger.zip
+
+# OS generated files
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary folders
+tmp/
+temp/
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+# 🔒 ملفات الأمان
+.env.backup
+*.key
+*.pem
+*.p12
+secrets/
+credentials/
+# 📊 تقارير الاختبارات
+test-reports/
+coverage/
+# 🗄️ نسخ احتياطية
+*.backup
+*.bak
+
+# 📁 ملفات مرفوعة (صور)
+uploads/
+uploads/images/
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.webp
+
+# 📁 ملفات اختبار مؤقتة
+test-*.js
+debug-*.js
+monitor-*.js
+check-*.js
+test-image-*.js
+test-real-*.js
+test-with-*.js
+
+# 📁 ملفات قاعدة البيانات
+*.sqlite
+*.sqlite3
+*.db

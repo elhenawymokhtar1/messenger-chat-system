@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ حل سريع</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+        }
+        .icon {
+            font-size: 5em;
+            margin-bottom: 20px;
+        }
+        button {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+            border: none;
+            padding: 20px 40px;
+            border-radius: 15px;
+            font-size: 1.3em;
+            cursor: pointer;
+            margin: 15px;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            min-width: 250px;
+        }
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+        .countdown {
+            font-size: 1.2em;
+            color: #666;
+            margin: 20px 0;
+        }
+        .progress {
+            width: 100%;
+            height: 10px;
+            background: #f0f0f0;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            width: 0%;
+            transition: width 0.1s;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">⚡</div>
+        <h1>حل سريع</h1>
+        <p>مسح جميع البيانات التجريبية وإعادة تحميل النظام</p>
+        
+        <button onclick="quickFix()" id="fixButton">
+            🧹 حل المشكلة الآن
+        </button>
+        
+        <div id="progress" style="display: none;">
+            <div class="countdown" id="countdown">جاري المعالجة...</div>
+            <div class="progress">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function quickFix() {
+            const button = document.getElementById('fixButton');
+            const progress = document.getElementById('progress');
+            const countdown = document.getElementById('countdown');
+            const progressBar = document.getElementById('progressBar');
+            
+            button.style.display = 'none';
+            progress.style.display = 'block';
+            
+            let step = 0;
+            const steps = [
+                { text: '🧹 مسح Local Storage...', action: () => localStorage.clear() },
+                { text: '🗂️ مسح Session Storage...', action: () => sessionStorage.clear() },
+                { text: '🍪 مسح Cookies...', action: clearCookies },
+                { text: '💾 مسح IndexedDB...', action: clearIndexedDB },
+                { text: '📦 مسح Cache API...', action: clearCacheAPI },
+                { text: '🔄 إعادة تحميل الصفحة...', action: () => {} }
+            ];
+            
+            function executeStep() {
+                if (step < steps.length) {
+                    countdown.textContent = steps[step].text;
+                    progressBar.style.width = ((step + 1) / steps.length * 100) + '%';
+                    
+                    steps[step].action();
+                    console.log('✅', steps[step].text);
+                    
+                    step++;
+                    setTimeout(executeStep, 800);
+                } else {
+                    countdown.textContent = '✅ تم! إعادة توجيه إلى الإعدادات...';
+                    setTimeout(() => {
+                        window.location.href = 'http://localhost:8080/settings';
+                    }, 1500);
+                }
+            }
+            
+            executeStep();
+        }
+        
+        function clearCookies() {
+            document.cookie.split(";").forEach(function(c) { 
+                document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+            });
+        }
+        
+        function clearIndexedDB() {
+            if ('indexedDB' in window) {
+                indexedDB.databases().then(databases => {
+                    databases.forEach(db => {
+                        indexedDB.deleteDatabase(db.name);
+                    });
+                });
+            }
+        }
+        
+        function clearCacheAPI() {
+            if ('caches' in window) {
+                caches.keys().then(names => {
+                    names.forEach(name => {
+                        caches.delete(name);
+                    });
+                });
+            }
+        }
+        
+        console.log('⚡ حل سريع جاهز للتنفيذ');
+        console.log('🎯 سيتم مسح جميع البيانات التجريبية');
+    </script>
+</body>
+</html>

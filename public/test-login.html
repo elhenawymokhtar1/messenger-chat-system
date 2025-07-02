@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار تسجيل دخول الشركات</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            max-width: 500px;
+            width: 100%;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        input:focus, select:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .companies-list {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        .company-item {
+            padding: 10px;
+            border-bottom: 1px solid #dee2e6;
+            cursor: pointer;
+        }
+        .company-item:hover {
+            background: #e9ecef;
+        }
+        .company-item:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 اختبار تسجيل دخول الشركات</h1>
+        
+        <div class="form-group">
+            <label>اختر شركة للاختبار:</label>
+            <select id="companySelect">
+                <option value="">-- اختر شركة --</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>البريد الإلكتروني:</label>
+            <input type="email" id="email" placeholder="أدخل البريد الإلكتروني">
+        </div>
+
+        <div class="form-group">
+            <label>كلمة المرور:</label>
+            <input type="password" id="password" placeholder="أدخل كلمة المرور" value="123456">
+        </div>
+
+        <button onclick="testLogin()">🚀 اختبار تسجيل الدخول</button>
+        <button onclick="loadCompanies()">📋 تحديث قائمة الشركات</button>
+
+        <div id="result"></div>
+        
+        <div class="companies-list" id="companiesList" style="display: none;">
+            <h3>📊 الشركات المتاحة:</h3>
+            <div id="companiesData"></div>
+        </div>
+    </div>
+
+    <script>
+        // تحميل الشركات عند فتح الصفحة
+        window.onload = function() {
+            loadCompanies();
+        };
+
+        async function loadCompanies() {
+            try {
+                const response = await fetch('/api/check-company-credentials');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const select = document.getElementById('companySelect');
+                    const companiesData = document.getElementById('companiesData');
+                    const companiesList = document.getElementById('companiesList');
+                    
+                    // مسح الخيارات الموجودة
+                    select.innerHTML = '<option value="">-- اختر شركة --</option>';
+                    
+                    // إضافة الشركات للقائمة
+                    data.data.companies.forEach(company => {
+                        const option = document.createElement('option');
+                        option.value = company.email;
+                        option.textContent = `${company.name} (${company.email})`;
+                        option.dataset.companyData = JSON.stringify(company);
+                        select.appendChild(option);
+                    });
+                    
+                    // عرض تفاصيل الشركات
+                    companiesData.innerHTML = '';
+                    data.data.companies.forEach(company => {
+                        const div = document.createElement('div');
+                        div.className = 'company-item';
+                        div.innerHTML = `
+                            <strong>${company.name}</strong><br>
+                            📧 ${company.email}<br>
+                            🔐 كلمة مرور: ${company.has_password ? '✅ موجودة' : '❌ غير موجودة'}<br>
+                            📊 الحالة: ${company.status}<br>
+                            ✅ يمكن تسجيل الدخول: ${company.can_login ? '✅ نعم' : '❌ لا'}
+                        `;
+                        div.onclick = () => selectCompany(company);
+                        companiesData.appendChild(div);
+                    });
+                    
+                    companiesList.style.display = 'block';
+                    
+                    showResult(`تم تحميل ${data.data.companies.length} شركة بنجاح`, 'success');
+                } else {
+                    showResult('خطأ في تحميل الشركات: ' + data.error, 'error');
+                }
+            } catch (error) {
+                showResult('خطأ في الاتصال: ' + error.message, 'error');
+            }
+        }
+
+        function selectCompany(company) {
+            document.getElementById('email').value = company.email;
+            document.getElementById('companySelect').value = company.email;
+            showResult(`تم اختيار الشركة: ${company.name}`, 'success');
+        }
+
+        async function testLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            if (!email || !password) {
+                showResult('يرجى إدخال البريد الإلكتروني وكلمة المرور', 'error');
+                return;
+            }
+
+            try {
+                showResult('جاري اختبار تسجيل الدخول...', 'success');
+
+                const response = await fetch('/api/subscriptions/companies/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showResult(`✅ نجح تسجيل الدخول!
+الشركة: ${data.company.name}
+البريد: ${data.company.email}
+الحالة: ${data.company.status}
+تم التحقق: ${data.company.is_verified ? 'نعم' : 'لا'}`, 'success');
+                } else {
+                    showResult(`❌ فشل تسجيل الدخول: ${data.message || data.error}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ خطأ في الاتصال: ${error.message}`, 'error');
+            }
+        }
+
+        function showResult(message, type) {
+            const result = document.getElementById('result');
+            result.textContent = message;
+            result.className = `result ${type}`;
+        }
+
+        // تحديث البريد عند اختيار شركة من القائمة
+        document.getElementById('companySelect').addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            if (selectedOption.value) {
+                document.getElementById('email').value = selectedOption.value;
+                const companyData = JSON.parse(selectedOption.dataset.companyData);
+                showResult(`تم اختيار: ${companyData.name}`, 'success');
+            }
+        });
+    </script>
+</body>
+</html>

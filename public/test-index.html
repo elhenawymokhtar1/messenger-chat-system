@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>فهرس صفحات الاختبار</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            direction: rtl;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .test-link {
+            display: block;
+            background: #f8f9fa;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            text-decoration: none;
+            color: #333;
+            transition: all 0.3s ease;
+        }
+        
+        .test-link:hover {
+            border-color: #4facfe;
+            background: #f0f9ff;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .test-link h3 {
+            margin: 0 0 10px 0;
+            color: #4facfe;
+        }
+        
+        .test-link p {
+            margin: 0;
+            color: #666;
+        }
+        
+        .status {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #b3d9ff;
+            margin: 20px 0;
+        }
+        
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧪 فهرس صفحات الاختبار</h1>
+            <p>اختر صفحة الاختبار المناسبة</p>
+        </div>
+        
+        <div class="status">
+            <strong>✅ تم إصلاح مشكلة عزل الصفحات!</strong><br>
+            الآن كل شركة ترى صفحاتها الخاصة فقط.
+        </div>
+        
+        <a href="/test-company-pages.html" class="test-link">
+            <h3>🏢 اختبار الشركات والصفحات (كامل)</h3>
+            <p>صفحة اختبار شاملة مع جميع الميزات والتفاصيل</p>
+        </a>
+        
+        <a href="/simple-test.html" class="test-link">
+            <h3>🔧 اختبار بسيط</h3>
+            <p>صفحة اختبار مبسطة للتحقق السريع من النظام</p>
+        </a>
+        
+        <a href="/settings" class="test-link">
+            <h3>⚙️ صفحة الإعدادات</h3>
+            <p>اذهب مباشرة لصفحة الإعدادات لرؤية الصفحات المفلترة</p>
+        </a>
+        
+        <a href="/conversations" class="test-link">
+            <h3>💬 صفحة المحادثات</h3>
+            <p>اذهب لصفحة المحادثات لرؤية المحادثات المفلترة</p>
+        </a>
+        
+        <div style="text-align: center; margin-top: 30px;">
+            <h3>🎯 خطوات الاختبار:</h3>
+            <ol style="text-align: right; max-width: 500px; margin: 0 auto;">
+                <li>اختر صفحة اختبار من الأعلى</li>
+                <li>جرب التبديل بين الشركات المختلفة</li>
+                <li>اذهب للإعدادات وتحقق من الصفحات المعروضة</li>
+                <li>لاحظ أن كل شركة ترى صفحاتها فقط</li>
+            </ol>
+        </div>
+        
+        <div style="text-align: center; margin-top: 30px;">
+            <h3>📋 النتائج المتوقعة:</h3>
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: right;">
+                <strong>Swan Shop:</strong> ترى صفحة Swan shop فقط<br>
+                <strong>سولا 127:</strong> ترى صفحة سولا 127 فقط<br>
+                <strong>شركة جديدة:</strong> لا ترى أي صفحات + رسائل ترحيبية
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="javascript:location.reload()" class="btn">🔄 تحديث الصفحة</a>
+            <a href="javascript:localStorage.clear(); alert('تم مسح البيانات!');" class="btn">🧹 مسح البيانات</a>
+        </div>
+    </div>
+
+    <script>
+        console.log('🧪 تم تحميل فهرس صفحات الاختبار');
+        console.log('📊 الصفحات المتاحة:');
+        console.log('- /test-company-pages.html - اختبار كامل');
+        console.log('- /simple-test.html - اختبار بسيط');
+        console.log('- /settings - الإعدادات');
+        console.log('- /conversations - المحادثات');
+        
+        // عرض معلومات الشركة الحالية إذا كانت موجودة
+        const companyData = localStorage.getItem('company');
+        if (companyData) {
+            try {
+                const company = JSON.parse(companyData);
+                console.log('🏢 الشركة الحالية:', company.name, '(' + company.id + ')');
+            } catch (error) {
+                console.log('⚠️ خطأ في قراءة بيانات الشركة');
+            }
+        } else {
+            console.log('⚠️ لا توجد شركة محددة حالياً');
+        }
+    </script>
+</body>
+</html>

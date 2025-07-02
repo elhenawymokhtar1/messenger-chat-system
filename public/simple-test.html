@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار بسيط - الشركات</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+            direction: rtl;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            margin: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-family: inherit;
+        }
+        
+        .btn:hover {
+            background: #0056b3;
+        }
+        
+        .btn.success {
+            background: #28a745;
+        }
+        
+        .btn.danger {
+            background: #dc3545;
+        }
+        
+        .status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .company-info {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border: 1px solid #b3d9ff;
+        }
+        
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 اختبار بسيط للشركات</h1>
+        
+        <div class="test-section">
+            <h3>📊 الشركة الحالية:</h3>
+            <div id="currentInfo">جاري التحميل...</div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🎭 اختبار الدوال:</h3>
+            <button class="btn" onclick="testAlert()">اختبار Alert</button>
+            <button class="btn success" onclick="createNewCompany()">إنشاء شركة جديدة</button>
+            <button class="btn" onclick="createOldCompany()">إنشاء شركة قديمة</button>
+            <button class="btn danger" onclick="clearData()">مسح البيانات</button>
+        </div>
+        
+        <div class="test-section">
+            <h3>🔗 التنقل:</h3>
+            <button class="btn" onclick="goHome()">الصفحة الرئيسية</button>
+            <button class="btn" onclick="goConversations()">المحادثات</button>
+        </div>
+        
+        <div id="status"></div>
+    </div>
+
+    <script>
+        console.log('🚀 تم تحميل الصفحة البسيطة');
+        
+        // بيانات الشركة الجديدة
+        const newCompanyData = {
+            id: 'test-new-' + Date.now(),
+            name: 'شركة جديدة للاختبار',
+            email: 'new@test.com',
+            city: 'القاهرة',
+            status: 'active',
+            is_verified: true,
+            created_at: new Date().toISOString(),
+            last_login_at: new Date().toISOString()
+        };
+        
+        // بيانات الشركة القديمة
+        const oldCompanyData = {
+            id: 'test-old-' + Date.now(),
+            name: 'شركة قديمة للاختبار',
+            email: 'old@test.com',
+            city: 'الإسكندرية',
+            status: 'active',
+            is_verified: true,
+            created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+            last_login_at: new Date().toISOString()
+        };
+        
+        // اختبار Alert
+        function testAlert() {
+            console.log('🧪 اختبار Alert...');
+            alert('JavaScript يعمل! ✅');
+            showMessage('تم اختبار Alert بنجاح!', 'success');
+        }
+        
+        // إنشاء شركة جديدة
+        function createNewCompany() {
+            console.log('🆕 إنشاء شركة جديدة...');
+            try {
+                localStorage.setItem('company', JSON.stringify(newCompanyData));
+                console.log('✅ تم حفظ الشركة الجديدة');
+                showMessage('تم إنشاء شركة جديدة بنجاح! 🎉', 'success');
+                updateDisplay();
+            } catch (error) {
+                console.error('❌ خطأ:', error);
+                showMessage('خطأ: ' + error.message, 'error');
+            }
+        }
+        
+        // إنشاء شركة قديمة
+        function createOldCompany() {
+            console.log('🏢 إنشاء شركة قديمة...');
+            try {
+                localStorage.setItem('company', JSON.stringify(oldCompanyData));
+                console.log('✅ تم حفظ الشركة القديمة');
+                showMessage('تم إنشاء شركة قديمة بنجاح! 🏢', 'success');
+                updateDisplay();
+            } catch (error) {
+                console.error('❌ خطأ:', error);
+                showMessage('خطأ: ' + error.message, 'error');
+            }
+        }
+        
+        // مسح البيانات
+        function clearData() {
+            console.log('🧹 مسح البيانات...');
+            try {
+                localStorage.removeItem('company');
+                localStorage.removeItem('userToken');
+                console.log('✅ تم مسح البيانات');
+                showMessage('تم مسح البيانات بنجاح! 🧹', 'success');
+                updateDisplay();
+            } catch (error) {
+                console.error('❌ خطأ:', error);
+                showMessage('خطأ: ' + error.message, 'error');
+            }
+        }
+        
+        // عرض رسالة
+        function showMessage(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+            setTimeout(() => {
+                statusDiv.innerHTML = '';
+            }, 5000);
+        }
+        
+        // تحديث العرض
+        function updateDisplay() {
+            const infoDiv = document.getElementById('currentInfo');
+            const companyData = localStorage.getItem('company');
+            
+            if (companyData) {
+                try {
+                    const company = JSON.parse(companyData);
+                    const createdDate = new Date(company.created_at);
+                    const diffInDays = Math.floor((Date.now() - createdDate.getTime()) / (1000 * 60 * 60 * 24));
+                    const isNew = diffInDays <= 7;
+                    
+                    infoDiv.innerHTML = `
+                        <div class="company-info">
+                            <strong>الاسم:</strong> ${company.name}<br>
+                            <strong>الإيميل:</strong> ${company.email}<br>
+                            <strong>تاريخ الإنشاء:</strong> ${createdDate.toLocaleDateString('ar-EG')}<br>
+                            <strong>العمر:</strong> ${diffInDays} يوم<br>
+                            <strong>شركة جديدة:</strong> ${isNew ? '✅ نعم' : '❌ لا'}
+                        </div>
+                    `;
+                } catch (error) {
+                    infoDiv.innerHTML = '<div style="color: red;">خطأ في قراءة البيانات</div>';
+                }
+            } else {
+                infoDiv.innerHTML = '<div>لا توجد شركة مسجلة</div>';
+            }
+        }
+        
+        // التنقل
+        function goHome() {
+            console.log('🏠 الانتقال للرئيسية...');
+            window.location.href = '/';
+        }
+        
+        function goConversations() {
+            console.log('💬 الانتقال للمحادثات...');
+            window.location.href = '/conversations';
+        }
+        
+        // تحديث العرض عند التحميل
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('📄 تم تحميل DOM');
+            updateDisplay();
+        });
+        
+        console.log('✅ تم تحميل جميع الدوال');
+    </script>
+</body>
+</html>

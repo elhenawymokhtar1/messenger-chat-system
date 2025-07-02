@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار الشركات والصفحات</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            direction: rtl;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 25px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            background: #f8f9fa;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            margin: 5px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn.success { background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%); }
+        .btn.danger { background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%); }
+        .btn.info { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        
+        .company-card {
+            background: white;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        
+        .company-card.active {
+            border-color: #4facfe;
+            background: #f0f9ff;
+        }
+        
+        .page-list {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+        }
+        
+        .page-item {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 5px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏢 اختبار عزل الصفحات للشركات</h1>
+            <p>كل شركة لها صفحاتها الخاصة - نظام عزل كامل</p>
+            <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 8px; margin-top: 15px;">
+                <strong>✅ تم تطبيق النظام الجديد:</strong> كل شركة ترى صفحاتها فقط
+            </div>
+        </div>
+        
+        <div class="content">
+            <!-- الشركة الحالية -->
+            <div class="test-section">
+                <h3>📊 الشركة الحالية</h3>
+                <div id="currentCompanyInfo">جاري التحميل...</div>
+            </div>
+            
+            <!-- شركة Swan Shop -->
+            <div class="test-section">
+                <h3>🦢 شركة Swan Shop</h3>
+                <p>شركة متخصصة في الأزياء والإكسسوارات</p>
+                <div class="company-card" id="swanCard">
+                    <h4>معلومات الشركة:</h4>
+                    <p><strong>الاسم:</strong> Swan Shop</p>
+                    <p><strong>النوع:</strong> متجر أزياء</p>
+                    <p><strong>الصفحات المخصصة:</strong></p>
+                    <div class="page-list">
+                        <div class="page-item">
+                            <span>Swan shop (260345600493273)</span>
+                            <span style="color: green;">✅ مربوطة</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn success" onclick="switchToSwanShop()">
+                    تبديل إلى Swan Shop
+                </button>
+            </div>
+            
+            <!-- شركة سولا 127 -->
+            <div class="test-section">
+                <h3>🏪 شركة سولا 127</h3>
+                <p>شركة تجارية متنوعة</p>
+                <div class="company-card" id="solaCard">
+                    <h4>معلومات الشركة:</h4>
+                    <p><strong>الاسم:</strong> سولا 127</p>
+                    <p><strong>النوع:</strong> تجارة عامة</p>
+                    <p><strong>الصفحات المخصصة:</strong></p>
+                    <div class="page-list">
+                        <div class="page-item">
+                            <span>سولا 127 (240244019177739)</span>
+                            <span style="color: green;">✅ مربوطة</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn info" onclick="switchToSola127()">
+                    تبديل إلى سولا 127
+                </button>
+            </div>
+            
+            <!-- شركة جديدة -->
+            <div class="test-section">
+                <h3>🆕 شركة جديدة</h3>
+                <p>شركة جديدة بدون صفحات مربوطة</p>
+                <div class="company-card" id="newCard">
+                    <h4>معلومات الشركة:</h4>
+                    <p><strong>الاسم:</strong> شركة جديدة للاختبار</p>
+                    <p><strong>النوع:</strong> شركة ناشئة</p>
+                    <p><strong>الصفحات المخصصة:</strong></p>
+                    <div class="page-list">
+                        <div class="page-item">
+                            <span>لا توجد صفحات مربوطة بعد</span>
+                            <span style="color: orange;">⏳ جديدة</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn" onclick="switchToNewCompany()">
+                    تبديل إلى شركة جديدة
+                </button>
+            </div>
+            
+            <!-- تعليمات الاختبار -->
+            <div class="test-section">
+                <h3>📋 كيفية الاختبار</h3>
+                <div style="background: #e7f3ff; padding: 15px; border-radius: 8px; margin: 10px 0;">
+                    <h4 style="margin-top: 0;">خطوات الاختبار:</h4>
+                    <ol style="text-align: right; padding-right: 20px;">
+                        <li>اختر شركة من الأزرار أعلاه</li>
+                        <li>اضغط "فتح الإعدادات" أدناه</li>
+                        <li>لاحظ الصفحات المعروضة في قسم "ربط صفحات فيسبوك"</li>
+                        <li>جرب شركة أخرى وقارن النتائج</li>
+                    </ol>
+                    <p><strong>النتيجة المتوقعة:</strong></p>
+                    <ul style="text-align: right; padding-right: 20px;">
+                        <li>Swan Shop: ترى صفحة Swan shop فقط</li>
+                        <li>سولا 127: ترى صفحة سولا 127 فقط</li>
+                        <li>شركة جديدة: لا ترى أي صفحات</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- أدوات إضافية -->
+            <div class="test-section">
+                <h3>🔧 أدوات الاختبار</h3>
+                <button class="btn info" onclick="goToSettings()">🔧 فتح الإعدادات</button>
+                <button class="btn" onclick="goToConversations()">💬 فتح المحادثات</button>
+                <button class="btn danger" onclick="clearAllData()">🧹 مسح البيانات</button>
+                <button class="btn" onclick="refreshPage()">🔄 تحديث الصفحة</button>
+            </div>
+            
+            <div id="status"></div>
+        </div>
+    </div>
+
+    <script>
+        // بيانات الشركات
+        const companies = {
+            swan: {
+                id: 'company-1',
+                name: 'Swan Shop',
+                email: 'info@swanshop.com',
+                phone: '+201234567890',
+                website: 'https://swanshop.com',
+                address: 'القاهرة، مصر',
+                city: 'القاهرة',
+                country: 'Egypt',
+                status: 'active',
+                is_verified: true,
+                created_at: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(), // قبل 60 يوم
+                last_login_at: new Date().toISOString(),
+                pages: ['260345600493273']
+            },
+            sola: {
+                id: 'company-2',
+                name: 'سولا 127',
+                email: 'info@sola127.com',
+                phone: '+201234567891',
+                website: 'https://sola127.com',
+                address: 'الإسكندرية، مصر',
+                city: 'الإسكندرية',
+                country: 'Egypt',
+                status: 'active',
+                is_verified: true,
+                created_at: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString(), // قبل 45 يوم
+                last_login_at: new Date().toISOString(),
+                pages: ['240244019177739']
+            },
+            new: {
+                id: 'company-new',
+                name: 'شركة جديدة للاختبار',
+                email: 'info@newcompany.com',
+                phone: '+201234567892',
+                website: 'https://newcompany.com',
+                address: 'الجيزة، مصر',
+                city: 'الجيزة',
+                country: 'Egypt',
+                status: 'active',
+                is_verified: true,
+                created_at: new Date().toISOString(), // اليوم
+                last_login_at: new Date().toISOString(),
+                pages: []
+            }
+        };
+
+        function switchToSwanShop() {
+            localStorage.setItem('company', JSON.stringify(companies.swan));
+            showStatus('تم التبديل إلى Swan Shop! 🦢', 'success');
+            updateDisplay();
+        }
+
+        function switchToSola127() {
+            localStorage.setItem('company', JSON.stringify(companies.sola));
+            showStatus('تم التبديل إلى سولا 127! 🏪', 'success');
+            updateDisplay();
+        }
+
+        function switchToNewCompany() {
+            localStorage.setItem('company', JSON.stringify(companies.new));
+            showStatus('تم التبديل إلى شركة جديدة! 🆕', 'success');
+            updateDisplay();
+        }
+
+        function clearAllData() {
+            localStorage.removeItem('company');
+            localStorage.removeItem('userToken');
+            showStatus('تم مسح جميع البيانات! 🧹', 'info');
+            updateDisplay();
+        }
+
+        function goToSettings() {
+            console.log('🔧 الانتقال للإعدادات...');
+            window.location.href = '/settings';
+        }
+
+        function goToConversations() {
+            console.log('💬 الانتقال للمحادثات...');
+            window.location.href = '/conversations';
+        }
+
+        function refreshPage() {
+            console.log('🔄 تحديث الصفحة...');
+            window.location.reload();
+        }
+
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+            setTimeout(() => {
+                statusDiv.innerHTML = '';
+            }, 3000);
+        }
+
+        function updateDisplay() {
+            const infoDiv = document.getElementById('currentCompanyInfo');
+            const companyData = localStorage.getItem('company');
+            
+            // إزالة التمييز من جميع البطاقات
+            document.querySelectorAll('.company-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            
+            if (companyData) {
+                try {
+                    const company = JSON.parse(companyData);
+                    const createdDate = new Date(company.created_at);
+                    const diffInDays = Math.floor((Date.now() - createdDate.getTime()) / (1000 * 60 * 60 * 24));
+                    const isNew = diffInDays <= 7;
+                    
+                    infoDiv.innerHTML = `
+                        <div style="background: #e7f3ff; padding: 15px; border-radius: 8px; border: 1px solid #b3d9ff;">
+                            <strong>الاسم:</strong> ${company.name}<br>
+                            <strong>المعرف:</strong> ${company.id}<br>
+                            <strong>المدينة:</strong> ${company.city}<br>
+                            <strong>تاريخ الإنشاء:</strong> ${createdDate.toLocaleDateString('ar-EG')}<br>
+                            <strong>العمر:</strong> ${diffInDays} يوم<br>
+                            <strong>شركة جديدة:</strong> ${isNew ? '✅ نعم' : '❌ لا'}<br>
+                            <strong>الصفحات المخصصة:</strong> ${company.pages ? company.pages.length : 0} صفحة
+                        </div>
+                    `;
+                    
+                    // تمييز البطاقة النشطة
+                    if (company.id === 'company-1') {
+                        document.getElementById('swanCard').classList.add('active');
+                    } else if (company.id === 'company-2') {
+                        document.getElementById('solaCard').classList.add('active');
+                    } else if (company.id === 'company-new') {
+                        document.getElementById('newCard').classList.add('active');
+                    }
+                    
+                } catch (error) {
+                    infoDiv.innerHTML = '<div style="color: red;">خطأ في قراءة بيانات الشركة</div>';
+                }
+            } else {
+                infoDiv.innerHTML = '<div>لا توجد شركة مسجلة حالياً</div>';
+            }
+        }
+
+        // تحديث العرض عند تحميل الصفحة
+        document.addEventListener('DOMContentLoaded', updateDisplay);
+        
+        console.log('🏢 تم تحميل صفحة اختبار الشركات والصفحات');
+        console.log('💡 الشركات المتاحة:', Object.keys(companies));
+    </script>
+</body>
+</html>

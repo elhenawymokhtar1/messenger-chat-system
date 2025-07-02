@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 إصلاح شركة 121cx</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .header {
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1.2em;
+        }
+        
+        .company-info {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 5px solid #007bff;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+        }
+        
+        .btn-info {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+        
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .status-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .current-company {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 إصلاح شركة 121cx</h1>
+            <p>تم إنشاء الشركة والمتجر بنجاح!</p>
+        </div>
+        
+        <div class="company-info">
+            <h3>📋 معلومات الشركة الجديدة</h3>
+            <p><strong>الاسم:</strong> شركة 121cx</p>
+            <p><strong>البريد الإلكتروني:</strong> 121@sdfds.com</p>
+            <p><strong>المعرف:</strong> a7854ed7-f421-485b-87b4-7829fddf82c3</p>
+            <p><strong>المتجر:</strong> متجر 121cx</p>
+            <p><strong>منتج تجريبي:</strong> منتج تجريبي 121cx - 150.00 جنيه</p>
+        </div>
+        
+        <div class="current-company" id="currentCompanyInfo">
+            <strong>الشركة الحالية في النظام:</strong> جاري التحقق...
+        </div>
+        
+        <div id="statusMessage" class="status status-info">
+            اضغط على "تحديد الشركة" لتفعيل شركة 121cx
+        </div>
+        
+        <button class="btn btn-success" onclick="setCompany121cx()">
+            🏢 تحديد شركة 121cx كشركة حالية
+        </button>
+        
+        <button class="btn btn-info" onclick="checkCurrentCompany()">
+            🔍 فحص الشركة الحالية
+        </button>
+        
+        <button class="btn" onclick="goToProducts()">
+            📦 الذهاب لصفحة المنتجات
+        </button>
+        
+        <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+            <h4>📝 ملاحظات مهمة:</h4>
+            <ul style="text-align: right; margin-top: 10px;">
+                <li>تم إنشاء الشركة والمتجر بنجاح في قاعدة البيانات</li>
+                <li>تم إضافة منتج تجريبي للاختبار</li>
+                <li>اضغط على "تحديد الشركة" لتفعيلها في النظام</li>
+                <li>بعد التفعيل، ستتمكن من رؤية المنتجات وإضافة منتجات جديدة</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // بيانات الشركة الجديدة
+        const company121cx = {
+            id: 'a7854ed7-f421-485b-87b4-7829fddf82c3',
+            name: 'شركة 121cx',
+            email: '121@sdfds.com',
+            phone: '+201234567890',
+            status: 'active',
+            is_verified: true,
+            created_at: new Date().toISOString()
+        };
+        
+        // تحديد شركة 121cx كشركة حالية
+        function setCompany121cx() {
+            localStorage.setItem('company', JSON.stringify(company121cx));
+            
+            document.getElementById('statusMessage').innerHTML = 
+                '✅ تم تحديد شركة 121cx بنجاح! يمكنك الآن الذهاب لصفحة المنتجات.';
+            document.getElementById('statusMessage').className = 'status status-success';
+            
+            updateCurrentCompanyDisplay();
+        }
+        
+        // فحص الشركة الحالية
+        function checkCurrentCompany() {
+            const companyData = localStorage.getItem('company');
+            if (companyData) {
+                const company = JSON.parse(companyData);
+                document.getElementById('statusMessage').innerHTML = 
+                    `الشركة الحالية: ${company.name} (${company.email})`;
+                document.getElementById('statusMessage').className = 'status status-info';
+            } else {
+                document.getElementById('statusMessage').innerHTML = 
+                    '⚠️ لا توجد شركة محددة حالياً';
+                document.getElementById('statusMessage').className = 'status status-warning';
+            }
+            
+            updateCurrentCompanyDisplay();
+        }
+        
+        // تحديث عرض الشركة الحالية
+        function updateCurrentCompanyDisplay() {
+            const companyData = localStorage.getItem('company');
+            const currentCompanyDiv = document.getElementById('currentCompanyInfo');
+            
+            if (companyData) {
+                const company = JSON.parse(companyData);
+                currentCompanyDiv.innerHTML = `
+                    <strong>الشركة الحالية في النظام:</strong><br>
+                    الاسم: ${company.name}<br>
+                    البريد: ${company.email}<br>
+                    المعرف: ${company.id}
+                `;
+                currentCompanyDiv.style.background = '#d4edda';
+                currentCompanyDiv.style.color = '#155724';
+            } else {
+                currentCompanyDiv.innerHTML = 
+                    '<strong>الشركة الحالية في النظام:</strong> لا توجد شركة محددة';
+                currentCompanyDiv.style.background = '#fff3cd';
+                currentCompanyDiv.style.color = '#856404';
+            }
+        }
+        
+        // الذهاب لصفحة المنتجات
+        function goToProducts() {
+            const companyData = localStorage.getItem('company');
+            if (!companyData) {
+                alert('يرجى تحديد الشركة أولاً');
+                return;
+            }
+            
+            window.location.href = '/ecommerce-products';
+        }
+        
+        // تحميل البيانات عند فتح الصفحة
+        window.onload = function() {
+            updateCurrentCompanyDisplay();
+        };
+    </script>
+</body>
+</html>

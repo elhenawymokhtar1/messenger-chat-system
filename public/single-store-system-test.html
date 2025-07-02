@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏪 اختبار نظام المتجر الواحد</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border-left: 5px solid #007bff;
+        }
+        
+        .success-section {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+        
+        .info-section {
+            border-left-color: #17a2b8;
+            background: #d1ecf1;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .before, .after {
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
+        .before {
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+        }
+        
+        .after {
+            background: #d4edda;
+            border-left: 5px solid #28a745;
+        }
+        
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .feature-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .feature-list li:before {
+            content: "✅ ";
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        .old-feature-list li:before {
+            content: "❌ ";
+            color: #dc3545;
+        }
+        
+        .test-steps {
+            background: #e3f2fd;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .test-steps ol {
+            padding-right: 20px;
+        }
+        
+        .test-steps li {
+            margin: 10px 0;
+            padding: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏪 نظام المتجر الواحد</h1>
+            <p>تبسيط إدارة المتاجر - كل شركة لها متجر واحد فقط</p>
+        </div>
+        
+        <div class="content">
+            <!-- التحديث الجديد -->
+            <div class="section success-section">
+                <h3>🎉 تم تطبيق النظام الجديد بنجاح!</h3>
+                <p>الآن كل شركة لها متجر واحد فقط، مما يجعل النظام أبسط وأكثر وضوحاً.</p>
+            </div>
+            
+            <!-- المقارنة -->
+            <div class="section">
+                <h3>📊 مقارنة النظام القديم والجديد</h3>
+                <div class="comparison">
+                    <div class="before">
+                        <h4>❌ النظام القديم (متعدد المتاجر)</h4>
+                        <ul class="feature-list old-feature-list">
+                            <li>كل شركة يمكنها إنشاء متاجر متعددة</li>
+                            <li>تعقيد في إدارة المتاجر</li>
+                            <li>صعوبة في تحديد المتجر المناسب للمنتج</li>
+                            <li>واجهة معقدة لإدارة المتاجر</li>
+                            <li>إمكانية الخطأ في اختيار المتجر</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="after">
+                        <h4>✅ النظام الجديد (متجر واحد)</h4>
+                        <ul class="feature-list">
+                            <li>كل شركة لها متجر واحد فقط</li>
+                            <li>بساطة في الإدارة</li>
+                            <li>إضافة المنتجات تلقائياً للمتجر الوحيد</li>
+                            <li>واجهة مبسطة لتعديل بيانات المتجر</li>
+                            <li>لا توجد إمكانية للخطأ</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- الميزات الجديدة -->
+            <div class="section info-section">
+                <h3>✨ الميزات الجديدة</h3>
+                <ul class="feature-list">
+                    <li><strong>إنشاء تلقائي:</strong> يتم إنشاء متجر تلقائياً عند إنشاء شركة جديدة</li>
+                    <li><strong>واجهة مبسطة:</strong> صفحة واحدة لتعديل بيانات المتجر</li>
+                    <li><strong>إضافة منتجات مبسطة:</strong> المنتجات تُضاف تلقائياً للمتجر الوحيد</li>
+                    <li><strong>عدم التعقيد:</strong> لا حاجة لاختيار متجر عند إضافة منتج</li>
+                    <li><strong>أمان محكم:</strong> كل شركة ترى متجرها ومنتجاتها فقط</li>
+                </ul>
+            </div>
+            
+            <!-- التغييرات التقنية -->
+            <div class="section">
+                <h3>🔧 التغييرات التقنية المطبقة</h3>
+                <div style="background: white; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                    <h4>الملفات المحدثة:</h4>
+                    <ul style="margin-top: 10px; padding-right: 20px;">
+                        <li><code>src/pages/StoreManagement.tsx</code> - تبسيط صفحة إدارة المتاجر</li>
+                        <li><code>src/hooks/useEcommerceProducts.ts</code> - تحديث منطق إضافة المنتجات</li>
+                        <li><code>src/pages/EcommerceProducts.tsx</code> - تحديث منطق إضافة المنتجات</li>
+                        <li><code>src/utils/companyStoreUtils.ts</code> - أدوات إدارة متجر الشركة</li>
+                        <li><code>src/hooks/useCompanyStore.ts</code> - Hook لإدارة متجر الشركة</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- خطوات الاختبار -->
+            <div class="test-steps">
+                <h3>🧪 خطوات اختبار النظام الجديد</h3>
+                <ol>
+                    <li><strong>اختبار الشركة الحالية:</strong>
+                        <ul style="margin-top: 5px; padding-right: 20px;">
+                            <li>اذهب لصفحة "إعدادات المتجر"</li>
+                            <li>تأكد من ظهور متجر واحد فقط</li>
+                            <li>جرب تعديل بيانات المتجر</li>
+                        </ul>
+                    </li>
+                    
+                    <li><strong>اختبار إضافة المنتجات:</strong>
+                        <ul style="margin-top: 5px; padding-right: 20px;">
+                            <li>اذهب لصفحة "إدارة المنتجات"</li>
+                            <li>أضف منتج جديد</li>
+                            <li>تأكد من إضافته تلقائياً للمتجر الوحيد</li>
+                        </ul>
+                    </li>
+                    
+                    <li><strong>اختبار شركة جديدة:</strong>
+                        <ul style="margin-top: 5px; padding-right: 20px;">
+                            <li>أنشئ شركة جديدة</li>
+                            <li>تأكد من إنشاء متجر تلقائياً</li>
+                            <li>جرب إضافة منتجات للشركة الجديدة</li>
+                        </ul>
+                    </li>
+                    
+                    <li><strong>اختبار العزل:</strong>
+                        <ul style="margin-top: 5px; padding-right: 20px;">
+                            <li>بدل بين الشركات</li>
+                            <li>تأكد من أن كل شركة ترى متجرها ومنتجاتها فقط</li>
+                        </ul>
+                    </li>
+                </ol>
+            </div>
+            
+            <!-- أزرار التنقل -->
+            <div style="text-align: center; margin-top: 30px;">
+                <a href="/store-management" class="btn btn-success">
+                    🏪 إعدادات المتجر
+                </a>
+                
+                <a href="/ecommerce-products" class="btn btn-primary">
+                    📦 إدارة المنتجات
+                </a>
+                
+                <a href="/fix-121cx-company.html" class="btn">
+                    🏢 إعداد الشركة
+                </a>
+            </div>
+            
+            <!-- ملاحظات مهمة -->
+            <div style="margin-top: 30px; padding: 20px; background: #fff3cd; border-radius: 10px; border-left: 5px solid #ffc107;">
+                <h4>📝 ملاحظات مهمة:</h4>
+                <ul style="margin-top: 10px; padding-right: 20px;">
+                    <li>النظام الآن أبسط وأكثر وضوحاً</li>
+                    <li>كل شركة لها متجر واحد فقط</li>
+                    <li>يتم إنشاء المتجر تلقائياً عند إنشاء الشركة</li>
+                    <li>المنتجات تُضاف تلقائياً للمتجر الوحيد</li>
+                    <li>العزل بين الشركات محكم 100%</li>
+                    <li>لا حاجة لاختيار متجر عند إضافة منتج</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

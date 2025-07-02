@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار واجهة إرسال الصور</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .image-plus-icon {
+            width: 20px;
+            height: 20px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
+        }
+        .send-icon {
+            width: 20px;
+            height: 20px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-md mx-auto bg-white rounded-lg shadow-lg">
+        <div class="p-4 border-b">
+            <h2 class="text-lg font-semibold">اختبار واجهة إرسال الصور</h2>
+        </div>
+        
+        <div class="p-4">
+            <!-- معاينة الصورة -->
+            <div id="imagePreview" class="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200 hidden">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-blue-600 image-plus-icon" viewBox="0 0 24 24">
+                            <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
+                            <circle cx="12" cy="13" r="3"/>
+                            <path d="M21 15h-6m3-3v6"/>
+                        </svg>
+                        <span class="text-sm font-medium text-blue-800">صورة جاهزة للإرسال</span>
+                    </div>
+                    <button onclick="removeImage()" class="text-red-500 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded" title="إزالة الصورة">
+                        ✕
+                    </button>
+                </div>
+                <div class="flex justify-center">
+                    <img id="previewImg" src="" alt="معاينة الصورة" class="max-w-40 max-h-40 rounded-lg border border-blue-300 object-cover shadow-sm">
+                </div>
+            </div>
+
+            <!-- منطقة الإرسال -->
+            <div class="flex gap-2 items-end">
+                <!-- منطقة النص -->
+                <div class="flex-1">
+                    <textarea 
+                        id="messageInput"
+                        placeholder="اكتب رسالتك هنا..."
+                        class="w-full min-h-[60px] max-h-32 resize-none p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    ></textarea>
+                </div>
+
+                <!-- أزرار الإجراءات -->
+                <div class="flex gap-2">
+                    <!-- زر رفع الصور -->
+                    <button 
+                        id="imageBtn"
+                        onclick="document.getElementById('fileInput').click()"
+                        class="h-[60px] w-12 flex-shrink-0 border rounded-lg hover:bg-gray-50 flex items-center justify-center transition-colors"
+                        title="رفع صورة (PNG, JPG, GIF - حد أقصى 10MB)"
+                    >
+                        <svg class="w-5 h-5 image-plus-icon" viewBox="0 0 24 24">
+                            <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
+                            <circle cx="12" cy="13" r="3"/>
+                            <path d="M21 15h-6m3-3v6"/>
+                        </svg>
+                    </button>
+
+                    <!-- زر الإرسال -->
+                    <button 
+                        id="sendBtn"
+                        onclick="sendMessage()"
+                        class="bg-blue-500 hover:bg-blue-600 h-[60px] w-12 flex-shrink-0 rounded-lg flex items-center justify-center text-white transition-colors"
+                        title="إرسال"
+                    >
+                        <svg class="w-5 h-5 send-icon" viewBox="0 0 24 24">
+                            <path d="M22 2L11 13"/>
+                            <path d="M22 2L15 22L11 13L2 9L22 2Z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Input مخفي لرفع الصور -->
+            <input 
+                id="fileInput"
+                type="file" 
+                accept="image/*" 
+                onchange="handleImageSelect(event)"
+                class="hidden"
+            >
+        </div>
+    </div>
+
+    <script>
+        let selectedImage = null;
+
+        function handleImageSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                selectedImage = file;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('previewImg').src = e.target.result;
+                    document.getElementById('imagePreview').classList.remove('hidden');
+                    updateImageButton();
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function removeImage() {
+            selectedImage = null;
+            document.getElementById('imagePreview').classList.add('hidden');
+            document.getElementById('fileInput').value = '';
+            updateImageButton();
+        }
+
+        function updateImageButton() {
+            const btn = document.getElementById('imageBtn');
+            if (selectedImage) {
+                btn.className = 'h-[60px] w-12 flex-shrink-0 border-blue-500 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg flex items-center justify-center transition-colors';
+            } else {
+                btn.className = 'h-[60px] w-12 flex-shrink-0 border rounded-lg hover:bg-gray-50 flex items-center justify-center transition-colors';
+            }
+        }
+
+        function sendMessage() {
+            const message = document.getElementById('messageInput').value.trim();
+            if (message || selectedImage) {
+                alert(`إرسال رسالة: "${message}" ${selectedImage ? 'مع صورة' : ''}`);
+                document.getElementById('messageInput').value = '';
+                removeImage();
+            }
+        }
+    </script>
+</body>
+</html>

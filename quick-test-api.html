@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار API مباشر</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        .loading {
+            background-color: #d1ecf1;
+            border-color: #bee5eb;
+            color: #0c5460;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        pre {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 اختبار API مباشر للفئات</h1>
+        
+        <div class="test-section">
+            <h3>🏥 اختبار Health Check</h3>
+            <button onclick="testHealth()">اختبار الخادم</button>
+            <div id="health-result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>📂 اختبار جلب الفئات</h3>
+            <button onclick="testGetCategories()">جلب الفئات</button>
+            <div id="categories-result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🆕 اختبار إضافة فئة</h3>
+            <button onclick="testAddCategory()">إضافة فئة تجريبية</button>
+            <div id="add-result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>📊 سجل الاختبارات</h3>
+            <div id="log"></div>
+        </div>
+    </div>
+
+    <script>
+        const COMPANY_ID = 'c677b32f-fe1c-4c64-8362-a1c03406608d';
+        const API_BASE = 'http://localhost:3002/api';
+        
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const time = new Date().toLocaleTimeString('ar-SA');
+            logDiv.innerHTML += `<div>[${time}] ${message}</div>`;
+        }
+        
+        async function testHealth() {
+            const resultDiv = document.getElementById('health-result');
+            resultDiv.className = 'test-section loading';
+            resultDiv.innerHTML = '⏳ جاري اختبار الخادم...';
+            
+            try {
+                log('🏥 بدء اختبار Health Check');
+                
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    resultDiv.className = 'test-section success';
+                    resultDiv.innerHTML = `
+                        <h4>✅ الخادم يعمل بنجاح</h4>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                    log('✅ Health Check نجح');
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${data.message || 'خطأ غير معروف'}`);
+                }
+            } catch (error) {
+                resultDiv.className = 'test-section error';
+                resultDiv.innerHTML = `
+                    <h4>❌ فشل في الاتصال بالخادم</h4>
+                    <p><strong>الخطأ:</strong> ${error.message}</p>
+                    <p><strong>التحقق من:</strong></p>
+                    <ul>
+                        <li>هل الخادم يعمل على المنفذ 3002؟</li>
+                        <li>هل هناك مشكلة في CORS؟</li>
+                        <li>هل الشبكة متاحة؟</li>
+                    </ul>
+                `;
+                log(`❌ Health Check فشل: ${error.message}`);
+            }
+        }
+        
+        async function testGetCategories() {
+            const resultDiv = document.getElementById('categories-result');
+            resultDiv.className = 'test-section loading';
+            resultDiv.innerHTML = '⏳ جاري جلب الفئات...';
+            
+            try {
+                log('📂 بدء اختبار جلب الفئات');
+                
+                const response = await fetch(`${API_BASE}/companies/${COMPANY_ID}/categories`);
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    resultDiv.className = 'test-section success';
+                    resultDiv.innerHTML = `
+                        <h4>✅ تم جلب الفئات بنجاح</h4>
+                        <p><strong>عدد الفئات:</strong> ${data.data.length}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                    log(`✅ تم جلب ${data.data.length} فئة`);
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${data.message || 'خطأ غير معروف'}`);
+                }
+            } catch (error) {
+                resultDiv.className = 'test-section error';
+                resultDiv.innerHTML = `
+                    <h4>❌ فشل في جلب الفئات</h4>
+                    <p><strong>الخطأ:</strong> ${error.message}</p>
+                `;
+                log(`❌ فشل جلب الفئات: ${error.message}`);
+            }
+        }
+        
+        async function testAddCategory() {
+            const resultDiv = document.getElementById('add-result');
+            resultDiv.className = 'test-section loading';
+            resultDiv.innerHTML = '⏳ جاري إضافة فئة تجريبية...';
+            
+            try {
+                log('🆕 بدء اختبار إضافة فئة');
+                
+                const categoryData = {
+                    name: `فئة اختبار ${Date.now()}`,
+                    description: 'فئة تجريبية من الاختبار المباشر',
+                    slug: `test-${Date.now()}`,
+                    sort_order: 1,
+                    is_active: true,
+                    color: '#28a745'
+                };
+                
+                const response = await fetch(`${API_BASE}/companies/${COMPANY_ID}/categories`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(categoryData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    resultDiv.className = 'test-section success';
+                    resultDiv.innerHTML = `
+                        <h4>✅ تم إضافة الفئة بنجاح</h4>
+                        <p><strong>اسم الفئة:</strong> ${data.data.name}</p>
+                        <p><strong>معرف الفئة:</strong> ${data.data.id}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                    log(`✅ تم إضافة فئة: ${data.data.name}`);
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${data.message || 'خطأ غير معروف'}`);
+                }
+            } catch (error) {
+                resultDiv.className = 'test-section error';
+                resultDiv.innerHTML = `
+                    <h4>❌ فشل في إضافة الفئة</h4>
+                    <p><strong>الخطأ:</strong> ${error.message}</p>
+                `;
+                log(`❌ فشل إضافة الفئة: ${error.message}`);
+            }
+        }
+        
+        // تشغيل اختبار تلقائي عند تحميل الصفحة
+        window.onload = function() {
+            log('🚀 بدء الاختبارات التلقائية');
+            setTimeout(testHealth, 1000);
+        };
+    </script>
+</body>
+</html>

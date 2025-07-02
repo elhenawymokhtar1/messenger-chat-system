@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 اختبار تحديث التوقيت المباشر</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .test-section {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .timezone-selector {
+            margin: 20px 0;
+        }
+        
+        select {
+            padding: 10px 15px;
+            border-radius: 10px;
+            border: none;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            font-size: 16px;
+            width: 100%;
+            max-width: 300px;
+        }
+        
+        .time-display {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin: 10px 0;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        .comparison-table th,
+        .comparison-table td {
+            padding: 12px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .comparison-table th {
+            background: rgba(0, 0, 0, 0.3);
+            font-weight: bold;
+        }
+        
+        .comparison-table td {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 10px;
+            margin: 10px 0;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .status.success {
+            background: rgba(76, 175, 80, 0.3);
+            border: 1px solid #4CAF50;
+        }
+        
+        .status.warning {
+            background: rgba(255, 193, 7, 0.3);
+            border: 1px solid #FFC107;
+        }
+        
+        .instructions {
+            background: rgba(33, 150, 243, 0.3);
+            border: 1px solid #2196F3;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+        
+        .instructions h3 {
+            margin-top: 0;
+        }
+        
+        .instructions ol {
+            text-align: right;
+        }
+        
+        .instructions li {
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 اختبار تحديث التوقيت المباشر</h1>
+        
+        <div class="instructions">
+            <h3>📋 تعليمات الاختبار:</h3>
+            <ol>
+                <li>افتح صفحة الإعدادات في تبويب آخر: <code>http://localhost:8082/settings</code></li>
+                <li>غيّر المنطقة الزمنية في الإعدادات</li>
+                <li>احفظ الإعدادات</li>
+                <li>ارجع لهذه الصفحة وانقر "تحديث العرض"</li>
+                <li>لاحظ تغيير الأوقات حسب المنطقة الزمنية الجديدة</li>
+            </ol>
+        </div>
+        
+        <div class="test-section">
+            <h3>⚙️ الإعدادات الحالية</h3>
+            <div id="current-settings"></div>
+            <button onclick="loadCurrentSettings()" style="padding: 10px 20px; border-radius: 10px; border: none; background: #4CAF50; color: white; cursor: pointer; margin: 10px 0;">
+                🔄 تحديث الإعدادات
+            </button>
+        </div>
+        
+        <div class="test-section">
+            <h3>🕐 الوقت الحالي</h3>
+            <div id="current-time" class="time-display"></div>
+            <button onclick="updateCurrentTime()" style="padding: 10px 20px; border-radius: 10px; border: none; background: #2196F3; color: white; cursor: pointer;">
+                🔄 تحديث الوقت
+            </button>
+        </div>
+        
+        <div class="test-section">
+            <h3>🌍 مقارنة المناطق الزمنية</h3>
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>المنطقة الزمنية</th>
+                        <th>الوقت الحالي</th>
+                        <th>الحالة</th>
+                    </tr>
+                </thead>
+                <tbody id="timezone-comparison">
+                </tbody>
+            </table>
+            <button onclick="updateTimezoneComparison()" style="padding: 10px 20px; border-radius: 10px; border: none; background: #FF9800; color: white; cursor: pointer;">
+                🔄 تحديث المقارنة
+            </button>
+        </div>
+        
+        <div class="test-section">
+            <h3>📨 محاكاة أوقات الرسائل</h3>
+            <div id="message-times"></div>
+            <button onclick="updateMessageTimes()" style="padding: 10px 20px; border-radius: 10px; border: none; background: #9C27B0; color: white; cursor: pointer;">
+                🔄 تحديث أوقات الرسائل
+            </button>
+        </div>
+        
+        <div id="status" class="status"></div>
+    </div>
+
+    <script>
+        // المناطق الزمنية المدعومة
+        const timezones = [
+            { name: 'القاهرة', tz: 'Africa/Cairo', flag: '🇪🇬' },
+            { name: 'الرياض', tz: 'Asia/Riyadh', flag: '🇸🇦' },
+            { name: 'دبي', tz: 'Asia/Dubai', flag: '🇦🇪' },
+            { name: 'الكويت', tz: 'Asia/Kuwait', flag: '🇰🇼' },
+            { name: 'الدوحة', tz: 'Asia/Qatar', flag: '🇶🇦' },
+            { name: 'المنامة', tz: 'Asia/Bahrain', flag: '🇧🇭' },
+            { name: 'بغداد', tz: 'Asia/Baghdad', flag: '🇮🇶' },
+            { name: 'دمشق', tz: 'Asia/Damascus', flag: '🇸🇾' },
+            { name: 'بيروت', tz: 'Asia/Beirut', flag: '🇱🇧' },
+            { name: 'تونس', tz: 'Africa/Tunis', flag: '🇹🇳' },
+            { name: 'الجزائر', tz: 'Africa/Algiers', flag: '🇩🇿' },
+            { name: 'الدار البيضاء', tz: 'Africa/Casablanca', flag: '🇲🇦' },
+            { name: 'UTC', tz: 'UTC', flag: '🌍' }
+        ];
+        
+        // أوقات رسائل تجريبية
+        const sampleMessageTimes = [
+            new Date(Date.now() - 5 * 60 * 1000).toISOString(), // منذ 5 دقائق
+            new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // منذ ساعتين
+            new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // منذ يوم
+            new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), // منذ أسبوع
+        ];
+        
+        // الحصول على المنطقة الزمنية من الإعدادات
+        function getUserTimezone() {
+            try {
+                const savedSettings = localStorage.getItem('systemSettings');
+                if (savedSettings) {
+                    const settings = JSON.parse(savedSettings);
+                    return settings.timezone || 'Africa/Cairo';
+                }
+            } catch (error) {
+                console.warn('خطأ في قراءة إعدادات المنطقة الزمنية:', error);
+            }
+            return 'Africa/Cairo';
+        }
+        
+        // تحميل الإعدادات الحالية
+        function loadCurrentSettings() {
+            try {
+                const savedSettings = localStorage.getItem('systemSettings');
+                const currentTimezone = getUserTimezone();
+                
+                let html = `
+                    <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px;">
+                        <strong>المنطقة الزمنية المحددة:</strong> ${currentTimezone}<br>
+                `;
+                
+                if (savedSettings) {
+                    const settings = JSON.parse(savedSettings);
+                    html += `
+                        <strong>تنسيق التاريخ:</strong> ${settings.dateFormat || 'غير محدد'}<br>
+                        <strong>تنسيق الوقت:</strong> ${settings.timeFormat || 'غير محدد'}<br>
+                        <strong>اللغة:</strong> ${settings.language || 'غير محدد'}
+                    `;
+                } else {
+                    html += '<em>لا توجد إعدادات محفوظة</em>';
+                }
+                
+                html += '</div>';
+                document.getElementById('current-settings').innerHTML = html;
+                
+                updateStatus('تم تحميل الإعدادات بنجاح', 'success');
+            } catch (error) {
+                updateStatus('خطأ في تحميل الإعدادات: ' + error.message, 'warning');
+            }
+        }
+        
+        // تحديث الوقت الحالي
+        function updateCurrentTime() {
+            const timezone = getUserTimezone();
+            const now = new Date();
+            
+            const timeString = now.toLocaleString('ar-EG', {
+                timeZone: timezone,
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            });
+            
+            document.getElementById('current-time').innerHTML = `
+                <div>${timeString}</div>
+                <div style="font-size: 0.8em; margin-top: 10px; opacity: 0.8;">
+                    المنطقة الزمنية: ${timezone}
+                </div>
+            `;
+        }
+        
+        // تحديث مقارنة المناطق الزمنية
+        function updateTimezoneComparison() {
+            const userTimezone = getUserTimezone();
+            const now = new Date();
+            let html = '';
+            
+            timezones.forEach(({ name, tz, flag }) => {
+                const timeString = now.toLocaleString('ar-EG', {
+                    timeZone: tz,
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                });
+                
+                const isSelected = tz === userTimezone;
+                const statusClass = isSelected ? 'style="background: rgba(76, 175, 80, 0.3);"' : '';
+                const statusText = isSelected ? '✅ محدد' : '';
+                
+                html += `
+                    <tr ${statusClass}>
+                        <td>${flag} ${name} (${tz})</td>
+                        <td>${timeString}</td>
+                        <td>${statusText}</td>
+                    </tr>
+                `;
+            });
+            
+            document.getElementById('timezone-comparison').innerHTML = html;
+        }
+        
+        // تحديث أوقات الرسائل
+        function updateMessageTimes() {
+            const timezone = getUserTimezone();
+            let html = '<div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px;">';
+            
+            sampleMessageTimes.forEach((timeString, index) => {
+                const date = new Date(timeString);
+                const now = new Date();
+                const diffMs = now.getTime() - date.getTime();
+                const diffMins = Math.floor(diffMs / 60000);
+                const diffHours = Math.floor(diffMs / 3600000);
+                const diffDays = Math.floor(diffMs / 86400000);
+                
+                let relativeTime;
+                if (diffMins < 1) relativeTime = "الآن";
+                else if (diffMins < 60) relativeTime = `منذ ${diffMins} دقيقة`;
+                else if (diffHours < 24) relativeTime = `منذ ${diffHours} ساعة`;
+                else relativeTime = `منذ ${diffDays} يوم`;
+                
+                const formattedTime = date.toLocaleString('ar-EG', {
+                    timeZone: timezone,
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                });
+                
+                html += `
+                    <div style="margin: 10px 0; padding: 10px; background: rgba(255,255,255,0.1); border-radius: 8px;">
+                        <strong>رسالة ${index + 1}:</strong><br>
+                        📅 الوقت: ${formattedTime}<br>
+                        ⏰ نسبي: ${relativeTime}<br>
+                        🌍 المنطقة: ${timezone}
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            document.getElementById('message-times').innerHTML = html;
+        }
+        
+        // تحديث حالة الاختبار
+        function updateStatus(message, type = 'success') {
+            const statusElement = document.getElementById('status');
+            statusElement.className = `status ${type}`;
+            statusElement.innerHTML = `
+                <div>${type === 'success' ? '✅' : '⚠️'} ${message}</div>
+                <div style="font-size: 0.9em; margin-top: 5px;">
+                    آخر تحديث: ${new Date().toLocaleTimeString('ar-EG')}
+                </div>
+            `;
+        }
+        
+        // تحديث تلقائي كل ثانية
+        function startAutoUpdate() {
+            setInterval(() => {
+                updateCurrentTime();
+            }, 1000);
+        }
+        
+        // تهيئة الصفحة
+        function init() {
+            loadCurrentSettings();
+            updateCurrentTime();
+            updateTimezoneComparison();
+            updateMessageTimes();
+            startAutoUpdate();
+            updateStatus('تم تحميل الصفحة بنجاح - جاهز للاختبار!', 'success');
+        }
+        
+        // بدء التطبيق
+        window.onload = init;
+        
+        // مراقبة تغييرات localStorage
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'systemSettings') {
+                updateStatus('تم اكتشاف تغيير في الإعدادات - يتم التحديث...', 'warning');
+                setTimeout(() => {
+                    loadCurrentSettings();
+                    updateCurrentTime();
+                    updateTimezoneComparison();
+                    updateMessageTimes();
+                    updateStatus('تم تحديث العرض حسب الإعدادات الجديدة!', 'success');
+                }, 500);
+            }
+        });
+    </script>
+</body>
+</html>

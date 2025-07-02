@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إصلاح localStorage للمحادثات</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            color: white;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        .section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .button {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        .button.danger {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+        }
+        .button.info {
+            background: linear-gradient(45deg, #2196F3, #1976D2);
+        }
+        .output {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .status {
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .status.success {
+            background: rgba(76, 175, 80, 0.3);
+            border: 1px solid #4CAF50;
+        }
+        .status.error {
+            background: rgba(244, 67, 54, 0.3);
+            border: 1px solid #f44336;
+        }
+        .status.warning {
+            background: rgba(255, 193, 7, 0.3);
+            border: 1px solid #FFC107;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 إصلاح localStorage للمحادثات</h1>
+        
+        <div class="section">
+            <h3>📊 فحص الوضع الحالي</h3>
+            <button class="button info" onclick="checkCurrentState()">فحص localStorage</button>
+            <button class="button info" onclick="testAPI()">اختبار API</button>
+            <div id="currentState" class="output"></div>
+        </div>
+
+        <div class="section">
+            <h3>🏢 إعداد بيانات الشركة</h3>
+            <button class="button" onclick="setCompanyData()">إعداد بيانات الشركة</button>
+            <button class="button danger" onclick="clearCompanyData()">مسح بيانات الشركة</button>
+            <div id="companyStatus" class="output"></div>
+        </div>
+
+        <div class="section">
+            <h3>🔄 إعادة تحميل الصفحة</h3>
+            <button class="button" onclick="reloadConversations()">إعادة تحميل المحادثات</button>
+            <button class="button" onclick="openConversationsPage()">فتح صفحة المحادثات</button>
+            <div id="reloadStatus" class="output"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:3002';
+        const TEST_COMPANY_ID = 'c677b32f-fe1c-4c64-8362-a1c03406608d';
+
+        // فحص الوضع الحالي
+        function checkCurrentState() {
+            const output = document.getElementById('currentState');
+            let result = '🔍 فحص localStorage:\n\n';
+            
+            // فحص localStorage
+            const company = localStorage.getItem('company');
+            if (company) {
+                try {
+                    const companyData = JSON.parse(company);
+                    result += '✅ بيانات الشركة موجودة:\n';
+                    result += `   🏢 الاسم: ${companyData.name}\n`;
+                    result += `   📧 الإيميل: ${companyData.email}\n`;
+                    result += `   🆔 المعرف: ${companyData.id}\n\n`;
+                } catch (e) {
+                    result += '❌ بيانات الشركة تالفة في localStorage\n\n';
+                }
+            } else {
+                result += '❌ لا توجد بيانات شركة في localStorage\n\n';
+            }
+
+            // فحص sessionStorage
+            const sessionData = sessionStorage.getItem('company');
+            if (sessionData) {
+                result += '📝 توجد بيانات في sessionStorage أيضاً\n\n';
+            }
+
+            // فحص cookies
+            if (document.cookie) {
+                result += '🍪 Cookies موجودة:\n';
+                result += document.cookie + '\n\n';
+            }
+
+            output.textContent = result;
+        }
+
+        // اختبار API
+        async function testAPI() {
+            const output = document.getElementById('currentState');
+            output.textContent = '🔄 جاري اختبار API...\n';
+
+            try {
+                // اختبار صحة النظام
+                const healthResponse = await fetch(`${API_BASE_URL}/api/health`);
+                const healthData = await healthResponse.json();
+                
+                let result = '🔍 نتائج اختبار API:\n\n';
+                result += `✅ صحة النظام: ${healthData.database?.connected ? 'متصل' : 'غير متصل'}\n`;
+                
+                // اختبار المحادثات
+                const conversationsResponse = await fetch(`${API_BASE_URL}/api/conversations?company_id=${TEST_COMPANY_ID}&limit=5`);
+                const conversationsData = await conversationsResponse.json();
+                
+                result += `💬 المحادثات: ${conversationsData.length} محادثة موجودة\n`;
+                
+                if (conversationsData.length > 0) {
+                    result += '   📋 أول محادثة:\n';
+                    result += `      👤 المستخدم: ${conversationsData[0].user_name || 'غير محدد'}\n`;
+                    result += `      📅 التاريخ: ${conversationsData[0].last_message_at || 'غير محدد'}\n`;
+                }
+                
+                output.textContent = result;
+                
+            } catch (error) {
+                output.textContent = `❌ خطأ في اختبار API: ${error.message}`;
+            }
+        }
+
+        // إعداد بيانات الشركة
+        function setCompanyData() {
+            const companyData = {
+                id: TEST_COMPANY_ID,
+                name: 'شركة تجريبية',
+                email: 'test@example.com',
+                status: 'active',
+                created_at: new Date().toISOString()
+            };
+
+            localStorage.setItem('company', JSON.stringify(companyData));
+            sessionStorage.setItem('company', JSON.stringify(companyData));
+
+            const output = document.getElementById('companyStatus');
+            output.textContent = '✅ تم إعداد بيانات الشركة في localStorage و sessionStorage';
+            
+            // إضافة رسالة نجاح
+            const status = document.createElement('div');
+            status.className = 'status success';
+            status.textContent = '✅ تم حفظ بيانات الشركة بنجاح!';
+            output.appendChild(status);
+        }
+
+        // مسح بيانات الشركة
+        function clearCompanyData() {
+            localStorage.removeItem('company');
+            sessionStorage.removeItem('company');
+            
+            // مسح جميع البيانات المتعلقة بالتطبيق
+            const keysToRemove = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && (key.includes('company') || key.includes('conversation') || key.includes('message'))) {
+                    keysToRemove.push(key);
+                }
+            }
+            
+            keysToRemove.forEach(key => localStorage.removeItem(key));
+
+            const output = document.getElementById('companyStatus');
+            output.textContent = '🗑️ تم مسح جميع بيانات الشركة من localStorage';
+            
+            // إضافة رسالة تحذير
+            const status = document.createElement('div');
+            status.className = 'status warning';
+            status.textContent = '⚠️ تم مسح جميع البيانات المحلية!';
+            output.appendChild(status);
+        }
+
+        // إعادة تحميل المحادثات
+        async function reloadConversations() {
+            const output = document.getElementById('reloadStatus');
+            output.textContent = '🔄 جاري إعادة تحميل المحادثات...\n';
+
+            try {
+                // التأكد من وجود بيانات الشركة
+                const company = localStorage.getItem('company');
+                if (!company) {
+                    output.textContent = '❌ لا توجد بيانات شركة. يرجى إعداد بيانات الشركة أولاً.';
+                    return;
+                }
+
+                const companyData = JSON.parse(company);
+                
+                // جلب المحادثات
+                const response = await fetch(`${API_BASE_URL}/api/conversations?company_id=${companyData.id}&limit=10`);
+                const conversations = await response.json();
+
+                let result = `✅ تم جلب ${conversations.length} محادثة:\n\n`;
+                
+                conversations.forEach((conv, index) => {
+                    result += `${index + 1}. ${conv.user_name || 'غير محدد'}\n`;
+                    result += `   📅 ${conv.last_message_at || 'غير محدد'}\n`;
+                    result += `   💬 ${conv.last_message || 'لا توجد رسائل'}\n\n`;
+                });
+
+                output.textContent = result;
+
+                // إضافة رسالة نجاح
+                const status = document.createElement('div');
+                status.className = 'status success';
+                status.textContent = `✅ تم جلب ${conversations.length} محادثة بنجاح!`;
+                output.appendChild(status);
+
+            } catch (error) {
+                output.textContent = `❌ خطأ في جلب المحادثات: ${error.message}`;
+                
+                const status = document.createElement('div');
+                status.className = 'status error';
+                status.textContent = '❌ فشل في جلب المحادثات!';
+                output.appendChild(status);
+            }
+        }
+
+        // فتح صفحة المحادثات
+        function openConversationsPage() {
+            const output = document.getElementById('reloadStatus');
+            
+            // التأكد من وجود بيانات الشركة
+            const company = localStorage.getItem('company');
+            if (!company) {
+                output.textContent = '❌ لا توجد بيانات شركة. يرجى إعداد بيانات الشركة أولاً.';
+                return;
+            }
+
+            // فتح صفحة المحادثات في تبويب جديد
+            window.open('http://localhost:8080/conversations', '_blank');
+            
+            output.textContent = '🌐 تم فتح صفحة المحادثات في تبويب جديد';
+            
+            const status = document.createElement('div');
+            status.className = 'status success';
+            status.textContent = '✅ تم فتح صفحة المحادثات!';
+            output.appendChild(status);
+        }
+
+        // تشغيل فحص أولي عند تحميل الصفحة
+        window.onload = function() {
+            checkCurrentState();
+        };
+    </script>
+</body>
+</html>

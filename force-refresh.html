@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔄 إعادة تحميل قوية</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+        .icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin: 10px;
+            transition: transform 0.2s;
+            min-width: 200px;
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        .success {
+            color: #28a745;
+            font-weight: bold;
+            margin-top: 20px;
+            display: none;
+        }
+        .step {
+            background: #f8f9fa;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        .step h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        .step p {
+            margin: 0;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">🔄</div>
+        <h1>إعادة تحميل قوية للصفحة</h1>
+        <p>لحل مشكلة عرض الأسماء القديمة في قائمة الصفحات</p>
+        
+        <div class="step">
+            <h3>🧹 الخطوة 1: مسح الـ Cache</h3>
+            <p>مسح جميع البيانات المحفوظة مؤقتاً</p>
+            <button onclick="clearAllCache()">مسح الـ Cache</button>
+        </div>
+        
+        <div class="step">
+            <h3>🔄 الخطوة 2: إعادة تحميل قوية</h3>
+            <p>إعادة تحميل الصفحة مع تجاهل الـ Cache</p>
+            <button onclick="forceReload()">إعادة تحميل قوية</button>
+        </div>
+        
+        <div class="step">
+            <h3>🌐 الخطوة 3: فتح صفحة الإعدادات</h3>
+            <p>الانتقال مباشرة إلى صفحة الإعدادات</p>
+            <button onclick="openSettings()">فتح الإعدادات</button>
+        </div>
+        
+        <div id="success" class="success">
+            ✅ تم تنفيذ العملية بنجاح!
+        </div>
+    </div>
+
+    <script>
+        function clearAllCache() {
+            // مسح Local Storage
+            localStorage.clear();
+            
+            // مسح Session Storage
+            sessionStorage.clear();
+            
+            // مسح IndexedDB
+            if ('indexedDB' in window) {
+                indexedDB.databases().then(databases => {
+                    databases.forEach(db => {
+                        indexedDB.deleteDatabase(db.name);
+                    });
+                });
+            }
+            
+            // مسح Cache API
+            if ('caches' in window) {
+                caches.keys().then(names => {
+                    names.forEach(name => {
+                        caches.delete(name);
+                    });
+                });
+            }
+            
+            // مسح Cookies
+            document.cookie.split(";").forEach(function(c) { 
+                document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+            });
+            
+            showSuccess();
+            console.log('🧹 تم مسح جميع أنواع الـ Cache');
+        }
+
+        function forceReload() {
+            // إعادة تحميل قوية مع تجاهل الـ Cache
+            window.location.reload(true);
+        }
+
+        function openSettings() {
+            // فتح صفحة الإعدادات في نافذة جديدة
+            window.open('http://localhost:8080/settings', '_blank');
+            showSuccess();
+        }
+
+        function showSuccess() {
+            document.getElementById('success').style.display = 'block';
+            setTimeout(() => {
+                document.getElementById('success').style.display = 'none';
+            }, 3000);
+        }
+
+        // عرض معلومات الـ Cache الحالي
+        console.log('🔍 معلومات الـ Cache الحالي:');
+        console.log('📦 Local Storage:', Object.keys(localStorage).length, 'عنصر');
+        console.log('📦 Session Storage:', Object.keys(sessionStorage).length, 'عنصر');
+        
+        // عرض محتويات Local Storage
+        if (Object.keys(localStorage).length > 0) {
+            console.log('📋 محتويات Local Storage:');
+            for (let key in localStorage) {
+                if (localStorage.hasOwnProperty(key)) {
+                    console.log(`   ${key}:`, localStorage.getItem(key)?.substring(0, 50) + '...');
+                }
+            }
+        }
+
+        // إضافة اختصارات لوحة المفاتيح
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.shiftKey && e.key === 'R') {
+                e.preventDefault();
+                clearAllCache();
+                setTimeout(forceReload, 1000);
+            }
+        });
+
+        console.log('💡 نصيحة: اضغط Ctrl+Shift+R لمسح الـ Cache وإعادة التحميل');
+    </script>
+</body>
+</html>

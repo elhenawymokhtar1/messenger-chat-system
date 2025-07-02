@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 إصلاح مشكلة التوجيه</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .content {
+            padding: 30px;
+        }
+        .card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #4facfe;
+        }
+        .button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            transition: transform 0.2s;
+        }
+        .button:hover {
+            transform: translateY(-2px);
+        }
+        .button.success {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+        }
+        .button.danger {
+            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+        }
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .links {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .link-card {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .link-card:hover {
+            border-color: #4facfe;
+            transform: translateY(-5px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 إصلاح مشكلة التوجيه والمصادقة</h1>
+            <p>حل مشكلة إعادة التوجيه لتسجيل الدخول عند الرفريش</p>
+        </div>
+        
+        <div class="content">
+            <div class="card">
+                <h3>📊 حالة localStorage الحالية:</h3>
+                <div id="currentStatus" class="status">جاري الفحص...</div>
+                <button class="button" onclick="checkStatus()">🔍 فحص الحالة</button>
+            </div>
+
+            <div class="card">
+                <h3>🔧 إصلاح المشكلة:</h3>
+                <p>اضغط على الزر أدناه لإنشاء بيانات الشركة في localStorage:</p>
+                <button class="button success" onclick="fixAuth()">✅ إصلاح المصادقة</button>
+                <button class="button danger" onclick="clearStorage()">🗑️ مسح البيانات</button>
+            </div>
+
+            <div class="card">
+                <h3>🔗 اختبار الصفحات:</h3>
+                <div class="links">
+                    <div class="link-card">
+                        <h4>📱 المحادثات المحمية</h4>
+                        <p>الصفحة الأصلية مع نظام الحماية</p>
+                        <button class="button" onclick="goToProtected()">الذهاب للصفحة</button>
+                    </div>
+                    <div class="link-card">
+                        <h4>🚀 المحادثات المباشرة</h4>
+                        <p>صفحة مباشرة بدون حماية</p>
+                        <button class="button" onclick="goToDirect()">الذهاب للصفحة</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>📝 الكود اليدوي:</h3>
+                <p>يمكنك نسخ هذا الكود وتشغيله في Console:</p>
+                <div class="code-block" id="manualCode">
+// إنشاء بيانات شركة للمصادقة
+const companyData = {
+  id: 'c677b32f-fe1c-4c64-8362-a1c03406608d',
+  name: 'شركة تجريبية للمحادثات',
+  email: 'test@conversations.com',
+  status: 'active',
+  created_at: new Date().toISOString()
+};
+
+// حفظ البيانات
+localStorage.setItem('company', JSON.stringify(companyData));
+console.log('✅ تم حفظ بيانات الشركة');
+
+// إعادة تحميل الصفحة
+window.location.reload();
+                </div>
+                <button class="button" onclick="copyCode()">📋 نسخ الكود</button>
+            </div>
+
+            <div class="card">
+                <h3>📋 تعليمات الاستخدام:</h3>
+                <ol>
+                    <li>اضغط على "إصلاح المصادقة" لإنشاء بيانات الشركة</li>
+                    <li>جرب "المحادثات المحمية" للتأكد من عمل الحماية</li>
+                    <li>استخدم "المحادثات المباشرة" كبديل للاختبار</li>
+                    <li>افتح Developer Tools (F12) لمراقبة الأخطاء</li>
+                    <li>استخدم "مسح البيانات" إذا واجهت مشاكل</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function checkStatus() {
+            const companyData = localStorage.getItem('company');
+            const statusDiv = document.getElementById('currentStatus');
+            
+            if (companyData) {
+                try {
+                    const company = JSON.parse(companyData);
+                    statusDiv.className = 'status success';
+                    statusDiv.innerHTML = `
+                        ✅ توجد بيانات شركة محفوظة<br>
+                        📊 الاسم: ${company.name}<br>
+                        🆔 المعرف: ${company.id}<br>
+                        📧 البريد: ${company.email}
+                    `;
+                } catch (e) {
+                    statusDiv.className = 'status error';
+                    statusDiv.innerHTML = '❌ بيانات تالفة في localStorage';
+                }
+            } else {
+                statusDiv.className = 'status error';
+                statusDiv.innerHTML = '❌ لا توجد بيانات شركة محفوظة';
+            }
+        }
+
+        function fixAuth() {
+            const companyData = {
+                id: 'c677b32f-fe1c-4c64-8362-a1c03406608d',
+                name: 'شركة تجريبية للمحادثات',
+                email: 'test@conversations.com',
+                phone: '+201234567890',
+                status: 'active',
+                is_verified: true,
+                created_at: new Date().toISOString(),
+                last_login_at: new Date().toISOString()
+            };
+
+            localStorage.setItem('company', JSON.stringify(companyData));
+            
+            alert('✅ تم إصلاح المصادقة بنجاح!\nسيتم إعادة تحميل الصفحة...');
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        }
+
+        function clearStorage() {
+            if (confirm('هل أنت متأكد من مسح جميع البيانات؟')) {
+                localStorage.clear();
+                alert('🗑️ تم مسح جميع البيانات\nسيتم إعادة تحميل الصفحة...');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            }
+        }
+
+        function goToProtected() {
+            window.open('http://localhost:8082/facebook-conversations', '_blank');
+        }
+
+        function goToDirect() {
+            window.open('http://localhost:8082/conversations-direct', '_blank');
+        }
+
+        function copyCode() {
+            const code = document.getElementById('manualCode').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                alert('📋 تم نسخ الكود!\nالصقه في Console (F12)');
+            });
+        }
+
+        // فحص الحالة عند تحميل الصفحة
+        window.onload = function() {
+            checkStatus();
+        };
+    </script>
+</body>
+</html>

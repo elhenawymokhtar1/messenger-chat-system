@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار عزل إعدادات Gemini AI</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            direction: rtl;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .company-selector {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border: 2px solid #e9ecef;
+        }
+        
+        .company-selector h3 {
+            margin: 0 0 15px 0;
+            color: #495057;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .company-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .company-btn {
+            background: white;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .company-btn:hover {
+            border-color: #4facfe;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.3);
+        }
+        
+        .company-btn.active {
+            background: #4facfe;
+            color: white;
+            border-color: #4facfe;
+        }
+        
+        .results {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 2px solid #e9ecef;
+        }
+        
+        .results h3 {
+            margin: 0 0 15px 0;
+            color: #495057;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .settings-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 10px 0;
+            border-left: 4px solid #4facfe;
+        }
+        
+        .settings-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 10px 0;
+            padding: 8px 0;
+            border-bottom: 1px solid #f1f3f4;
+        }
+        
+        .settings-row:last-child {
+            border-bottom: none;
+        }
+        
+        .label {
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .value {
+            color: #6c757d;
+            font-family: monospace;
+        }
+        
+        .status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+        
+        .status.enabled {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status.disabled {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        
+        .test-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            margin: 10px 5px;
+        }
+        
+        .test-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .icon {
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 اختبار عزل إعدادات Gemini AI</h1>
+            <p>تحقق من أن كل شركة لها إعدادات Gemini منفصلة</p>
+        </div>
+        
+        <div class="content">
+            <div class="company-selector">
+                <h3>
+                    <span class="icon">🏢</span>
+                    اختر شركة للاختبار
+                </h3>
+                <div class="company-grid" id="companyGrid">
+                    <!-- سيتم ملؤها بـ JavaScript -->
+                </div>
+            </div>
+            
+            <div class="results" id="results" style="display: none;">
+                <h3>
+                    <span class="icon">📊</span>
+                    نتائج الاختبار
+                </h3>
+                <div id="resultsContent">
+                    <!-- سيتم ملؤها بـ JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // شركات للاختبار
+        const testCompanies = [
+            { id: '64999ae4-40f2-4a64-8e41-711ec6950c86', name: 'سيد' },
+            { id: 'a7854ed7-f421-485b-87b4-7829fddf82c3', name: 'شركة 121cx' },
+            { id: 'cb092ef8-f816-4483-8bcc-861b88bd3e9a', name: 'سولا 127' },
+            { id: 'a5be951d-c253-4213-ac2f-1bf92305369d', name: 'Swan Shop Company' },
+            { id: '815cd686-adf1-4f9c-b8a1-71689f0aa632', name: 'شركة اختبار المتجر الواحد' }
+        ];
+
+        let currentCompany = null;
+
+        // إنشاء أزرار الشركات
+        function createCompanyButtons() {
+            const grid = document.getElementById('companyGrid');
+            
+            testCompanies.forEach(company => {
+                const btn = document.createElement('div');
+                btn.className = 'company-btn';
+                btn.innerHTML = `
+                    <div style="font-weight: 600; margin-bottom: 5px;">${company.name}</div>
+                    <div style="font-size: 0.8em; color: #6c757d;">${company.id.substring(0, 8)}...</div>
+                `;
+                btn.onclick = () => selectCompany(company);
+                grid.appendChild(btn);
+            });
+        }
+
+        // اختيار شركة
+        function selectCompany(company) {
+            currentCompany = company;
+            
+            // تحديث الأزرار
+            document.querySelectorAll('.company-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.closest('.company-btn').classList.add('active');
+            
+            // اختبار الشركة
+            testCompanySettings(company);
+        }
+
+        // اختبار إعدادات الشركة
+        async function testCompanySettings(company) {
+            const resultsDiv = document.getElementById('results');
+            const contentDiv = document.getElementById('resultsContent');
+            
+            resultsDiv.style.display = 'block';
+            contentDiv.innerHTML = '<div class="loading">🔄 جاري اختبار الشركة...</div>';
+            
+            try {
+                // اختبار API الجديد (مع فلترة)
+                const response = await fetch(`http://localhost:3002/api/gemini/settings?company_id=${company.id}`);
+                const settings = await response.json();
+                
+                let html = `
+                    <div class="success">✅ تم جلب إعدادات Gemini للشركة بنجاح</div>
+                    <div class="settings-card">
+                        <h4>🏢 ${company.name}</h4>
+                        <div class="settings-row">
+                            <span class="label">معرف الشركة:</span>
+                            <span class="value">${company.id}</span>
+                        </div>
+                        <div class="settings-row">
+                            <span class="label">النموذج:</span>
+                            <span class="value">${settings.model || 'غير محدد'}</span>
+                        </div>
+                        <div class="settings-row">
+                            <span class="label">الحالة:</span>
+                            <span class="status ${settings.is_enabled ? 'enabled' : 'disabled'}">
+                                ${settings.is_enabled ? 'مفعل' : 'معطل'}
+                            </span>
+                        </div>
+                        <div class="settings-row">
+                            <span class="label">API Key:</span>
+                            <span class="value">${settings.api_key ? '***موجود***' : 'غير موجود'}</span>
+                        </div>
+                        <div class="settings-row">
+                            <span class="label">درجة الحرارة:</span>
+                            <span class="value">${settings.temperature || 0.7}</span>
+                        </div>
+                        <div class="settings-row">
+                            <span class="label">الحد الأقصى للرموز:</span>
+                            <span class="value">${settings.max_tokens || 1000}</span>
+                        </div>
+                        <div class="settings-row">
+                            <span class="label">معرف الشركة في الإعدادات:</span>
+                            <span class="value">${settings.company_id || 'غير محدد'}</span>
+                        </div>
+                    </div>
+                `;
+                
+                // التحقق من صحة العزل
+                if (settings.company_id === company.id) {
+                    html += '<div class="success">✅ العزل يعمل بشكل صحيح - الإعدادات مرتبطة بالشركة الصحيحة</div>';
+                } else if (!settings.company_id) {
+                    html += '<div class="error">⚠️ تحذير: الإعدادات غير مرتبطة بشركة محددة (إعدادات مشتركة)</div>';
+                } else {
+                    html += '<div class="error">❌ خطأ في العزل: الإعدادات مرتبطة بشركة أخرى!</div>';
+                }
+                
+                contentDiv.innerHTML = html;
+                
+            } catch (error) {
+                contentDiv.innerHTML = `<div class="error">❌ خطأ في الاختبار: ${error.message}</div>`;
+            }
+        }
+
+        // تشغيل الصفحة
+        document.addEventListener('DOMContentLoaded', function() {
+            createCompanyButtons();
+        });
+    </script>
+</body>
+</html>

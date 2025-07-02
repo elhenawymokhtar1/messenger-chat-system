@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار ربط الصفحات</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            direction: rtl;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .test-section {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+        
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+        }
+        
+        .btn.success { background: #28a745; }
+        .btn.danger { background: #dc3545; }
+        .btn.warning { background: #ffc107; color: #212529; }
+        
+        .result {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        
+        .form-group {
+            margin: 15px 0;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .current-company {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔗 اختبار ربط صفحات Facebook</h1>
+            <p>حل مشكلة عدم ربط الصفحات</p>
+        </div>
+        
+        <div class="current-company">
+            <h4>🏢 الشركة الحالية:</h4>
+            <div id="currentCompanyInfo">جاري التحميل...</div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🔧 إعداد الشركة</h3>
+            <p>أولاً اختر الشركة التي تريد ربط الصفحة بها:</p>
+            <button class="btn success" onclick="setCompany('company-1')">تعيين Swan Shop</button>
+            <button class="btn success" onclick="setCompany('company-2')">تعيين سولا 127</button>
+            <button class="btn" onclick="setCompany('company-new')">تعيين شركة جديدة</button>
+        </div>
+        
+        <div class="test-section">
+            <h3>📊 اختبار الـ API</h3>
+            <p>اختبار حفظ صفحة جديدة مباشرة:</p>
+            <button class="btn" onclick="testSaveAPI()">اختبار حفظ صفحة تجريبية</button>
+            <button class="btn warning" onclick="testGetPages()">جلب الصفحات الموجودة</button>
+            <div id="apiResult"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🆕 ربط صفحة جديدة</h3>
+            <p>جرب ربط صفحة جديدة بالبيانات التالية:</p>
+            
+            <div class="form-group">
+                <label>معرف الصفحة:</label>
+                <input type="text" id="pageId" value="123456789012345" placeholder="معرف صفحة Facebook">
+            </div>
+            
+            <div class="form-group">
+                <label>اسم الصفحة:</label>
+                <input type="text" id="pageName" value="صفحة تجريبية" placeholder="اسم الصفحة">
+            </div>
+            
+            <div class="form-group">
+                <label>Access Token:</label>
+                <input type="text" id="accessToken" value="test_token_123" placeholder="رمز الوصول">
+            </div>
+            
+            <button class="btn success" onclick="linkNewPage()">ربط الصفحة</button>
+            <div id="linkResult"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🌐 اختبار النتيجة</h3>
+            <p>بعد ربط الصفحة، اذهب للإعدادات لرؤية النتيجة:</p>
+            <button class="btn" onclick="goToSettings()">فتح الإعدادات</button>
+            <button class="btn" onclick="refreshAndCheck()">تحديث وفحص</button>
+        </div>
+    </div>
+
+    <script>
+        function updateCurrentCompany() {
+            const companyData = localStorage.getItem('company');
+            const div = document.getElementById('currentCompanyInfo');
+            
+            if (companyData) {
+                try {
+                    const company = JSON.parse(companyData);
+                    div.innerHTML = `${company.name} (${company.id})`;
+                } catch (error) {
+                    div.innerHTML = 'خطأ في قراءة البيانات';
+                }
+            } else {
+                div.innerHTML = 'لا توجد شركة محددة';
+            }
+        }
+
+        function setCompany(companyId) {
+            const companies = {
+                'company-1': { id: 'company-1', name: 'Swan Shop' },
+                'company-2': { id: 'company-2', name: 'سولا 127' },
+                'company-new': { id: 'company-new', name: 'شركة جديدة' }
+            };
+            
+            localStorage.setItem('company', JSON.stringify(companies[companyId]));
+            updateCurrentCompany();
+            
+            console.log('✅ تم تعيين الشركة:', companies[companyId].name);
+        }
+
+        async function testSaveAPI() {
+            const resultDiv = document.getElementById('apiResult');
+            resultDiv.innerHTML = '🔍 جاري اختبار حفظ صفحة تجريبية...\n';
+            
+            try {
+                const testData = {
+                    pageId: 'test_page_' + Date.now(),
+                    pageName: 'صفحة اختبار ' + new Date().toLocaleTimeString('ar'),
+                    accessToken: 'test_token_' + Date.now(),
+                    companyId: null
+                };
+                
+                const response = await fetch('/api/facebook/add-page', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testData)
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    resultDiv.innerHTML += '✅ نجح حفظ الصفحة!\n';
+                    resultDiv.innerHTML += `📋 البيانات: ${JSON.stringify(result, null, 2)}\n`;
+                } else {
+                    const error = await response.text();
+                    resultDiv.innerHTML += `❌ فشل الحفظ: ${error}\n`;
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML += `💥 خطأ: ${error.message}\n`;
+            }
+        }
+
+        async function testGetPages() {
+            const resultDiv = document.getElementById('apiResult');
+            resultDiv.innerHTML = '🔍 جاري جلب الصفحات...\n';
+            
+            try {
+                const response = await fetch('/api/facebook/settings');
+                const pages = await response.json();
+                
+                resultDiv.innerHTML += `✅ تم جلب ${pages.length} صفحة:\n`;
+                pages.forEach((page, index) => {
+                    resultDiv.innerHTML += `${index + 1}. ${page.page_name} (${page.page_id})\n`;
+                });
+                
+            } catch (error) {
+                resultDiv.innerHTML += `❌ خطأ: ${error.message}\n`;
+            }
+        }
+
+        async function linkNewPage() {
+            const resultDiv = document.getElementById('linkResult');
+            const pageId = document.getElementById('pageId').value;
+            const pageName = document.getElementById('pageName').value;
+            const accessToken = document.getElementById('accessToken').value;
+            
+            if (!pageId || !pageName || !accessToken) {
+                resultDiv.innerHTML = '❌ يرجى ملء جميع الحقول';
+                return;
+            }
+            
+            resultDiv.innerHTML = '🔍 جاري ربط الصفحة...\n';
+            
+            try {
+                const response = await fetch('/api/facebook/add-page', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        pageId: pageId,
+                        pageName: pageName,
+                        accessToken: accessToken
+                    })
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    resultDiv.innerHTML = '✅ تم ربط الصفحة بنجاح!\n';
+                    resultDiv.innerHTML += `📋 معرف الصفحة: ${pageId}\n`;
+                    resultDiv.innerHTML += `📋 اسم الصفحة: ${pageName}\n`;
+                    resultDiv.innerHTML += '🎯 الآن اذهب للإعدادات لرؤية الصفحة\n';
+                } else {
+                    const error = await response.text();
+                    resultDiv.innerHTML = `❌ فشل الربط: ${error}\n`;
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML = `💥 خطأ: ${error.message}\n`;
+            }
+        }
+
+        function goToSettings() {
+            window.open('/settings', '_blank');
+        }
+
+        function refreshAndCheck() {
+            location.reload();
+        }
+
+        // تحديث العرض عند تحميل الصفحة
+        document.addEventListener('DOMContentLoaded', updateCurrentCompany);
+        
+        console.log('🔗 تم تحميل صفحة اختبار ربط الصفحات');
+    </script>
+</body>
+</html>

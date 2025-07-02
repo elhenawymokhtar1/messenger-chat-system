@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تحديث بيانات الشركة الحالية</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            max-width: 500px;
+            width: 100%;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .info-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #007bff;
+        }
+        .current-company {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            margin: 10px 0;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+            display: none;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏢 تحديث بيانات الشركة الحالية</h1>
+        
+        <div class="info-box">
+            <strong>📋 المشكلة:</strong><br>
+            الشركة الحالية (121cx) غير مربوطة بالصفحات في النظام، لذلك لا تظهر الرسائل.
+        </div>
+
+        <div class="current-company">
+            <strong>🏢 الشركة الحالية:</strong><br>
+            <div id="currentCompanyInfo">جاري التحميل...</div>
+        </div>
+
+        <button onclick="updateCompanyTo121cx()">
+            🔄 تحديث الشركة إلى 121cx
+        </button>
+
+        <button onclick="updateCompanyToSimpleA42()">
+            🔄 تحديث الشركة إلى Simple A42
+        </button>
+
+        <button onclick="showCurrentData()">
+            📊 عرض البيانات الحالية
+        </button>
+
+        <button onclick="clearAllData()">
+            🗑️ مسح جميع البيانات
+        </button>
+
+        <div id="successMsg" class="success"></div>
+        <div id="errorMsg" class="error"></div>
+
+        <div class="info-box" style="margin-top: 20px;">
+            <strong>💡 ملاحظة:</strong><br>
+            بعد التحديث، قم بتحديث صفحة المحادثات لرؤية الرسائل.
+        </div>
+    </div>
+
+    <script>
+        function showMessage(message, isError = false) {
+            const successDiv = document.getElementById('successMsg');
+            const errorDiv = document.getElementById('errorMsg');
+            
+            if (isError) {
+                errorDiv.textContent = message;
+                errorDiv.style.display = 'block';
+                successDiv.style.display = 'none';
+            } else {
+                successDiv.textContent = message;
+                successDiv.style.display = 'block';
+                errorDiv.style.display = 'none';
+            }
+            
+            setTimeout(() => {
+                successDiv.style.display = 'none';
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function updateCurrentCompanyInfo() {
+            const company = localStorage.getItem('company');
+            const infoDiv = document.getElementById('currentCompanyInfo');
+            
+            if (company) {
+                try {
+                    const parsedCompany = JSON.parse(company);
+                    infoDiv.innerHTML = `
+                        <strong>الاسم:</strong> ${parsedCompany.name || 'غير محدد'}<br>
+                        <strong>الإيميل:</strong> ${parsedCompany.email || 'غير محدد'}<br>
+                        <strong>المعرف:</strong> ${parsedCompany.id || 'غير محدد'}
+                    `;
+                } catch (e) {
+                    infoDiv.textContent = 'خطأ في قراءة البيانات';
+                }
+            } else {
+                infoDiv.textContent = 'لا توجد بيانات شركة محفوظة';
+            }
+        }
+
+        function updateCompanyTo121cx() {
+            const companyData = {
+                id: 'a37ce988-fd80-4a73-914f-63dc72b687e2',
+                name: '121cx',
+                email: '121@sdfds.com',
+                phone: '+20123456789',
+                website: 'https://121cx.com',
+                address: 'القاهرة، مصر',
+                city: 'القاهرة',
+                country: 'مصر',
+                status: 'active',
+                is_verified: true,
+                created_at: new Date().toISOString(),
+                last_login_at: new Date().toISOString()
+            };
+
+            localStorage.setItem('company', JSON.stringify(companyData));
+            updateCurrentCompanyInfo();
+            showMessage('✅ تم تحديث الشركة إلى 121cx بنجاح! (ID: a37ce988-fd80-4a73-914f-63dc72b687e2)');
+        }
+
+        function updateCompanyToSimpleA42() {
+            const companyData = {
+                id: 'ac1eea64-6240-4c15-9cf1-569560fafb54',
+                name: 'Simple A42',
+                email: 'simple@a42.com',
+                phone: '+20123456789',
+                website: 'https://simplea42.com',
+                address: 'القاهرة، مصر',
+                city: 'القاهرة',
+                country: 'مصر',
+                status: 'active',
+                is_verified: true,
+                created_at: '2025-06-20T10:00:00.000Z',
+                last_login_at: new Date().toISOString()
+            };
+
+            localStorage.setItem('company', JSON.stringify(companyData));
+            updateCurrentCompanyInfo();
+            showMessage('✅ تم تحديث الشركة إلى Simple A42 بنجاح!');
+        }
+
+        function showCurrentData() {
+            const company = localStorage.getItem('company');
+            const userToken = localStorage.getItem('userToken');
+            
+            console.log('🏢 بيانات الشركة:', company);
+            console.log('🔑 رمز المستخدم:', userToken);
+            
+            showMessage('📊 تم عرض البيانات في Console (اضغط F12)');
+        }
+
+        function clearAllData() {
+            if (confirm('هل أنت متأكد من مسح جميع البيانات؟')) {
+                localStorage.clear();
+                updateCurrentCompanyInfo();
+                showMessage('🗑️ تم مسح جميع البيانات');
+            }
+        }
+
+        // تحديث المعلومات عند تحميل الصفحة
+        updateCurrentCompanyInfo();
+    </script>
+</body>
+</html>

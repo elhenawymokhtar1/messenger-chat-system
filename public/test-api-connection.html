@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 اختبار اتصال API</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            direction: rtl;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        .header h1 {
+            color: #333;
+            margin: 0;
+            font-size: 2.5em;
+        }
+        .header p {
+            color: #666;
+            margin: 10px 0 0 0;
+            font-size: 1.1em;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            background: #f9f9f9;
+        }
+        .test-section h3 {
+            color: #333;
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .result {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+            direction: ltr;
+        }
+        .success { border-left: 5px solid #4CAF50; background: #f1f8e9; }
+        .error { border-left: 5px solid #f44336; background: #ffebee; }
+        .warning { border-left: 5px solid #ff9800; background: #fff3e0; }
+        .info { border-left: 5px solid #2196F3; background: #e3f2fd; }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-left: 8px;
+        }
+        .status-online { background: #4CAF50; }
+        .status-offline { background: #f44336; }
+        .status-unknown { background: #ff9800; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 اختبار اتصال API</h1>
+            <p>أداة تشخيص لفحص حالة خادم API وقاعدة البيانات</p>
+        </div>
+
+        <!-- اختبار حالة الخادم -->
+        <div class="test-section">
+            <h3>
+                🌐 حالة خادم API
+                <span id="serverStatus" class="status-indicator status-unknown"></span>
+            </h3>
+            <p>فحص ما إذا كان خادم API يعمل على المنفذ 8081</p>
+            <button class="btn" onclick="testServerStatus()">فحص حالة الخادم</button>
+            <div id="serverResult" class="result" style="display: none;"></div>
+        </div>
+
+        <!-- اختبار قاعدة البيانات -->
+        <div class="test-section">
+            <h3>
+                🗄️ اختبار قاعدة البيانات
+                <span id="dbStatus" class="status-indicator status-unknown"></span>
+            </h3>
+            <p>فحص الاتصال بقاعدة البيانات وجلب الصفحات المربوطة</p>
+            <button class="btn" onclick="testDatabase()">فحص قاعدة البيانات</button>
+            <div id="dbResult" class="result" style="display: none;"></div>
+        </div>
+
+        <!-- اختبار إضافة صفحة -->
+        <div class="test-section">
+            <h3>🔗 اختبار إضافة صفحة</h3>
+            <p>اختبار إضافة صفحة تجريبية لقاعدة البيانات</p>
+            <button class="btn" onclick="testAddPage()">إضافة صفحة تجريبية</button>
+            <div id="addPageResult" class="result" style="display: none;"></div>
+        </div>
+
+        <!-- إعادة تشغيل الخدمات -->
+        <div class="test-section">
+            <h3>🔄 إعادة تشغيل</h3>
+            <p>إرشادات لإعادة تشغيل الخدمات</p>
+            <div class="info result" style="display: block;">
+خطوات إعادة تشغيل الخدمات:
+
+1. افتح Terminal جديد
+2. اذهب إلى مجلد المشروع:
+   cd C:\Users\mo1\Desktop\facebook-reply2.1
+
+3. شغل خادم API:
+   npm run api
+
+4. أو شغل النظام كاملاً:
+   npm run start:all
+
+5. تأكد من أن الخادم يعمل على:
+   - Frontend: http://localhost:8080
+   - API: http://localhost:8081
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // فحص حالة الخادم
+        async function testServerStatus() {
+            const resultDiv = document.getElementById('serverResult');
+            const statusIndicator = document.getElementById('serverStatus');
+            
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result info';
+            resultDiv.textContent = '🔍 جاري فحص حالة الخادم...';
+            
+            try {
+                const response = await fetch('http://localhost:8081/api/facebook/settings');
+                
+                if (response.ok) {
+                    statusIndicator.className = 'status-indicator status-online';
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = '✅ خادم API يعمل بشكل طبيعي!\n\nالمنفذ: 8081\nالحالة: متصل';
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (error) {
+                statusIndicator.className = 'status-indicator status-offline';
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ خادم API لا يعمل!\n\nالخطأ: ${error.message}\n\nالحل: شغل الأمر "npm run api" في Terminal`;
+            }
+        }
+
+        // فحص قاعدة البيانات
+        async function testDatabase() {
+            const resultDiv = document.getElementById('dbResult');
+            const statusIndicator = document.getElementById('dbStatus');
+            
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result info';
+            resultDiv.textContent = '🔍 جاري فحص قاعدة البيانات...';
+            
+            try {
+                const response = await fetch('http://localhost:8081/api/facebook/settings');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                statusIndicator.className = 'status-indicator status-online';
+                resultDiv.className = 'result success';
+                resultDiv.textContent = `✅ قاعدة البيانات تعمل بشكل طبيعي!\n\nعدد الصفحات المربوطة: ${data.length}\n\nالبيانات:\n${JSON.stringify(data, null, 2)}`;
+                
+            } catch (error) {
+                statusIndicator.className = 'status-indicator status-offline';
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ مشكلة في قاعدة البيانات!\n\nالخطأ: ${error.message}`;
+            }
+        }
+
+        // اختبار إضافة صفحة
+        async function testAddPage() {
+            const resultDiv = document.getElementById('addPageResult');
+            
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result info';
+            resultDiv.textContent = '🔍 جاري إضافة صفحة تجريبية...';
+            
+            const testPage = {
+                pageId: 'TEST_' + Date.now(),
+                pageName: 'صفحة تجريبية ' + new Date().toLocaleString('ar-EG'),
+                accessToken: 'test_token_' + Date.now()
+            };
+            
+            try {
+                const response = await fetch('http://localhost:8081/api/facebook/add-page', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testPage)
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ تم إضافة الصفحة التجريبية بنجاح!\n\nالبيانات:\n${JSON.stringify(result, null, 2)}`;
+                } else {
+                    const error = await response.text();
+                    throw new Error(error);
+                }
+                
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ فشل في إضافة الصفحة!\n\nالخطأ: ${error.message}`;
+            }
+        }
+
+        // فحص تلقائي عند تحميل الصفحة
+        window.onload = function() {
+            setTimeout(testServerStatus, 1000);
+        };
+    </script>
+</body>
+</html>

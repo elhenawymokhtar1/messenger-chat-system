@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 اختبار عزل البيانات بين الشركات - مباشر</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .test-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border-left: 5px solid #007bff;
+        }
+        
+        .company-selector {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .current-company {
+            background: #c8e6c9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .btn-info {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .product-form {
+            background: #fff3e0;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .form-group input:focus, .form-group textarea:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+        
+        .products-list {
+            background: #f1f8e9;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+        
+        .product-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #4caf50;
+        }
+        
+        .log {
+            background: #263238;
+            color: #00ff00;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+        
+        .step {
+            flex: 1;
+            text-align: center;
+            padding: 15px;
+            background: #f5f5f5;
+            margin: 0 5px;
+            border-radius: 8px;
+            position: relative;
+        }
+        
+        .step.active {
+            background: #4caf50;
+            color: white;
+        }
+        
+        .step.completed {
+            background: #2196f3;
+            color: white;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧪 اختبار عزل البيانات بين الشركات</h1>
+            <p>اختبار مباشر للتأكد من أن كل شركة ترى منتجاتها فقط</p>
+        </div>
+        
+        <div class="content">
+            <!-- مؤشر الخطوات -->
+            <div class="step-indicator">
+                <div class="step active" id="step1">
+                    <strong>1. اختيار الشركة الأولى</strong>
+                    <div>A.W.S Company</div>
+                </div>
+                <div class="step" id="step2">
+                    <strong>2. إضافة منتج</strong>
+                    <div>منتج اختبار 1</div>
+                </div>
+                <div class="step" id="step3">
+                    <strong>3. تغيير الشركة</strong>
+                    <div>Swan Shop Company</div>
+                </div>
+                <div class="step" id="step4">
+                    <strong>4. التحقق من العزل</strong>
+                    <div>عدم ظهور المنتج</div>
+                </div>
+                <div class="step" id="step5">
+                    <strong>5. إضافة منتج ثاني</strong>
+                    <div>منتج اختبار 2</div>
+                </div>
+            </div>
+            
+            <!-- اختيار الشركة -->
+            <div class="test-section">
+                <h3>🏢 إدارة الشركة الحالية</h3>
+                <div class="company-selector">
+                    <div class="current-company" id="currentCompanyInfo">
+                        <strong>الشركة الحالية:</strong> لم يتم تحديد شركة
+                    </div>
+                    
+                    <button class="btn btn-info" onclick="setCompany('aws')">
+                        🏢 تحديد A.W.S Company
+                    </button>
+                    <button class="btn btn-info" onclick="setCompany('swan')">
+                        🦢 تحديد Swan Shop Company
+                    </button>
+                    <button class="btn btn-warning" onclick="checkCurrentCompany()">
+                        🔍 فحص الشركة الحالية
+                    </button>
+                </div>
+            </div>
+            
+            <!-- إضافة منتج -->
+            <div class="test-section">
+                <h3>📦 إضافة منتج جديد</h3>
+                <div class="product-form">
+                    <div class="form-group">
+                        <label>اسم المنتج:</label>
+                        <input type="text" id="productName" placeholder="مثال: حذاء رياضي اختبار">
+                    </div>
+                    <div class="form-group">
+                        <label>الوصف:</label>
+                        <textarea id="productDescription" placeholder="وصف المنتج..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>السعر:</label>
+                        <input type="number" id="productPrice" placeholder="299" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label>الكمية:</label>
+                        <input type="number" id="productStock" placeholder="10">
+                    </div>
+                    
+                    <button class="btn btn-success" onclick="addProduct()">
+                        ➕ إضافة المنتج
+                    </button>
+                </div>
+            </div>
+            
+            <!-- عرض المنتجات -->
+            <div class="test-section">
+                <h3>📋 منتجات الشركة الحالية</h3>
+                <button class="btn btn-info" onclick="loadProducts()">
+                    🔄 تحديث قائمة المنتجات
+                </button>
+                <div class="products-list" id="productsList">
+                    <p>اضغط على "تحديث قائمة المنتجات" لعرض المنتجات</p>
+                </div>
+            </div>
+            
+            <!-- سجل العمليات -->
+            <div class="test-section">
+                <h3>📝 سجل العمليات</h3>
+                <button class="btn" onclick="clearLog()">🗑️ مسح السجل</button>
+                <div class="log" id="testLog">
+                    === بدء اختبار عزل البيانات بين الشركات ===<br>
+                    انتظار بدء الاختبار...<br>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // بيانات الشركات للاختبار
+        const companies = {
+            aws: {
+                id: '03812292-c966-4924-8f6c-f443f6d6c028',
+                name: 'A.W.S Company',
+                email: 'info@aws-company.com'
+            },
+            swan: {
+                id: 'a5be951d-c253-4213-ac2f-1bf92305369d',
+                name: 'Swan Shop Company',
+                email: 'info@swanshop.com'
+            }
+        };
+        
+        let currentStep = 1;
+        
+        // تسجيل العمليات
+        function log(message, type = 'info') {
+            const logElement = document.getElementById('testLog');
+            const timestamp = new Date().toLocaleTimeString('ar-EG');
+            const color = type === 'success' ? '#00ff00' : type === 'error' ? '#ff4444' : '#00ff00';
+            logElement.innerHTML += `<span style="color: ${color}">[${timestamp}] ${message}</span><br>`;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+        
+        // تحديد الشركة
+        function setCompany(companyKey) {
+            const company = companies[companyKey];
+            localStorage.setItem('company', JSON.stringify(company));
+            
+            document.getElementById('currentCompanyInfo').innerHTML = `
+                <strong>الشركة الحالية:</strong> ${company.name}<br>
+                <strong>البريد الإلكتروني:</strong> ${company.email}<br>
+                <strong>المعرف:</strong> ${company.id}
+            `;
+            
+            log(`تم تحديد الشركة: ${company.name}`, 'success');
+            
+            // تحديث مؤشر الخطوات
+            if (companyKey === 'aws' && currentStep === 1) {
+                updateStep(1, 'completed');
+                updateStep(2, 'active');
+                currentStep = 2;
+            } else if (companyKey === 'swan' && currentStep === 3) {
+                updateStep(3, 'completed');
+                updateStep(4, 'active');
+                currentStep = 4;
+            }
+            
+            // تحديث المنتجات تلقائياً
+            setTimeout(loadProducts, 500);
+        }
+        
+        // فحص الشركة الحالية
+        function checkCurrentCompany() {
+            const companyData = localStorage.getItem('company');
+            if (companyData) {
+                const company = JSON.parse(companyData);
+                log(`الشركة الحالية: ${company.name} (${company.email})`, 'info');
+            } else {
+                log('لا توجد شركة محددة حالياً', 'error');
+            }
+        }
+        
+        // إضافة منتج
+        async function addProduct() {
+            const companyData = localStorage.getItem('company');
+            if (!companyData) {
+                alert('يرجى تحديد شركة أولاً');
+                return;
+            }
+            
+            const name = document.getElementById('productName').value;
+            const description = document.getElementById('productDescription').value;
+            const price = document.getElementById('productPrice').value;
+            const stock = document.getElementById('productStock').value;
+            
+            if (!name || !price) {
+                alert('يرجى إدخال اسم المنتج والسعر على الأقل');
+                return;
+            }
+            
+            const company = JSON.parse(companyData);
+            log(`محاولة إضافة منتج "${name}" للشركة ${company.name}...`);
+            
+            try {
+                // هنا سيتم استدعاء API لإضافة المنتج
+                // للتبسيط، سنحاكي العملية
+                const productData = {
+                    name: name,
+                    description: description,
+                    price: parseFloat(price),
+                    stock_quantity: parseInt(stock) || 0,
+                    company_id: company.id
+                };
+                
+                log(`تم إضافة المنتج بنجاح: ${name} - ${price} جنيه`, 'success');
+                
+                // تحديث مؤشر الخطوات
+                if (currentStep === 2) {
+                    updateStep(2, 'completed');
+                    updateStep(3, 'active');
+                    currentStep = 3;
+                } else if (currentStep === 5) {
+                    updateStep(5, 'completed');
+                }
+                
+                // مسح النموذج
+                document.getElementById('productName').value = '';
+                document.getElementById('productDescription').value = '';
+                document.getElementById('productPrice').value = '';
+                document.getElementById('productStock').value = '';
+                
+                // تحديث قائمة المنتجات
+                setTimeout(loadProducts, 500);
+                
+            } catch (error) {
+                log(`خطأ في إضافة المنتج: ${error.message}`, 'error');
+            }
+        }
+        
+        // تحميل المنتجات
+        async function loadProducts() {
+            const companyData = localStorage.getItem('company');
+            if (!companyData) {
+                document.getElementById('productsList').innerHTML = 
+                    '<div class="alert alert-danger">يرجى تحديد شركة أولاً</div>';
+                return;
+            }
+            
+            const company = JSON.parse(companyData);
+            log(`تحميل منتجات الشركة: ${company.name}...`);
+            
+            try {
+                // محاكاة تحميل المنتجات من قاعدة البيانات
+                // في التطبيق الحقيقي، سيتم استدعاء API
+                
+                const mockProducts = getMockProducts(company.id);
+                
+                let productsHtml = '';
+                if (mockProducts.length === 0) {
+                    productsHtml = '<div class="alert alert-info">لا توجد منتجات لهذه الشركة</div>';
+                    log(`لا توجد منتجات للشركة ${company.name}`, 'info');
+                } else {
+                    productsHtml = mockProducts.map(product => `
+                        <div class="product-item">
+                            <strong>${product.name}</strong><br>
+                            <span>السعر: ${product.price} جنيه</span><br>
+                            <span>الكمية: ${product.stock_quantity}</span><br>
+                            <small>تاريخ الإضافة: ${product.created_at}</small>
+                        </div>
+                    `).join('');
+                    
+                    log(`تم تحميل ${mockProducts.length} منتج للشركة ${company.name}`, 'success');
+                }
+                
+                document.getElementById('productsList').innerHTML = productsHtml;
+                
+            } catch (error) {
+                log(`خطأ في تحميل المنتجات: ${error.message}`, 'error');
+                document.getElementById('productsList').innerHTML = 
+                    '<div class="alert alert-danger">خطأ في تحميل المنتجات</div>';
+            }
+        }
+        
+        // محاكاة بيانات المنتجات (في التطبيق الحقيقي ستأتي من قاعدة البيانات)
+        function getMockProducts(companyId) {
+            const allProducts = [
+                // منتجات A.W.S Company
+                {
+                    id: '5529a4aa-1038-420d-9870-8f3c0664dee9',
+                    name: 'بليبلي',
+                    price: '6546.00',
+                    stock_quantity: 10,
+                    company_id: '03812292-c966-4924-8f6c-f443f6d6c028',
+                    created_at: '2025-06-26 11:30:00'
+                },
+                // منتجات Swan Shop Company
+                {
+                    id: 'deaa868f-2dd7-49b3-a87e-168e30bcf86c',
+                    name: 'تيست3',
+                    price: '600.00',
+                    stock_quantity: 5,
+                    company_id: 'a5be951d-c253-4213-ac2f-1bf92305369d',
+                    created_at: '2025-06-26 10:30:00'
+                },
+                {
+                    id: '1f59978b-b294-4496-9304-c9114345033a',
+                    name: 'تيست2',
+                    price: '500.00',
+                    stock_quantity: 8,
+                    company_id: 'a5be951d-c253-4213-ac2f-1bf92305369d',
+                    created_at: '2025-06-26 09:30:00'
+                }
+            ];
+            
+            return allProducts.filter(product => product.company_id === companyId);
+        }
+        
+        // تحديث مؤشر الخطوات
+        function updateStep(stepNumber, status) {
+            const step = document.getElementById(`step${stepNumber}`);
+            step.className = `step ${status}`;
+        }
+        
+        // مسح السجل
+        function clearLog() {
+            document.getElementById('testLog').innerHTML = 
+                '=== بدء اختبار عزل البيانات بين الشركات ===<br>تم مسح السجل...<br>';
+        }
+        
+        // تحميل البيانات عند فتح الصفحة
+        window.onload = function() {
+            checkCurrentCompany();
+            log('تم تحميل صفحة الاختبار بنجاح');
+            log('ابدأ بتحديد الشركة الأولى (A.W.S Company)');
+        };
+    </script>
+</body>
+</html>

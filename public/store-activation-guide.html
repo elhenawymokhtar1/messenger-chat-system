@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔋 دليل تفعيل المتجر</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border-left: 5px solid #007bff;
+        }
+        
+        .success-section {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+        
+        .warning-section {
+            border-left-color: #ffc107;
+            background: #fff3cd;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+        }
+        
+        .step {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 4px solid #007bff;
+        }
+        
+        .step h4 {
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin: 5px;
+        }
+        
+        .active {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .feature-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .feature-list li:before {
+            content: "✅ ";
+            color: #28a745;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔋 تفعيل المتجر</h1>
+            <p>كيفية تفعيل وإلغاء تفعيل متجر الشركة</p>
+        </div>
+        
+        <div class="content">
+            <!-- تم إضافة الميزة -->
+            <div class="section success-section">
+                <h3>🎉 تم إضافة ميزة تفعيل المتجر!</h3>
+                <p>الآن يمكنك تفعيل أو إلغاء تفعيل متجرك بسهولة من صفحة إعدادات المتجر.</p>
+            </div>
+            
+            <!-- حالات المتجر -->
+            <div class="section">
+                <h3>📊 حالات المتجر</h3>
+                <div style="margin: 15px 0;">
+                    <span class="status-indicator active">✅ متجر نشط</span>
+                    <span class="status-indicator inactive">❌ متجر معطل</span>
+                </div>
+                
+                <div style="background: white; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                    <h4>الفرق بين الحالتين:</h4>
+                    <ul class="feature-list">
+                        <li><strong>متجر نشط:</strong> يمكن إضافة منتجات وقبول طلبات</li>
+                        <li><strong>متجر معطل:</strong> لا يمكن إضافة منتجات أو قبول طلبات</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- خطوات التفعيل -->
+            <div class="section">
+                <h3>🔧 كيفية تفعيل المتجر</h3>
+                
+                <div class="step">
+                    <h4>الخطوة 1: الوصول لصفحة إعدادات المتجر</h4>
+                    <p>اذهب إلى القائمة الجانبية ← المتجر الإلكتروني ← إعدادات المتجر</p>
+                </div>
+                
+                <div class="step">
+                    <h4>الخطوة 2: تحديد حالة المتجر</h4>
+                    <p>ستجد في أعلى الصفحة badge يوضح حالة المتجر الحالية:</p>
+                    <ul style="margin-top: 10px; padding-right: 20px;">
+                        <li>🟢 "متجر نشط" - المتجر يعمل</li>
+                        <li>🔴 "متجر معطل" - المتجر متوقف</li>
+                    </ul>
+                </div>
+                
+                <div class="step">
+                    <h4>الخطوة 3: تغيير حالة المتجر</h4>
+                    <p>اضغط على الزر المناسب:</p>
+                    <ul style="margin-top: 10px; padding-right: 20px;">
+                        <li><strong>🔋 "تفعيل المتجر"</strong> - لتفعيل متجر معطل</li>
+                        <li><strong>⏸️ "إلغاء التفعيل"</strong> - لإيقاف متجر نشط</li>
+                    </ul>
+                </div>
+                
+                <div class="step">
+                    <h4>الخطوة 4: التأكيد</h4>
+                    <p>ستظهر رسالة تأكيد نجاح العملية، وستتغير حالة المتجر فوراً</p>
+                </div>
+            </div>
+            
+            <!-- متى تستخدم كل حالة -->
+            <div class="section warning-section">
+                <h3>⚠️ متى تستخدم كل حالة؟</h3>
+                
+                <div style="background: white; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                    <h4>🟢 تفعيل المتجر عندما:</h4>
+                    <ul style="margin-top: 10px; padding-right: 20px;">
+                        <li>تريد بدء بيع المنتجات</li>
+                        <li>المتجر جاهز لاستقبال الطلبات</li>
+                        <li>تريد إضافة منتجات جديدة</li>
+                        <li>العودة من إجازة أو صيانة</li>
+                    </ul>
+                </div>
+                
+                <div style="background: white; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                    <h4>🔴 إلغاء تفعيل المتجر عندما:</h4>
+                    <ul style="margin-top: 10px; padding-right: 20px;">
+                        <li>المتجر في صيانة</li>
+                        <li>إجازة مؤقتة</li>
+                        <li>نفاد المخزون بالكامل</li>
+                        <li>مشاكل في التوريد</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- الميزات الجديدة -->
+            <div class="section">
+                <h3>✨ الميزات الجديدة المضافة</h3>
+                <ul class="feature-list">
+                    <li>زر تفعيل/إلغاء تفعيل في صفحة إعدادات المتجر</li>
+                    <li>عرض حالة المتجر بوضوح في الواجهة</li>
+                    <li>رسائل تأكيد عند تغيير الحالة</li>
+                    <li>تحديث فوري للحالة بدون إعادة تحميل</li>
+                    <li>أيقونات واضحة للتمييز بين الحالات</li>
+                </ul>
+            </div>
+            
+            <!-- أزرار التنقل -->
+            <div style="text-align: center; margin-top: 30px;">
+                <a href="/store-management" class="btn btn-success">
+                    🏪 إعدادات المتجر
+                </a>
+                
+                <a href="/ecommerce-products" class="btn">
+                    📦 إدارة المنتجات
+                </a>
+            </div>
+            
+            <!-- ملاحظة مهمة -->
+            <div style="margin-top: 30px; padding: 20px; background: #e3f2fd; border-radius: 10px; border-left: 5px solid #2196f3;">
+                <h4>💡 ملاحظة مهمة:</h4>
+                <p>عند إلغاء تفعيل المتجر، لن تتمكن من إضافة منتجات جديدة حتى تعيد تفعيله. المنتجات الموجودة ستبقى محفوظة.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

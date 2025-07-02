@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مسح الـ Cache</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+        .icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin: 10px;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        .success {
+            color: #28a745;
+            font-weight: bold;
+            margin-top: 20px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon">🧹</div>
+        <h1>مسح الـ Cache</h1>
+        <p>اضغط على الأزرار التالية لمسح الـ Cache وإعادة تحميل البيانات:</p>
+        
+        <button onclick="clearLocalStorage()">مسح Local Storage</button>
+        <button onclick="clearSessionStorage()">مسح Session Storage</button>
+        <button onclick="clearAllCache()">مسح كل شيء</button>
+        <button onclick="reloadPage()">إعادة تحميل الصفحة</button>
+        
+        <div id="success" class="success">
+            ✅ تم مسح الـ Cache بنجاح!
+        </div>
+    </div>
+
+    <script>
+        function clearLocalStorage() {
+            localStorage.clear();
+            showSuccess();
+            console.log('🧹 تم مسح Local Storage');
+        }
+
+        function clearSessionStorage() {
+            sessionStorage.clear();
+            showSuccess();
+            console.log('🧹 تم مسح Session Storage');
+        }
+
+        function clearAllCache() {
+            localStorage.clear();
+            sessionStorage.clear();
+            
+            // مسح IndexedDB إذا كان متاحاً
+            if ('indexedDB' in window) {
+                indexedDB.databases().then(databases => {
+                    databases.forEach(db => {
+                        indexedDB.deleteDatabase(db.name);
+                    });
+                });
+            }
+            
+            // مسح Cache API إذا كان متاحاً
+            if ('caches' in window) {
+                caches.keys().then(names => {
+                    names.forEach(name => {
+                        caches.delete(name);
+                    });
+                });
+            }
+            
+            showSuccess();
+            console.log('🧹 تم مسح كل الـ Cache');
+        }
+
+        function reloadPage() {
+            window.location.reload(true);
+        }
+
+        function showSuccess() {
+            document.getElementById('success').style.display = 'block';
+            setTimeout(() => {
+                document.getElementById('success').style.display = 'none';
+            }, 3000);
+        }
+
+        // إضافة معلومات مفيدة
+        console.log('🔍 معلومات الـ Cache الحالي:');
+        console.log('📦 Local Storage:', Object.keys(localStorage).length, 'عنصر');
+        console.log('📦 Session Storage:', Object.keys(sessionStorage).length, 'عنصر');
+        
+        // عرض محتويات Local Storage
+        if (Object.keys(localStorage).length > 0) {
+            console.log('📋 محتويات Local Storage:');
+            for (let key in localStorage) {
+                if (localStorage.hasOwnProperty(key)) {
+                    console.log(`   ${key}:`, localStorage.getItem(key)?.substring(0, 100) + '...');
+                }
+            }
+        }
+    </script>
+</body>
+</html>
