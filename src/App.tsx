@@ -24,6 +24,7 @@ import AuthTestPage from "./pages/AuthTestPage";
 import StoreManagement from "./pages/StoreManagement";
 import NewStoreManagement from "./pages/NewStoreManagement";
 import NewEcommerceProducts from "./pages/NewEcommerceProducts";
+import SimpleProducts from "./pages/SimpleProducts";
 import NewCategories from "./pages/NewCategories";
 import TestCategories from "./pages/TestCategories";
 import SimpleCategoriesTest from "./pages/SimpleCategoriesTest";
@@ -65,236 +66,244 @@ const App: React.FC = () => {
           <Toaster />
           <Sonner />
           <BrowserRouter>
-          <Routes>
-            {/* الصفحات العامة */}
-            <Route path="/test" element={<TestSimple />} />
-            <Route path="/simple-login" element={<SimpleLogin />} />
-            <Route path="/company-register" element={<CompanyRegister />} />
-            <Route path="/company-login" element={<CompanyLogin />} />
-            <Route path="/simple-company-login" element={<SimpleCompanyLogin />} />
-            <Route path="/auth-test" element={<AuthTestPage />} />
+            <Routes>
+              {/* الصفحات العامة */}
+              <Route path="/test" element={<TestSimple />} />
+              <Route path="/simple-login" element={<SimpleLogin />} />
+              <Route path="/company-register" element={<CompanyRegister />} />
+              <Route path="/company-login" element={<CompanyLogin />} />
+              <Route path="/simple-company-login" element={<SimpleCompanyLogin />} />
+              <Route path="/auth-test" element={<AuthTestPage />} />
 
-            {/* صفحة اختبار الصور */}
-            <Route path="/image-test" element={
-              <ProperProtectedRoute>
-                <AuthenticatedLayout>
-                  <ImageTestPage />
-                </AuthenticatedLayout>
-              </ProperProtectedRoute>
-            } />
+              {/* صفحة اختبار الصور */}
+              <Route path="/image-test" element={
+                <ProperProtectedRoute>
+                  <AuthenticatedLayout>
+                    <ImageTestPage />
+                  </AuthenticatedLayout>
+                </ProperProtectedRoute>
+              } />
 
-            {/* صفحة محادثات مباشرة للاختبار */}
-            <Route path="/conversations-direct" element={
-              <AuthenticatedLayout>
-                <Conversations />
-              </AuthenticatedLayout>
-            } />
-
-            {/* صفحة محادثات بالنظام الصحيح */}
-            <Route path="/conversations-proper" element={
-              <ProperProtectedRoute>
+              {/* صفحة محادثات مباشرة للاختبار */}
+              <Route path="/conversations-direct" element={
                 <AuthenticatedLayout>
                   <Conversations />
                 </AuthenticatedLayout>
-              </ProperProtectedRoute>
-            } />
+              } />
 
-            {/* صفحة تحليل الأداء */}
-            <Route path="/analytics" element={
-              <ProperProtectedRoute>
-                <AuthenticatedLayout>
-                  <AnalyticsPage />
-                </AuthenticatedLayout>
-              </ProperProtectedRoute>
-            } />
+              {/* صفحة محادثات بالنظام الصحيح */}
+              <Route path="/conversations-proper" element={
+                <ProperProtectedRoute>
+                  <AuthenticatedLayout>
+                    <Conversations />
+                  </AuthenticatedLayout>
+                </ProperProtectedRoute>
+              } />
 
-            {/* صفحة الإعدادات */}
-            <Route path="/settings" element={
-              <ProperProtectedRoute>
-                <AuthenticatedLayout>
-                  <SettingsPage />
-                </AuthenticatedLayout>
-              </ProperProtectedRoute>
-            } />
+              {/* صفحة تحليل الأداء */}
+              <Route path="/analytics" element={
+                <ProperProtectedRoute>
+                  <AuthenticatedLayout>
+                    <AnalyticsPage />
+                  </AuthenticatedLayout>
+                </ProperProtectedRoute>
+              } />
 
-            {/* الصفحات المحمية */}
-            <Route path="/" element={
-              <ProtectedRoute>
-                <AuthenticatedLayout>
-                  <HomePage />
-                </AuthenticatedLayout>
-              </ProtectedRoute>
-            } />
+              {/* صفحة الإعدادات */}
+              <Route path="/settings" element={
+                <ProperProtectedRoute>
+                  <AuthenticatedLayout>
+                    <SettingsPage />
+                  </AuthenticatedLayout>
+                </ProperProtectedRoute>
+              } />
 
-            <Route path="/facebook-settings" element={
-              <ProtectedRoute>
-                <AuthenticatedLayout>
-                  <FacebookSettingsMySQL />
-                </AuthenticatedLayout>
-              </ProtectedRoute>
-            } />
+              {/* الصفحات المحمية */}
+              <Route path="/" element={
+                <ProperProtectedRoute>
+                  <AuthenticatedLayout>
+                    <HomePage />
+                  </AuthenticatedLayout>
+                </ProperProtectedRoute>
+              } />
 
-            <Route path="/facebook-conversations" element={
-              <ProtectedRoute>
-                <AuthenticatedLayout>
-                  <Conversations />
-                </AuthenticatedLayout>
-              </ProtectedRoute>
-            } />
+              <Route path="/facebook-settings" element={
+                <ProperProtectedRoute>
+                  <AuthenticatedLayout>
+                    <FacebookSettingsMySQL />
+                  </AuthenticatedLayout>
+                </ProperProtectedRoute>
+              } />
 
-            <Route path="/store-management" element={
-              <ProtectedRoute>
-                <AuthenticatedLayout>
-                  <StoreManagement />
-                </AuthenticatedLayout>
-              </ProtectedRoute>
-            } />
+              <Route path="/facebook-conversations" element={
+                <ProtectedRoute>
+                  <AuthenticatedLayout>
+                    <Conversations />
+                  </AuthenticatedLayout>
+                </ProtectedRoute>
+              } />
 
-            <Route path="/new-store-management" element={
-              <ProtectedRoute>
-                <AuthenticatedLayout>
-                  <NewStoreManagement />
-                </AuthenticatedLayout>
-              </ProtectedRoute>
-            } />
+              <Route path="/store-management" element={
+                <ProtectedRoute>
+                  <AuthenticatedLayout>
+                    <StoreManagement />
+                  </AuthenticatedLayout>
+                </ProtectedRoute>
+              } />
 
-            <Route path="/new-ecommerce-products" element={
-              <ProtectedRoute>
-                <AuthenticatedLayout>
-                  <NewEcommerceProducts />
-                </AuthenticatedLayout>
-              </ProtectedRoute>
-            } />
+              <Route path="/new-store-management" element={
+                <ProtectedRoute>
+                  <AuthenticatedLayout>
+                    <NewStoreManagement />
+                  </AuthenticatedLayout>
+                </ProtectedRoute>
+              } />
 
-            <Route path="/new-categories" element={
-              <ProtectedRoute>
-                <AuthenticatedLayout>
-                  <NewCategories />
-                </AuthenticatedLayout>
-              </ProtectedRoute>
-            } />
+              <Route path="/new-ecommerce-products" element={
+                <ProtectedRoute>
+                  <AuthenticatedLayout>
+                    <NewEcommerceProducts />
+                  </AuthenticatedLayout>
+                </ProtectedRoute>
+              } />
 
-            <Route path="/test-categories" element={
-              <ProtectedRoute>
-                <AuthenticatedLayout>
-                  <TestCategories />
-                </AuthenticatedLayout>
-              </ProtectedRoute>
-            } />
+              <Route path="/simple-products" element={
+                <ProtectedRoute>
+                  <AuthenticatedLayout>
+                    <SimpleProducts />
+                  </AuthenticatedLayout>
+                </ProtectedRoute>
+              } />
 
-            <Route path="/simple-categories" element={
-              <ProtectedRoute>
-                <AuthenticatedLayout>
-                  <SimpleCategoriesTest />
-                </AuthenticatedLayout>
-              </ProtectedRoute>
-            } />
+              <Route path="/new-categories" element={
+                <ProtectedRoute>
+                  <AuthenticatedLayout>
+                    <NewCategories />
+                  </AuthenticatedLayout>
+                </ProtectedRoute>
+              } />
 
-            <Route path="/simple-cart" element={
-              <ProtectedRoute>
-                <AuthenticatedLayout>
-                  <SimpleCartTest />
-                </AuthenticatedLayout>
-              </ProtectedRoute>
-            } />
+              <Route path="/test-categories" element={
+                <ProtectedRoute>
+                  <AuthenticatedLayout>
+                    <TestCategories />
+                  </AuthenticatedLayout>
+                </ProtectedRoute>
+              } />
 
-            <Route path="/full-cart" element={
-              <ProtectedRoute>
-                <AuthenticatedLayout>
-                  <FullCartTest />
-                </AuthenticatedLayout>
-              </ProtectedRoute>
-            } />
+              <Route path="/simple-categories" element={
+                <ProtectedRoute>
+                  <AuthenticatedLayout>
+                    <SimpleCategoriesTest />
+                  </AuthenticatedLayout>
+                </ProtectedRoute>
+              } />
 
-            <Route path="/new-shop" element={
-              <ProtectedRoute>
-                <AuthenticatedLayout>
-                  <NewShop />
-                </AuthenticatedLayout>
-              </ProtectedRoute>
-            } />
+              <Route path="/simple-cart" element={
+                <ProtectedRoute>
+                  <AuthenticatedLayout>
+                    <SimpleCartTest />
+                  </AuthenticatedLayout>
+                </ProtectedRoute>
+              } />
 
-            <Route path="/new-cart" element={
-              <ProtectedRoute>
-                <AuthenticatedLayout>
-                  <NewCart />
-                </AuthenticatedLayout>
-              </ProtectedRoute>
-            } />
+              <Route path="/full-cart" element={
+                <ProtectedRoute>
+                  <AuthenticatedLayout>
+                    <FullCartTest />
+                  </AuthenticatedLayout>
+                </ProtectedRoute>
+              } />
 
-            <Route path="/new-orders" element={
-              <ProtectedRoute>
-                <AuthenticatedLayout>
-                  <NewOrders />
-                </AuthenticatedLayout>
-              </ProtectedRoute>
-            } />
+              <Route path="/new-shop" element={
+                <ProtectedRoute>
+                  <AuthenticatedLayout>
+                    <NewShop />
+                  </AuthenticatedLayout>
+                </ProtectedRoute>
+              } />
 
-            <Route path="/new-coupons" element={
-              <ProtectedRoute>
-                <AuthenticatedLayout>
-                  <NewCoupons />
-                </AuthenticatedLayout>
-              </ProtectedRoute>
-            } />
+              <Route path="/new-cart" element={
+                <ProtectedRoute>
+                  <AuthenticatedLayout>
+                    <NewCart />
+                  </AuthenticatedLayout>
+                </ProtectedRoute>
+              } />
 
-            <Route path="/new-shipping" element={
-              <ProtectedRoute>
-                <AuthenticatedLayout>
-                  <NewShipping />
-                </AuthenticatedLayout>
-              </ProtectedRoute>
-            } />
+              <Route path="/new-orders" element={
+                <ProtectedRoute>
+                  <AuthenticatedLayout>
+                    <NewOrders />
+                  </AuthenticatedLayout>
+                </ProtectedRoute>
+              } />
 
-            <Route path="/new-reports" element={
-              <ProtectedRoute>
-                <AuthenticatedLayout>
-                  <NewReports />
-                </AuthenticatedLayout>
-              </ProtectedRoute>
-            } />
+              <Route path="/new-coupons" element={
+                <ProtectedRoute>
+                  <AuthenticatedLayout>
+                    <NewCoupons />
+                  </AuthenticatedLayout>
+                </ProtectedRoute>
+              } />
 
-            <Route path="/new-store-setup" element={
-              <ProtectedRoute>
-                <AuthenticatedLayout>
-                  <NewStoreSetup />
-                </AuthenticatedLayout>
-              </ProtectedRoute>
-            } />
+              <Route path="/new-shipping" element={
+                <ProtectedRoute>
+                  <AuthenticatedLayout>
+                    <NewShipping />
+                  </AuthenticatedLayout>
+                </ProtectedRoute>
+              } />
 
-            <Route path="/new-product-variants" element={
-              <ProtectedRoute>
-                <AuthenticatedLayout>
-                  <NewProductVariants />
-                </AuthenticatedLayout>
-              </ProtectedRoute>
-            } />
+              <Route path="/new-reports" element={
+                <ProtectedRoute>
+                  <AuthenticatedLayout>
+                    <NewReports />
+                  </AuthenticatedLayout>
+                </ProtectedRoute>
+              } />
 
-            <Route path="/company-dashboard" element={
-              <ProtectedRoute>
-                <AuthenticatedLayout>
-                  <Suspense fallback={<div className="flex items-center justify-center h-64">
+              <Route path="/new-store-setup" element={
+                <ProtectedRoute>
+                  <AuthenticatedLayout>
+                    <NewStoreSetup />
+                  </AuthenticatedLayout>
+                </ProtectedRoute>
+              } />
+
+              <Route path="/new-product-variants" element={
+                <ProtectedRoute>
+                  <AuthenticatedLayout>
+                    <NewProductVariants />
+                  </AuthenticatedLayout>
+                </ProtectedRoute>
+              } />
+
+              <Route path="/company-dashboard" element={
+                <ProtectedRoute>
+                  <AuthenticatedLayout>
+                    <Suspense fallback={<div className="flex items-center justify-center h-64">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                     </div>}>
+                      <CompanyDashboard />
+                    </Suspense>
+                  </AuthenticatedLayout>
+                </ProtectedRoute>
+              } />
+
+
+              <Route path="/dashboard" element={
+                <ProtectedRoute>
+                  <AuthenticatedLayout>
                     <CompanyDashboard />
-                  </Suspense>
-                </AuthenticatedLayout>
-              </ProtectedRoute>
-            } />
+                  </AuthenticatedLayout>
+                </ProtectedRoute>
+              } />
 
-
-            <Route path="/dashboard" element={
-              <ProtectedRoute>
-                <AuthenticatedLayout>
-                  <CompanyDashboard />
-                </AuthenticatedLayout>
-              </ProtectedRoute>
-            } />
-
-            {/* صفحة 404 */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
+              {/* صفحة 404 */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
         </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>

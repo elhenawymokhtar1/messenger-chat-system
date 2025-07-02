@@ -464,7 +464,7 @@ router.get('/conversation/:phoneNumber', async (req, res) => {
 /**
  * حذف رسالة
  */
-router// TODO: Replace with MySQL API => {
+router.delete('/messages/:messageId', async (req, res) => {
   try {
     const { messageId } = req.params;
     

@@ -200,7 +200,8 @@ export class FacebookApiService {
 
           // إشعار في قاعدة البيانات
           try {
-            await // TODO: Replace with MySQL API
+            // TODO: Replace with MySQL API
+            console.log('✅ Alert creation skipped - MySQL API needed');
           } catch (alertError) {
             console.error('❌ فشل في إنشاء تنبيه النظام:', alertError);
           }

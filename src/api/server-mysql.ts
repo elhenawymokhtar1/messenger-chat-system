@@ -65,7 +65,7 @@ let outgoingMessageStats = {
   totalSent: 0,
   sentThisMinute: 0,
   lastMinuteReset: new Date(),
-  sentPerMinute: [] as number[]
+  sentPerMinute: []
 };
 
 // دالة تحديث إحصائيات الرسائل الصادرة
@@ -431,6 +431,27 @@ app.post('/api/companies/login', async (req, res) => {
   }
 });
 
+// الحصول على جميع الشركات
+app.get('/api/companies', async (req, res) => {
+  try {
+    console.log('🔍 [API] بدء جلب جميع الشركات...');
+
+    const companies = await CompanyService.getAll();
+    console.log('✅ [API] تم جلب الشركات بنجاح، العدد:', companies?.length || 0);
+
+    res.json({
+      success: true,
+      data: companies || []
+    });
+  } catch (error) {
+    console.error('❌ [API] خطأ في جلب الشركات:', error);
+    res.status(500).json({
+      success: false,
+      error: 'خطأ في الخادم'
+    });
+  }
+});
+
 // الحصول على معلومات الشركة
 app.get('/api/companies/:id', async (req, res) => {
   try {
@@ -469,11 +490,11 @@ app.get('/api/companies/:id', async (req, res) => {
 app.get('/api/facebook/settings', async (req, res) => {
   try {
     const { company_id } = req.query;
-    
+
     if (!company_id) {
       return res.status(400).json({ error: 'company_id is required' });
     }
-    
+
     const settings = await FacebookService.getByCompanyId(company_id as string);
     res.json(settings);
   } catch (error) {
@@ -486,19 +507,19 @@ app.get('/api/facebook/settings', async (req, res) => {
 app.post('/api/facebook/settings', async (req, res) => {
   try {
     const { company_id, page_id, page_name, access_token } = req.body;
-    
+
     if (!company_id || !page_id || !page_name || !access_token) {
-      return res.status(400).json({ 
-        error: 'company_id, page_id, page_name, and access_token are required' 
+      return res.status(400).json({
+        error: 'company_id, page_id, page_name, and access_token are required'
       });
     }
-    
+
     // التحقق من عدم وجود الصفحة مسبقاً
     const existingPage = await FacebookService.getByPageId(page_id);
     if (existingPage) {
       return res.status(409).json({ error: 'Page already exists' });
     }
-    
+
     const pageId = await FacebookService.create({
       company_id,
       page_id,
@@ -507,11 +528,11 @@ app.post('/api/facebook/settings', async (req, res) => {
       is_active: true,
       webhook_verified: false
     });
-    
-    res.json({ 
-      success: true, 
+
+    res.json({
+      success: true,
       page_id: pageId,
-      message: 'Facebook page added successfully' 
+      message: 'Facebook page added successfully'
     });
   } catch (error) {
     console.error('❌ Error adding Facebook page:', error);
@@ -1024,24 +1045,24 @@ app.post('/api/conversations/:id/messages', async (req, res) => {
 app.get('/api/gemini/settings', async (req, res) => {
   try {
     const { company_id } = req.query;
-    
+
     if (!company_id) {
       return res.status(400).json({ error: 'company_id is required' });
     }
-    
+
     const settings = await GeminiService.getByCompanyId(company_id as string);
-    
+
     if (!settings) {
       return res.status(404).json({ error: 'Gemini settings not found' });
     }
-    
+
     // إخفاء API key في الاستجابة
     const safeSettings = {
       ...settings,
       api_key: settings.api_key ? '***' : null,
       hasApiKey: !!settings.api_key
     };
-    
+
     res.json(safeSettings);
   } catch (error) {
     console.error('❌ Error fetching Gemini settings:', error);
@@ -1053,20 +1074,20 @@ app.get('/api/gemini/settings', async (req, res) => {
 app.put('/api/gemini/settings', async (req, res) => {
   try {
     const { company_id, ...updateData } = req.body;
-    
+
     if (!company_id) {
       return res.status(400).json({ error: 'company_id is required' });
     }
-    
+
     const success = await GeminiService// TODO: Replace with MySQL API;
-    
+
     if (!success) {
       return res.status(404).json({ error: 'Gemini settings not found' });
     }
-    
-    res.json({ 
-      success: true, 
-      message: 'Gemini settings updated successfully' 
+
+    res.json({
+      success: true,
+      message: 'Gemini settings updated successfully'
     });
   } catch (error) {
     console.error('❌ Error updating Gemini settings:', error);
@@ -1206,10 +1227,10 @@ async function saveMessageToDatabase(messageRequest: any) {
     if (conversationData && conversationData.length > 0) {
       const conversation = conversationData[0];
       const needsNameUpdate = !conversation.user_name ||
-                             conversation.user_name === '' ||
-                             conversation.user_name === 'undefined' ||
-                             conversation.user_name === 'null' ||
-                             conversation.user_name === 'بدون اسم';
+        conversation.user_name === '' ||
+        conversation.user_name === 'undefined' ||
+        conversation.user_name === 'null' ||
+        conversation.user_name === 'بدون اسم';
 
       console.log(`👤 اسم المستخدم الحالي: "${conversation.user_name}" | يحتاج تحديث: ${needsNameUpdate}`);
 
@@ -1330,63 +1351,63 @@ app.post('/webhook', async (req, res) => {
               };
 
               try {
-              // معالجة مبسطة للرسالة
-              console.log('💬 معالجة رسالة جديدة:', {
-                senderId: messageRequest.senderId,
-                text: messageRequest.messageText,
-                pageId: messageRequest.pageId
-              });
+                // معالجة مبسطة للرسالة
+                console.log('💬 معالجة رسالة جديدة:', {
+                  senderId: messageRequest.senderId,
+                  text: messageRequest.messageText,
+                  pageId: messageRequest.pageId
+                });
 
-              // حفظ الرسالة في قاعدة البيانات
-              const savedMessage = await saveMessageToDatabase(messageRequest);
+                // حفظ الرسالة في قاعدة البيانات
+                const savedMessage = await saveMessageToDatabase(messageRequest);
 
-              console.log('✅ تم معالجة الرسالة بنجاح');
+                console.log('✅ تم معالجة الرسالة بنجاح');
 
-              // إرسال تحديث فوري للواجهة عند استلام رسالة جديدة من العميل
-              if (!messageRequest.isEcho && messageRequest.senderId !== messageRequest.pageId) {
-                // البحث عن company_id من خلال page_id
-                try {
-                  const facebookSettings = await FacebookService.getByPageId(messageRequest.pageId);
-                  if (facebookSettings && facebookSettings.company_id) {
-                    broadcastUpdate(facebookSettings.company_id, {
-                      type: 'new_message',
-                      conversation_id: savedMessage?.conversation_id,
-                      messageData: {
-                        id: savedMessage?.id,
-                        content: messageRequest.messageText,
-                        sender_type: 'customer',
-                        timestamp: new Date().toISOString(),
-                        image_url: messageRequest.imageUrl,
-                        attachments: messageRequest.attachments
-                      }
-                    });
+                // إرسال تحديث فوري للواجهة عند استلام رسالة جديدة من العميل
+                if (!messageRequest.isEcho && messageRequest.senderId !== messageRequest.pageId) {
+                  // البحث عن company_id من خلال page_id
+                  try {
+                    const facebookSettings = await FacebookService.getByPageId(messageRequest.pageId);
+                    if (facebookSettings && facebookSettings.company_id) {
+                      broadcastUpdate(facebookSettings.company_id, {
+                        type: 'new_message',
+                        conversation_id: savedMessage?.conversation_id,
+                        messageData: {
+                          id: savedMessage?.id,
+                          content: messageRequest.messageText,
+                          sender_type: 'customer',
+                          timestamp: new Date().toISOString(),
+                          image_url: messageRequest.imageUrl,
+                          attachments: messageRequest.attachments
+                        }
+                      });
+                    }
+                  } catch (broadcastError) {
+                    console.error('❌ خطأ في إرسال التحديث الفوري:', broadcastError);
                   }
-                } catch (broadcastError) {
-                  console.error('❌ خطأ في إرسال التحديث الفوري:', broadcastError);
                 }
-              }
 
-              // مزامنة محدودة جداً - فقط للرسائل الواردة من العملاء (ليس echo)
-              if (!messageRequest.isEcho && messageRequest.senderId !== messageRequest.pageId) {
-                const syncKey = `${messageRequest.pageId}-${messageRequest.senderId}`;
-                const lastSyncTime = lastSyncTimes.get(syncKey) || 0;
-                const now = Date.now();
+                // مزامنة محدودة جداً - فقط للرسائل الواردة من العملاء (ليس echo)
+                if (!messageRequest.isEcho && messageRequest.senderId !== messageRequest.pageId) {
+                  const syncKey = `${messageRequest.pageId}-${messageRequest.senderId}`;
+                  const lastSyncTime = lastSyncTimes.get(syncKey) || 0;
+                  const now = Date.now();
 
-                // مزامنة كل 30 ثانية فقط لكل محادثة، وفقط للرسائل الواردة الحقيقية
-                if (now - lastSyncTime > 30000) {
-                  lastSyncTimes.set(syncKey, now);
-                  setTimeout(() => {
-                    console.log(`🔄 [WEBHOOK] مزامنة محدودة للمحادثة: ${syncKey}`);
-                    syncSpecificConversation(messageRequest.pageId, messageRequest.senderId).catch(error => {
-                      console.error('❌ [WEBHOOK] خطأ في المزامنة:', error);
-                    });
-                  }, 10000); // تأخير 10 ثواني
+                  // مزامنة كل 30 ثانية فقط لكل محادثة، وفقط للرسائل الواردة الحقيقية
+                  if (now - lastSyncTime > 30000) {
+                    lastSyncTimes.set(syncKey, now);
+                    setTimeout(() => {
+                      console.log(`🔄 [WEBHOOK] مزامنة محدودة للمحادثة: ${syncKey}`);
+                      syncSpecificConversation(messageRequest.pageId, messageRequest.senderId).catch(error => {
+                        console.error('❌ [WEBHOOK] خطأ في المزامنة:', error);
+                      });
+                    }, 10000); // تأخير 10 ثواني
+                  } else {
+                    console.log(`⏭️ [WEBHOOK] تخطي المزامنة - تمت مؤخراً للمحادثة: ${syncKey}`);
+                  }
                 } else {
-                  console.log(`⏭️ [WEBHOOK] تخطي المزامنة - تمت مؤخراً للمحادثة: ${syncKey}`);
+                  console.log('⏭️ [WEBHOOK] تخطي المزامنة - رسالة صادرة أو echo');
                 }
-              } else {
-                console.log('⏭️ [WEBHOOK] تخطي المزامنة - رسالة صادرة أو echo');
-              }
               } catch (processError) {
                 console.error('❌ خطأ في معالجة الرسالة:', processError);
               }
@@ -1864,7 +1885,7 @@ async function syncOutgoingMessages() {
 
           for (let i = 0; i < activeConversations.length; i += BATCH_SIZE) {
             const batch = activeConversations.slice(i, i + BATCH_SIZE);
-            console.log(`🔄 [SYNC] معالجة دفعة ${Math.floor(i/BATCH_SIZE) + 1}: ${batch.length} محادثة`);
+            console.log(`🔄 [SYNC] معالجة دفعة ${Math.floor(i / BATCH_SIZE) + 1}: ${batch.length} محادثة`);
 
             // مزامنة متوازية للدفعة
             // استخدام النظام المحسن للمزامنة المتوازية
@@ -1923,7 +1944,7 @@ async function syncOutgoingMessages() {
               const BATCH_SIZE = 10;
               for (let i = 0; i < conversationsForSync.length; i += BATCH_SIZE) {
                 const batch = conversationsForSync.slice(i, i + BATCH_SIZE);
-                console.log(`🆕 [SYNC] معالجة دفعة ${Math.floor(i/BATCH_SIZE) + 1}: ${batch.length} محادثة جديدة`);
+                console.log(`🆕 [SYNC] معالجة دفعة ${Math.floor(i / BATCH_SIZE) + 1}: ${batch.length} محادثة جديدة`);
 
                 // استخدام النظام المحسن للمزامنة المتوازية
                 const validConversations = batch
@@ -2990,6 +3011,318 @@ const server = app.listen(PORT, () => {
       console.log(`   📋 آخر 10 دقائق: [${outgoingMessageStats.sentPerMinute.join(', ')}]`);
     }
   }, 60000); // كل دقيقة
+});
+
+// ===================================
+// 📦 Products API
+// ===================================
+
+// جلب المنتجات للشركة
+app.get('/api/companies/:companyId/products', async (req, res) => {
+  try {
+    const { companyId } = req.params;
+    console.log('🔍 [PRODUCTS] جلب المنتجات للشركة:', companyId);
+
+    const products = await executeQuery(
+      'SELECT * FROM products WHERE company_id = ? ORDER BY created_at DESC',
+      [companyId]
+    );
+
+    console.log('✅ [PRODUCTS] تم جلب', products.length, 'منتج');
+
+    res.json({
+      success: true,
+      data: products || []
+    });
+  } catch (error) {
+    console.error('❌ [PRODUCTS] خطأ في جلب المنتجات:', error);
+    res.status(500).json({
+      success: false,
+      error: 'خطأ في جلب المنتجات'
+    });
+  }
+});
+
+// إضافة منتج جديد
+app.post('/api/companies/:companyId/products', async (req, res) => {
+  try {
+    const { companyId } = req.params;
+    const data = req.body;
+
+    console.log('🏪 [PRODUCTS] إضافة منتج جديد للشركة:', companyId);
+    console.log('📦 [PRODUCTS] اسم المنتج:', data.name);
+
+    if (!data.name || data.name.trim() === '') {
+      return res.status(400).json({
+        success: false,
+        message: 'اسم المنتج مطلوب'
+      });
+    }
+
+    const productId = crypto.randomUUID();
+
+    await executeQuery(`
+      INSERT INTO products (
+        id, company_id, name, description, short_description, sku,
+        price, sale_price, stock_quantity, category, brand,
+        image_url, featured, weight, status, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+    `, [
+      productId,
+      companyId,
+      data.name.trim(),
+      data.description || '',
+      data.short_description || '',
+      data.sku || `SKU-${Date.now()}`,
+      parseFloat(data.price) || 0,
+      data.sale_price ? parseFloat(data.sale_price) : null,
+      parseInt(data.stock_quantity) || 0,
+      data.category || '',
+      data.brand || '',
+      data.image_url || '',
+      data.featured ? 1 : 0,
+      data.weight ? parseFloat(data.weight) : null,
+      data.status || 'active'
+    ]);
+
+    // جلب المنتج المُنشأ
+    const newProduct = await executeQuery(
+      'SELECT * FROM products WHERE id = ?',
+      [productId]
+    );
+
+    console.log('✅ [PRODUCTS] تم إضافة المنتج بنجاح');
+
+    res.json({
+      success: true,
+      data: newProduct[0]
+    });
+  } catch (error) {
+    console.error('❌ [PRODUCTS] خطأ في إضافة المنتج:', error);
+    res.status(500).json({
+      success: false,
+      error: 'خطأ في إضافة المنتج'
+    });
+  }
+});
+
+// ===================================
+// 📦 Products API
+// ===================================
+
+// جلب المنتجات للشركة
+app.get('/api/companies/:companyId/products', async (req, res) => {
+  try {
+    const { companyId } = req.params;
+    console.log('🔍 [PRODUCTS] جلب المنتجات للشركة:', companyId);
+
+    const products = await executeQuery(
+      'SELECT * FROM products WHERE company_id = ? ORDER BY created_at DESC',
+      [companyId]
+    );
+
+    console.log('✅ [PRODUCTS] تم جلب', products.length, 'منتج');
+
+    res.json({
+      success: true,
+      data: products || []
+    });
+  } catch (error) {
+    console.error('❌ [PRODUCTS] خطأ في جلب المنتجات:', error);
+    res.status(500).json({
+      success: false,
+      error: 'خطأ في جلب المنتجات'
+    });
+  }
+});
+
+// إضافة منتج جديد
+app.post('/api/companies/:companyId/products', async (req, res) => {
+  try {
+    const { companyId } = req.params;
+    const data = req.body;
+
+    console.log('🏪 [PRODUCTS] إضافة منتج جديد للشركة:', companyId);
+    console.log('📦 [PRODUCTS] اسم المنتج:', data.name);
+
+    if (!data.name || data.name.trim() === '') {
+      return res.status(400).json({
+        success: false,
+        message: 'اسم المنتج مطلوب'
+      });
+    }
+
+    const productId = crypto.randomUUID();
+
+    await executeQuery(`
+      INSERT INTO products (
+        id, company_id, name, description, short_description, sku,
+        price, sale_price, stock_quantity, category, brand,
+        image_url, featured, weight, status, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+    `, [
+      productId,
+      companyId,
+      data.name.trim(),
+      data.description || '',
+      data.short_description || '',
+      data.sku || `SKU-${Date.now()}`,
+      parseFloat(data.price) || 0,
+      data.sale_price ? parseFloat(data.sale_price) : null,
+      parseInt(data.stock_quantity) || 0,
+      data.category || '',
+      data.brand || '',
+      data.image_url || '',
+      data.featured ? 1 : 0,
+      data.weight ? parseFloat(data.weight) : null,
+      data.status || 'active'
+    ]);
+
+    // جلب المنتج المُنشأ
+    const newProduct = await executeQuery(
+      'SELECT * FROM products WHERE id = ?',
+      [productId]
+    );
+
+    console.log('✅ [PRODUCTS] تم إضافة المنتج بنجاح');
+
+    res.json({
+      success: true,
+      data: newProduct[0]
+    });
+  } catch (error) {
+    console.error('❌ [PRODUCTS] خطأ في إضافة المنتج:', error);
+    res.status(500).json({
+      success: false,
+      error: 'خطأ في إضافة المنتج'
+    });
+  }
+});
+
+// ===================================
+// 📦 Products API
+// ===================================
+
+// جلب المنتجات للشركة
+app.get('/api/companies/:companyId/products', async (req, res) => {
+  try {
+    const { companyId } = req.params;
+    console.log('🔍 [PRODUCTS] جلب المنتجات للشركة:', companyId);
+
+    const products = await executeQuery(
+      'SELECT * FROM products_temp WHERE company_id = ? ORDER BY created_at DESC',
+      [companyId]
+    );
+
+    console.log('✅ [PRODUCTS] تم جلب', products.length, 'منتج');
+
+    res.json({
+      success: true,
+      data: products || []
+    });
+  } catch (error) {
+    console.error('❌ [PRODUCTS] خطأ في جلب المنتجات:', error);
+    res.status(500).json({
+      success: false,
+      error: 'خطأ في جلب المنتجات: ' + error.message
+    });
+  }
+});
+
+// إضافة منتج جديد
+app.post('/api/companies/:companyId/products', async (req, res) => {
+  try {
+    const { companyId } = req.params;
+    const data = req.body;
+
+    console.log('🏪 [PRODUCTS] إضافة منتج جديد للشركة:', companyId);
+    console.log('📦 [PRODUCTS] بيانات المنتج:', JSON.stringify(data, null, 2));
+
+    // التحقق من البيانات المطلوبة
+    if (!data.name || data.name.trim() === '') {
+      console.log('⚠️ [PRODUCTS] اسم المنتج مفقود');
+      return res.status(400).json({
+        success: false,
+        message: 'اسم المنتج مطلوب'
+      });
+    }
+
+    const productId = crypto.randomUUID();
+    console.log('🆔 [PRODUCTS] معرف المنتج الجديد:', productId);
+
+    // إعداد البيانات
+    const insertData = [
+      productId,
+      companyId,
+      data.name.trim(),
+      data.description || '',
+      data.short_description || '',
+      data.sku || `SKU-${Date.now()}`,
+      parseFloat(data.price) || 0,
+      data.sale_price ? parseFloat(data.sale_price) : null,
+      parseInt(data.stock_quantity) || 0,
+      data.category || '',
+      data.brand || '',
+      data.image_url || '',
+      data.featured ? 1 : 0,
+      data.weight ? parseFloat(data.weight) : null,
+      data.status || 'active'
+    ];
+
+    console.log('📋 [PRODUCTS] بيانات الإدراج:', insertData);
+
+    // إنشاء جدول منتجات مؤقت إذا لم يكن موجوداً
+    await executeQuery(`
+      CREATE TABLE IF NOT EXISTS products_temp (
+        id CHAR(36) PRIMARY KEY,
+        company_id CHAR(36) NOT NULL,
+        name VARCHAR(255) NOT NULL,
+        description TEXT,
+        short_description TEXT,
+        sku VARCHAR(100),
+        price DECIMAL(10,2) DEFAULT 0,
+        sale_price DECIMAL(10,2) NULL,
+        stock_quantity INT DEFAULT 0,
+        category VARCHAR(100),
+        brand VARCHAR(100),
+        image_url TEXT,
+        featured BOOLEAN DEFAULT FALSE,
+        weight DECIMAL(8,2) NULL,
+        status VARCHAR(50) DEFAULT 'active',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `);
+
+    await executeQuery(`
+      INSERT INTO products_temp (
+        id, company_id, name, description, short_description, sku,
+        price, sale_price, stock_quantity, category, brand,
+        image_url, featured, weight, status, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+    `, insertData);
+
+    console.log('✅ [PRODUCTS] تم إدراج المنتج في قاعدة البيانات');
+
+    // جلب المنتج المُنشأ
+    const newProduct = await executeQuery(
+      'SELECT * FROM products_temp WHERE id = ?',
+      [productId]
+    );
+
+    console.log('✅ [PRODUCTS] تم إضافة المنتج بنجاح');
+
+    res.json({
+      success: true,
+      data: newProduct[0]
+    });
+  } catch (error) {
+    console.error('❌ [PRODUCTS] خطأ في إضافة المنتج:', error);
+    res.status(500).json({
+      success: false,
+      error: 'خطأ في إضافة المنتج: ' + error.message
+    });
+  }
 });
 
 // معالجة أخطاء الخادم

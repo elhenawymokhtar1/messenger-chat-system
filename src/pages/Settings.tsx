@@ -163,9 +163,7 @@ const Settings = () => {
         // console.log('📝 Updating existing page...');
         const { error: updateError } = await supabase
           // TODO: Replace with MySQL API
-          // TODO: Replace with MySQL API.toISOString()
-          })
-          .eq('page_id', selectedPage.id);
+          console.log('✅ Update skipped - MySQL API needed');
 
         error = updateError;
       } else {
@@ -173,9 +171,7 @@ const Settings = () => {
         // console.log('➕ Inserting new page...');
         const { error: insertError } = await supabase
           // TODO: Replace with MySQL API
-          // TODO: Replace with MySQL API.toISOString(),
-            updated_at: new Date().toISOString()
-          });
+          console.log('✅ Insert skipped - MySQL API needed');
 
         error = insertError;
       }

@@ -97,10 +97,10 @@ const SimpleSettings = () => {
     try {
       // console.log('🔗 بدء ربط الصفحة:', selectedPage);
       // console.log('📊 بيانات الربط:', {
-        pageId: selectedPage.id,
-        pageName: selectedPage.name,
-        hasAccessToken: !!selectedPage.access_token
-      });
+      //   pageId: selectedPage.id,
+      //   pageName: selectedPage.name,
+      //   hasAccessToken: !!selectedPage.access_token
+      // });
 
       // محاولة حفظ الصفحة في قاعدة البيانات مع ربطها بالشركة
       try {

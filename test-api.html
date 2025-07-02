@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار API</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>اختبار API الشركات</h1>
+        
+        <h2>تسجيل شركة جديدة</h2>
+        <form id="registerForm">
+            <div class="form-group">
+                <label for="name">اسم الشركة:</label>
+                <input type="text" id="name" value="شركة اختبار API" required>
+            </div>
+            <div class="form-group">
+                <label for="email">الإيميل:</label>
+                <input type="email" id="email" value="apitest@example.com" required>
+            </div>
+            <div class="form-group">
+                <label for="password">كلمة المرور:</label>
+                <input type="password" id="password" value="123456" required>
+            </div>
+            <div class="form-group">
+                <label for="phone">الهاتف:</label>
+                <input type="text" id="phone" value="01012345678">
+            </div>
+            <div class="form-group">
+                <label for="city">المدينة:</label>
+                <input type="text" id="city" value="القاهرة">
+            </div>
+            <div class="form-group">
+                <label for="country">الدولة:</label>
+                <input type="text" id="country" value="Egypt">
+            </div>
+            <button type="submit">تسجيل الشركة</button>
+        </form>
+
+        <h2>تسجيل الدخول</h2>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="loginEmail">الإيميل:</label>
+                <input type="email" id="loginEmail" value="dummy@example.com" required>
+            </div>
+            <div class="form-group">
+                <label for="loginPassword">كلمة المرور:</label>
+                <input type="password" id="loginPassword" value="123456" required>
+            </div>
+            <button type="submit">تسجيل الدخول</button>
+        </form>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:3003';
+
+        function showResult(message, isSuccess = true) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = message;
+            resultDiv.className = `result ${isSuccess ? 'success' : 'error'}`;
+        }
+
+        // تسجيل شركة جديدة
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value,
+                phone: document.getElementById('phone').value,
+                city: document.getElementById('city').value,
+                country: document.getElementById('country').value
+            };
+
+            try {
+                showResult('جاري تسجيل الشركة...');
+                
+                const response = await fetch(`${API_BASE_URL}/api/companies/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    showResult(`✅ نجح التسجيل!\n${JSON.stringify(result, null, 2)}`, true);
+                } else {
+                    showResult(`❌ فشل التسجيل: ${result.message || 'خطأ غير معروف'}`, false);
+                }
+            } catch (error) {
+                showResult(`❌ خطأ في الشبكة: ${error.message}`, false);
+            }
+        });
+
+        // تسجيل الدخول
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                email: document.getElementById('loginEmail').value,
+                password: document.getElementById('loginPassword').value
+            };
+
+            try {
+                showResult('جاري تسجيل الدخول...');
+                
+                const response = await fetch(`${API_BASE_URL}/api/companies/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    showResult(`✅ نجح تسجيل الدخول!\n${JSON.stringify(result, null, 2)}`, true);
+                } else {
+                    showResult(`❌ فشل تسجيل الدخول: ${result.message || 'خطأ غير معروف'}`, false);
+                }
+            } catch (error) {
+                showResult(`❌ خطأ في الشبكة: ${error.message}`, false);
+            }
+        });
+
+        // اختبار الاتصال عند تحميل الصفحة
+        window.addEventListener('load', async () => {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/health`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    showResult(`🟢 الخادم متصل ويعمل بشكل صحيح\nالوقت: ${result.data.timestamp}`, true);
+                } else {
+                    showResult('🔴 الخادم لا يستجيب بشكل صحيح', false);
+                }
+            } catch (error) {
+                showResult(`🔴 لا يمكن الاتصال بالخادم: ${error.message}`, false);
+            }
+        });
+    </script>
+</body>
+</html>

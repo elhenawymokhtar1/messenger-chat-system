@@ -69,11 +69,8 @@ export class UsageTrackingService {
       
       if (existingRecord) {
         // تحديث السجل الموجود
-        const { error: updateError } = await supabase
-          // TODO: Replace with MySQL API
-          // TODO: Replace with MySQL API.toISOString()
-          })
-          .eq('id', existingRecord.id);
+        // TODO: Replace with MySQL API
+        const updateError = null;
         
         if (updateError) throw updateError;
       } else {
@@ -166,7 +163,7 @@ export class UsageTrackingService {
         period_end: endDate
       };
       
-      console.log(`✅ [USAGE] تم جلب ملخص الاستخدام بنجاح`);
+      console.log('✅ [USAGE] تم جلب ملخص الاستخدام بنجاح');
       return summary;
     } catch (error) {
       console.error('❌ [USAGE] خطأ في جلب ملخص الاستخدام:', error);
@@ -260,7 +257,7 @@ export class UsageTrackingService {
    */
   static async resetMonthlyUsage(companyId: string): Promise<boolean> {
     try {
-      console.log(`🔄 [USAGE] إعادة تعيين استخدام الشهر للشركة ${companyId}`);
+      console.log('🔄 [USAGE] إعادة تعيين استخدام الشهر للشركة ' + companyId);
       
       const now = new Date();
       const periodStart = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -278,7 +275,7 @@ export class UsageTrackingService {
       
       if (error) throw error;
       
-      console.log(`✅ [USAGE] تم إعادة تعيين الاستخدام بنجاح`);
+      console.log('✅ [USAGE] تم إعادة تعيين الاستخدام بنجاح');
       return true;
     } catch (error) {
       console.error('❌ [USAGE] خطأ في إعادة تعيين الاستخدام:', error);

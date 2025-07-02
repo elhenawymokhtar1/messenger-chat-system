@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   Send,
   Search,
@@ -55,8 +55,8 @@ const WhatsAppChat: React.FC<WhatsAppChatProps> = ({ isConnected, onSendMessage 
   const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSending, setIsSending] = useState(false);
-  const messagesEndRef =<HTMLDivElement>(null);
-  const fileInputRef =<HTMLInputElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // تحميل جهات الاتصال الحقيقية
   useEffect(() => {

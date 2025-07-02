@@ -68,21 +68,24 @@ const CompanyLogin: React.FC = () => {
         login(result.company);
         toast({
           title: "مرحباً بك! 👋",
-          description: `أهلاً بك ${result.company.name}`});
+          description: `أهلاً بك ${result.company.name}`
+        });
         // الانتقال للصفحة المطلوبة أو لوحة التحكم
         const redirectTo = location.state?.from || '/company-dashboard';
         navigate(redirectTo, { replace: true });
       } else {
         toast({
           title: "خطأ في تسجيل الدخول",
-          description: result.message,
-          variant: "destructive"});
+          description: result.message || "فشل في تسجيل الدخول",
+          variant: "destructive"
+        });
       }
     } catch (error) {
       toast({
         title: "خطأ",
         description: "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.",
-        variant: "destructive"});
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }
@@ -168,7 +171,8 @@ const CompanyLogin: React.FC = () => {
                 onClick={() => {
                   toast({
                     title: "قريباً",
-                    description: "ميزة استعادة كلمة المرور ستكون متاحة قريباً"});
+                    description: "ميزة استعادة كلمة المرور ستكون متاحة قريباً"
+                  });
                 }}
               >
                 نسيت كلمة المرور؟

@@ -199,11 +199,8 @@ export async function forceUpdateAllUserNames(onlyMissingNames: boolean = false)
             }
             
             try {
-              const { error: updateError } = await supabase
-                // TODO: Replace with MySQL API
-                // TODO: Replace with MySQL API.toISOString()
-                })
-                .eq('id', id);
+              // TODO: Replace with MySQL API
+              const updateError = null;
 
               if (updateError) {
                 stats.dbErrors++;
@@ -270,11 +267,8 @@ export async function forceUpdateAllUserNames(onlyMissingNames: boolean = false)
                   continue;
                 }
                 
-                const { error: directUpdateError } = await supabase
-                  // TODO: Replace with MySQL API
-                  // TODO: Replace with MySQL API.toISOString()
-                  })
-                  .eq('id', id);
+                // TODO: Replace with MySQL API
+                const directUpdateError = null;
                 
                 if (directUpdateError) {
                   stats.dbErrors++;

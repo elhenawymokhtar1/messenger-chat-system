@@ -3,10 +3,10 @@
  */
 
 import React from 'react';
-import {} from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 
 const TestCompanyDetails: React.FC = () => {
-  const { companyId } =<{ companyId: string }>();
+  const { companyId } = useParams<{ companyId: string }>();
 
   return (
     <div className="container mx-auto p-6" role="main">

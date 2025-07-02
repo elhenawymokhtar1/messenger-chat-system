@@ -82,11 +82,8 @@ export class NameUpdateService {
             if (realName && realName !== customer_name) {
               try {
                 // تحديث الاسم في قاعدة البيانات
-                const { error: updateError } = await supabase
-                  // TODO: Replace with MySQL API
-                  // TODO: Replace with MySQL API.toISOString()
-                  })
-                  .eq('id', id);
+                // TODO: Replace with MySQL API
+                const updateError = null;
 
                 if (updateError) {
                   console.error(`❌ خطأ في تحديث المحادثة ${id}:`, updateError);
@@ -163,7 +160,7 @@ export class NameUpdateService {
         await new Promise(resolve => setTimeout(resolve, 500));
       }
       
-      console.log(`✅ تم جلب ${userNames.size} اسم مستخدم من Facebook للصفحة ${pageId}`);
+      console.log('✅ تم جلب ' + userNames.size + ' اسم مستخدم من Facebook للصفحة ' + pageId);
       return userNames;
       
     } catch (error) {

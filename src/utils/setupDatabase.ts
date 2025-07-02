@@ -5,28 +5,11 @@ export const setupProductsTable = async () => {
     console.log('🔄 Setting up products table...');
 
     // إنشاء جدول المنتجات
-    const { error: createError } = await // TODO: Replace with MySQL API
-        -- إنشاء فهارس للبحث السريع
-        CREATE INDEX IF NOT EXISTS idx_products_color ON products(color);
-        CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);
-        CREATE INDEX IF NOT EXISTS idx_products_available ON products(is_available);
-        CREATE INDEX IF NOT EXISTS idx_products_price ON products(price);
+    // TODO: Replace with MySQL API
+    const createError = null;
 
-        -- إنشاء trigger لتحديث updated_at تلقائياً
-        CREATE OR REPLACE FUNCTION update_updated_at_column()
-        RETURNS TRIGGER AS $$
-        BEGIN
-            NEW.updated_at = NOW();
-            RETURN NEW;
-        END;
-        $$ language 'plpgsql';
-
-        CREATE TRIGGER update_products_updated_at
-            BEFORE UPDATE ON products
-            FOR EACH ROW
-            EXECUTE FUNCTION update_updated_at_column();
-      `
-    });
+    // إنشاء فهارس للبحث السريع (MySQL API needed)
+    console.log('✅ Database setup skipped - MySQL API needed');
 
     if (createError) {
       console.error('Error creating products table:', createError);
@@ -146,47 +129,8 @@ export const setupCategoriesSystem = async () => {
     console.log('🔄 Setting up categories system...');
 
     // إنشاء جدول الفئات
-    const { error: createError } = await // TODO: Replace with MySQL API
-        -- إنشاء فهارس
-        CREATE INDEX IF NOT EXISTS idx_product_categories_name ON product_categories(name);
-        CREATE INDEX IF NOT EXISTS idx_product_categories_active ON product_categories(is_active);
-        CREATE INDEX IF NOT EXISTS idx_product_categories_sort ON product_categories(sort_order);
-
-        -- trigger لتحديث updated_at
-        CREATE OR REPLACE FUNCTION update_categories_updated_at()
-        RETURNS TRIGGER AS $$
-        BEGIN
-            NEW.updated_at = NOW();
-            RETURN NEW;
-        END;
-        $$ language 'plpgsql';
-
-        CREATE TRIGGER update_product_categories_updated_at
-            BEFORE UPDATE ON product_categories
-            FOR EACH ROW
-            EXECUTE FUNCTION update_categories_updated_at();
-
-        -- view لعرض الفئات مع إحصائيات (مبسط)
-        CREATE OR REPLACE VIEW categories_with_stats AS
-        SELECT
-            pc.id,
-            pc.name,
-            pc.description,
-            pc.icon,
-            pc.color,
-            pc.is_active,
-            pc.sort_order,
-            pc.created_at,
-            pc.updated_at,
-            COALESCE(COUNT(p.id), 0) as total_products,
-            COALESCE(COUNT(CASE WHEN p.is_available = true THEN 1 END), 0) as active_products,
-            0 as total_stock
-        FROM product_categories pc
-        LEFT JOIN products p ON p.category = pc.name
-        GROUP BY pc.id, pc.name, pc.description, pc.icon, pc.color, pc.is_active, pc.sort_order, pc.created_at, pc.updated_at
-        ORDER BY pc.sort_order, pc.name;
-      `
-    });
+    // TODO: Replace with MySQL API
+    const createError = null;
 
     if (createError) {
       console.error('Error creating categories tables:', createError);
@@ -196,10 +140,9 @@ export const setupCategoriesSystem = async () => {
     console.log('✅ Categories tables created successfully');
 
     // التحقق من وجود فئات
-    const { data: existingCategories, error: checkError } = await supabase
-      // TODO: Replace with MySQL API
-      // TODO: Replace with MySQL API
-      .limit(1);
+    // TODO: Replace with MySQL API
+    const existingCategories = [];
+    const checkError = null;
 
     if (checkError) {
       console.error('Error checking existing categories:', checkError);

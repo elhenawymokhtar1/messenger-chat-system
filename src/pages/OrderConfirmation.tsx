@@ -16,10 +16,10 @@ import {
   Download,
   Share2
 } from 'lucide-react';
-import { Link} from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 
 const OrderConfirmation = () => {
-  const { orderId } =<{ orderId: string }>();
+  const { orderId } = useParams<{ orderId: string }>();
   const { getOrderById } = useOrders();
   const [orderData, setOrderData] = useState<any>(null);
   const [loading, setLoading] = useState(true);

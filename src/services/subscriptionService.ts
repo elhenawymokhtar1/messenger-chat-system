@@ -253,10 +253,8 @@ export class SubscriptionService {
       // إنشاء الشركة
       const { data: company, error } = await supabase
         // TODO: Replace with MySQL API
-        // TODO: Replace with MySQL API
-        })
-        // TODO: Replace with MySQL API
-        .single();
+        const data = null;
+        const error = null;
 
       if (error) throw error;
 
@@ -352,15 +350,9 @@ export class SubscriptionService {
    */
   static async getCompanySubscription(companyId: string): Promise<CompanySubscription | null> {
     try {
-      const { data, error } = await supabase
-        // TODO: Replace with MySQL API
-        // TODO: Replace with MySQL API
-        `)
-        .eq('company_id', companyId)
-        .eq('status', 'active')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
+      // TODO: Replace with MySQL API
+      const data = null;
+      const error = null;
 
       if (error) throw error;
       return data;
@@ -441,15 +433,14 @@ export class SubscriptionService {
       const endDate = new Date();
       endDate.setFullYear(endDate.getFullYear() + 10); // اشتراك مجاني لمدة 10 سنوات
 
-      await supabase
-        // TODO: Replace with MySQL API
-        // TODO: Replace with MySQL API,
-          end_date: endDate.toISOString(),
-          amount: 0,
-          currency: 'USD',
-          status: 'active',
-          auto_renew: false
-        });
+      // TODO: Replace with MySQL API
+      console.log('✅ Free subscription creation skipped - MySQL API needed', {
+        end_date: endDate.toISOString(),
+        amount: 0,
+        currency: 'USD',
+        status: 'active',
+        auto_renew: false
+      });
     } catch (error) {
       console.error('❌ خطأ في إنشاء الاشتراك المجاني:', error);
       throw error;

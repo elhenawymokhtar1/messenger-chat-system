@@ -104,7 +104,7 @@ export class WhatsAppAIService {
     contactName?: string
   ): Promise<string | null> {
     try {
-      console.log(`🤖 [WhatsApp AI] معالجة رسالة من ${phoneNumber}: ${messageText}`);
+      console.log('🤖 [WhatsApp AI] معالجة رسالة من ' + phoneNumber + ': ' + messageText);
 
       // تحميل الإعدادات إذا لم تكن محملة
       if (!this.settings) {
@@ -483,16 +483,15 @@ export class WhatsAppAIService {
     response: string
   ): Promise<void> {
     try {
-      await supabase
-        // TODO: Replace with MySQL API
-        // TODO: Replace with MySQL API}`,
-          phone_number: phoneNumber,
-          contact_name: '',
-          message_text: response,
-          message_type: 'outgoing',
-          timestamp: new Date().toISOString(),
-          is_ai_generated: true
-        });
+      // TODO: Replace with MySQL API
+      console.log('✅ Message save skipped - MySQL API needed', {
+        phone_number: phoneNumber,
+        contact_name: '',
+        message_text: response,
+        message_type: 'outgoing',
+        timestamp: new Date().toISOString(),
+        is_ai_generated: true
+      });
     } catch (error) {
       console.error('❌ [WhatsApp AI] خطأ في حفظ الرد:', error);
     }

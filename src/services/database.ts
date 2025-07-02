@@ -48,6 +48,16 @@ export class CompanyService {
   }
 
   /**
+   * الحصول على جميع الشركات
+   */
+  static async getAll(): Promise<Company[]> {
+    const companies = await executeQuery<Company>(
+      'SELECT * FROM companies ORDER BY created_at DESC'
+    );
+    return companies || [];
+  }
+
+  /**
    * إنشاء شركة جديدة
    */
   static async create(data: Partial<Company>): Promise<string> {
@@ -71,7 +81,7 @@ export class CompanyService {
       data.status || 'active',
       data.subscription_status || 'trial'
     ]);
-    
+
     return result.insertId;
   }
 
@@ -104,7 +114,7 @@ export class CompanyService {
       data.subscription_status,
       id
     ]);
-    
+
     return result.affectedRows > 0;
   }
 }
@@ -168,7 +178,7 @@ export class FacebookService {
       data.is_active || true,
       data.webhook_verified || false
     ]);
-    
+
     return result.insertId;
   }
 
@@ -191,7 +201,7 @@ export class FacebookService {
       data.webhook_verified,
       pageId
     ]);
-    
+
     return result.affectedRows > 0;
   }
 
@@ -337,7 +347,7 @@ export class ConversationService {
       data.status || 'active',
       data.priority || 'normal'
     ]);
-    
+
     return result.insertId;
   }
 
@@ -368,7 +378,7 @@ export class ConversationService {
         updated_at = CURRENT_TIMESTAMP
       WHERE id = ?
     `, [conversationId, conversationId, conversationId, conversationId]);
-    
+
     return result.affectedRows > 0;
   }
 }

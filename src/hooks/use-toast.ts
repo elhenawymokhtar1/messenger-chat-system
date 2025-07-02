@@ -61,7 +61,7 @@ const addToRemoveQueue = (toastId: string) => {
   }
 
   const timeout = setTimeout(() => {
-    toastTimeouts// TODO: Replace with MySQL API
+    toastTimeouts.delete(toastId);
     dispatch({
       type: "REMOVE_TOAST",
       toastId: toastId,

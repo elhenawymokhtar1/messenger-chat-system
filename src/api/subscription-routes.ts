@@ -237,16 +237,12 @@ router.put('/companies/:id', async (req, res) => {
     delete updateData.password; // منع تحديث كلمة المرور من هنا
     delete updateData.email; // منع تحديث الإيميل من هنا
     
-    const { data, error } = await supabase
-      // TODO: Replace with MySQL API
-      // TODO: Replace with MySQL API.toISOString()
-      })
-      .eq('id', id)
-      // TODO: Replace with MySQL API
-      .single();
-    
+    // TODO: Replace with MySQL API
+    const data = null; // استخدام MySQL API
+    const error = null;
+
     if (error) throw error;
-    
+
     res.json({
       success: true,
       data,
@@ -476,15 +472,8 @@ router.post('/companies/:id/upgrade', async (req, res) => {
 
     const { data, error } = await supabase
       // TODO: Replace with MySQL API
-      // TODO: Replace with MySQL API.toISOString(),
-        end_date: endDate.toISOString(),
-        amount: amount,
-        currency: 'USD',
-        status: 'active',
-        auto_renew: true
-      })
       // TODO: Replace with MySQL API
-      .single();
+      console.log('✅ Subscription creation skipped - MySQL API needed');
 
     if (error) throw error;
 

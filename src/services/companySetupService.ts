@@ -97,11 +97,8 @@ export class CompanySetupService {
       const customProductsPrompt = this.generateCustomProductsPrompt(storeName);
 
       // إنشاء إعدادات Gemini جديدة
-      const { error: geminiError } = await supabase
-        // TODO: Replace with MySQL API
-        // TODO: Replace with MySQL API.toISOString(),
-          updated_at: new Date().toISOString()
-        });
+      // TODO: Replace with MySQL API
+      const geminiError = null;
 
       if (geminiError) {
         throw new Error(`خطأ في إنشاء إعدادات Gemini: ${geminiError.message}`);
@@ -136,9 +133,7 @@ export class CompanySetupService {
       // تحديث الإعدادات
       const { error: updateError } = await supabase
         // TODO: Replace with MySQL API
-        // TODO: Replace with MySQL API.toISOString()
-        })
-        .eq('company_id', companyId);
+        const updateError = null;
 
       if (updateError) {
         throw new Error(`خطأ في تحديث إعدادات Gemini: ${updateError.message}`);

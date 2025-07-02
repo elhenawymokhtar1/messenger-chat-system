@@ -1,8 +1,6 @@
 
-
-// إعداد Supabase
-const supabaseUrl = 'https://ddwszecfsfkjnahesymm.// TODO: Replace with MySQL API
 // TODO: Replace with MySQL API
+// إعداد قاعدة البيانات المحلية بدلاً من Supabase
 
 
 /**
@@ -98,7 +96,8 @@ export class SimpleGeminiService {
       // حفظ رسالة المستخدم أولاً (للمحادثات المؤقتة والاختبار)
       if (conversationId.startsWith('temp_') || conversationId.startsWith('test-')) {
         console.log(`💾 [SIMPLE GEMINI] Saving user message to test_messages with conversation_id: "${conversationId}"`);
-        await // TODO: Replace with MySQL API
+        // TODO: Replace with MySQL API
+        console.log('✅ Message save skipped - MySQL API needed');
       }
 
       // الحصول على إعدادات Gemini للشركة المناسبة

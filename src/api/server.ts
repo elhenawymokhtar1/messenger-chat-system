@@ -1087,7 +1087,7 @@ app.get('/api/products-grouped', async (req, res) => {
       variants: product.variants.sort((a, b) => a.color.localeCompare(b.color, 'ar'))
     }));
 
-    console.log(`✅ Successfully grouped ${result.length} products with ${products?.length || 0} total variants`);
+    console.log('✅ Successfully grouped ' + result.length + ' products with ' + (products?.length || 0) + ' total variants');
     res.json(result);
 
   } catch (error) {

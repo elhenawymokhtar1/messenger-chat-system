@@ -63,8 +63,19 @@ const CompanyRegister: React.FC = () => {
       newErrors.confirmPassword = 'كلمات المرور غير متطابقة';
     }
     // التحقق من رقم الهاتف (اختياري ولكن إذا تم إدخاله يجب أن يكون صحيح)
-    if (formData.phone && !/^[\+]?[0-9\s\-\(\)]{10}$/.test(formData.phone)) {
-      newErrors.phone = 'رقم الهاتف غير صحيح';
+    if (formData.phone) {
+      const phoneClean = formData.phone.replace(/[\s\-\(\)]/g, ''); // إزالة المسافات والرموز
+
+      // دعم الأرقام المصرية والدولية
+      const isValidPhone =
+        /^(\+20)?01[0-9]{9}$/.test(phoneClean) ||  // أرقام مصرية: 01xxxxxxxxx أو +2001xxxxxxxxx
+        /^01[0-9]{9}$/.test(phoneClean) ||         // أرقام مصرية: 01xxxxxxxxx
+        /^\+[1-9]\d{1,14}$/.test(phoneClean) ||   // أرقام دولية: +xxxxxxxxxxxxxxx
+        /^[0-9]{10,15}$/.test(phoneClean);        // أرقام عامة: 10-15 رقم
+
+      if (!isValidPhone) {
+        newErrors.phone = 'رقم الهاتف غير صحيح (مثال: 01012345678 أو +201012345678)';
+      }
     }
     // التحقق من الموقع الإلكتروني (اختياري)
     if (formData.website && !/^https?:\/\/.+\..+/.test(formData.website)) {
@@ -80,6 +91,15 @@ const CompanyRegister: React.FC = () => {
     }
     setLoading(true);
     try {
+      console.log('🚀 [REGISTER] بدء عملية التسجيل...');
+      console.log('📝 [REGISTER] البيانات:', {
+        name: formData.name.trim(),
+        email: formData.email.trim().toLowerCase(),
+        phone: formData.phone.trim() || undefined,
+        city: formData.city.trim() || undefined,
+        country: formData.country
+      });
+
       const result = await CompanyServiceMySQL.registerCompany({
         name: formData.name.trim(),
         email: formData.email.trim().toLowerCase(),
@@ -90,25 +110,73 @@ const CompanyRegister: React.FC = () => {
         city: formData.city.trim() || undefined,
         country: formData.country
       });
-      if (result.success && result.company) {
-        // حفظ بيانات الشركة باستخدام useAuth
-        login(result.company);
-        toast({
-          title: "تم التسجيل بنجاح! 🎉",
-          description: "مرحباً بك في نظام الرد التلقائي. تم تفعيل الخطة المجانية لك."});
-        // الانتقال مباشرة للوحة التحكم
-        navigate('/company-dashboard');
-      } else {
+
+      console.log('📋 [REGISTER] نتيجة التسجيل الكاملة:', result);
+
+      // التحقق من صحة النتيجة
+      if (!result || typeof result !== 'object') {
+        console.error('❌ [REGISTER] نتيجة غير صحيحة:', result);
         toast({
           title: "خطأ في التسجيل",
-          description: result.message,
-          variant: "destructive"});
+          description: "استجابة غير صحيحة من الخادم",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      console.log('✅ [REGISTER] حالة النجاح:', result.success);
+      console.log('🏢 [REGISTER] بيانات الشركة:', result.company);
+      console.log('💬 [REGISTER] الرسالة:', result.message);
+
+      if (result.success === true) {
+        if (result.company && typeof result.company === 'object') {
+          console.log('🎉 [REGISTER] التسجيل نجح! حفظ بيانات الشركة...');
+          console.log('👤 [REGISTER] بيانات الشركة للحفظ:', result.company);
+
+          // حفظ بيانات الشركة باستخدام useAuth
+          try {
+            await login(result.company);
+            console.log('✅ [REGISTER] تم حفظ بيانات الشركة في النظام');
+
+            toast({
+              title: "تم التسجيل بنجاح! 🎉",
+              description: "مرحباً بك في نظام الرد التلقائي. تم تفعيل الخطة المجانية لك."
+            });
+
+            // الانتقال مباشرة للوحة التحكم
+            console.log('🔄 [REGISTER] الانتقال للوحة التحكم...');
+            navigate('/company-dashboard');
+          } catch (loginError) {
+            console.error('❌ [REGISTER] خطأ في حفظ بيانات الشركة:', loginError);
+            toast({
+              title: "تم التسجيل لكن حدث خطأ",
+              description: "تم إنشاء الحساب بنجاح، يرجى تسجيل الدخول يدوياً",
+              variant: "destructive"
+            });
+          }
+        } else {
+          console.error('❌ [REGISTER] بيانات الشركة مفقودة أو غير صحيحة:', result.company);
+          toast({
+            title: "خطأ في التسجيل",
+            description: "تم إنشاء الحساب لكن بيانات الشركة غير مكتملة",
+            variant: "destructive"
+          });
+        }
+      } else {
+        console.log('❌ [REGISTER] التسجيل فشل:', result.message);
+        toast({
+          title: "خطأ في التسجيل",
+          description: result.message || "فشل في تسجيل الشركة",
+          variant: "destructive"
+        });
       }
     } catch (error) {
+      console.error('💥 [REGISTER] خطأ استثنائي:', error);
       toast({
         title: "خطأ",
-        description: "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.",
-        variant: "destructive"});
+        description: error instanceof Error ? error.message : "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.",
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }

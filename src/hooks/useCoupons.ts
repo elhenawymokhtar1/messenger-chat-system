@@ -318,9 +318,11 @@ export const useCoupons = () => {
   // استخدام كوبون (زيادة العداد)
   const useCouponMutation = useMutation({
     mutationFn: async (couponId: string) => {
-      const { data, error } = await supabase
-        // TODO: Replace with MySQL API
-        // TODO: Replace with MySQL API {
+      // TODO: Replace with MySQL API
+      const data = null;
+      const error = null;
+
+      if (error) {
         throw new Error(error.message);
       }
 

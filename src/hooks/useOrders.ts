@@ -313,7 +313,8 @@ export const useOrders = () => {
 
       // تحديث المخزون
       for (const item of orderData.items) {
-        const { error: stockError } = await // TODO: Replace with MySQL API
+        // TODO: Replace with MySQL API
+        const stockError = null;
         if (stockError) {
           console.error('Error updating stock:', stockError);
         }

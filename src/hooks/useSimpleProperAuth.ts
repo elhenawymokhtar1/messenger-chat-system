@@ -47,58 +47,66 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const checkAuthStatus = async () => {
     try {
       console.log('🔍 [AUTH] التحقق من حالة المصادقة...');
-      
+
       // فحص وجود token
       const token = localStorage.getItem('auth_token');
       const companyId = localStorage.getItem('company_id');
-      
+
+      console.log('🔍 [AUTH] فحص البيانات المحفوظة:', {
+        hasToken: !!token,
+        hasCompanyId: !!companyId
+      });
+
       if (!token || !companyId) {
-        console.log('ℹ️ [AUTH] لا يوجد token أو company_id');
-        
-        // للتطوير: إنشاء session تجريبي تلقائياً
-        console.log('🧪 [AUTH] إنشاء session تجريبي للتطوير...');
-        await createDevelopmentSession();
-        
+        console.log('ℹ️ [AUTH] لا يوجد token أو company_id - توجيه لتسجيل الدخول');
+
+        // مسح أي بيانات قديمة
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('company_id');
+        localStorage.removeItem('company_data');
+
+        setUser(null);
         setLoading(false);
         return;
       }
-      
-      // للتطوير: قبول أي token يبدأ بـ dev_ وجلب البيانات من API
-      if (token.startsWith('dev_token_')) {
-        console.log('✅ [AUTH] Token تجريبي صحيح، جلب بيانات الشركة من API...');
 
-        try {
-          // جلب بيانات الشركة من API الحقيقي
-          const response = await fetch(`http://localhost:3002/api/companies/${companyId}`);
+      // التحقق من صحة token مع الخادم
+      console.log('🔍 [AUTH] التحقق من صحة token مع الخادم...');
 
-          if (response.ok) {
-            const apiData = await response.json();
+      try {
+        const response = await fetch(`http://localhost:3002/api/companies/verify-token`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ company_id: companyId })
+        });
 
-            if (apiData.success && apiData.data) {
-              const companyData: AuthUser = {
-                id: apiData.data.id,
-                name: apiData.data.name,
-                email: apiData.data.email,
-                status: apiData.data.status,
-                created_at: apiData.data.created_at
-              };
+        if (response.ok) {
+          const result = await response.json();
 
-              setUser(companyData);
-              console.log('✅ [AUTH] تم تحميل بيانات الشركة من API:', companyData.name);
-            } else {
-              console.warn('⚠️ [AUTH] فشل جلب بيانات الشركة من API');
-              logout();
-            }
-          } else {
-            console.warn('⚠️ [AUTH] خطأ في API الشركات:', response.status);
-            logout();
+          if (result.success && result.data) {
+            console.log('✅ [AUTH] Token صحيح، تم تسجيل الدخول:', result.data.name);
+
+            const companyData: AuthUser = {
+              id: result.data.id,
+              name: result.data.name,
+              email: result.data.email,
+              status: result.data.status,
+              created_at: result.data.created_at || new Date().toISOString()
+            };
+
+            setUser(companyData);
+            setLoading(false);
+            return;
           }
-        } catch (error) {
-          console.error('❌ [AUTH] خطأ في جلب بيانات الشركة:', error);
-          logout();
         }
-      } else {
-        console.warn('⚠️ [AUTH] Token غير معروف');
+
+        console.log('❌ [AUTH] Token غير صحيح - تسجيل خروج');
+        logout();
+      } catch (error) {
+        console.log('❌ [AUTH] خطأ في التحقق من token:', error);
         logout();
       }
     } catch (error) {
@@ -112,7 +120,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
       console.log('🔐 [AUTH] محاولة تسجيل الدخول...');
-      
+
       // للتطوير: قبول أي بيانات
       if (process.env.NODE_ENV === 'development') {
         const testCompany: AuthUser = {
@@ -122,21 +130,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           status: 'active',
           created_at: new Date().toISOString()
         };
-        
+
         // إنشاء token تجريبي
         const testToken = 'dev_token_' + Date.now();
-        
+
         // حفظ token و company_id فقط في localStorage
         localStorage.setItem('auth_token', testToken);
         localStorage.setItem('company_id', testCompany.id);
-        
+
         // حفظ بيانات الشركة في state
         setUser(testCompany);
-        
+
         console.log('✅ [AUTH] تم تسجيل الدخول بنجاح:', testCompany.name);
         return true;
       }
-      
+
       // في الإنتاج: استدعاء API حقيقي
       console.warn('⚠️ [AUTH] API المصادقة غير مُعد بعد');
       return false;
@@ -148,15 +156,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = () => {
     console.log('🚪 [AUTH] تسجيل الخروج...');
-    
-    // مسح localStorage
+
+    // مسح جميع البيانات المحفوظة
     localStorage.removeItem('auth_token');
     localStorage.removeItem('company_id');
-    
+    localStorage.removeItem('company_data');
+    localStorage.removeItem('auth_version');
+
     // مسح state
     setUser(null);
-    
-    console.log('✅ [AUTH] تم تسجيل الخروج');
+
+    console.log('✅ [AUTH] تم تسجيل الخروج ومسح جميع البيانات');
   };
 
   // للتطوير: إنشاء session تجريبي
@@ -227,7 +237,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 // Hook مبسط للحصول على الشركة الحالية
 export const useCurrentCompany = () => {
   const { user, loading } = useAuth();
-  
+
   return {
     company: user,
     loading,

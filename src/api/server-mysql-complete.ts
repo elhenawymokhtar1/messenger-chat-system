@@ -1,5 +1,6 @@
-import { logger } from '../utils/logger';
 #!/usr/bin/env node
+
+import { logger } from '../utils/logger';
 
 /**
  * 🚀 خادم MySQL الكامل - يحل محل Supabase بالكامل
@@ -374,7 +375,7 @@ app.post('/api/facebook/settings', async (req, res) => {
 });
 
 // حذف صفحة فيسبوك
-app// TODO: Replace with MySQL API => {
+app.delete('/api/facebook-pages/:pageId', async (req, res) => {
   try {
     const { pageId } = req.params;
 

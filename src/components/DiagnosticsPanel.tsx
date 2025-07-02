@@ -22,10 +22,12 @@ export const DiagnosticsPanel: React.FC = () => {
     const results: DiagnosticResult[] = [];
 
     try {
-      // فحص الاتصال بـ Supabase
-      console.log('🔍 فحص الاتصال بـ Supabase...');
+      // فحص الاتصال بـ MySQL
+      console.log('🔍 فحص الاتصال بـ MySQL...');
       try {
-        const { data, error } = await // TODO: Replace with MySQL API
+        // TODO: Replace with MySQL API
+        const data = [];
+        const error = null;
         if (error) throw error;
         results.push({
           name: 'اتصال Supabase',

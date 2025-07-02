@@ -203,12 +203,9 @@ export const useCart = (sessionId?: string) => {
       }
 
       // الحصول على عنصر السلة
-      const { data: cartItem, error: cartError } = await supabase
-        // TODO: Replace with MySQL API
-        // TODO: Replace with MySQL API
-        `)
-        .eq('id', itemId)
-        .single();
+      // TODO: Replace with MySQL API
+      const cartItem = null;
+      const cartError = null;
 
       if (cartError || !cartItem) {
         throw new Error('عنصر السلة غير موجود');
@@ -340,7 +337,7 @@ export const useCart = (sessionId?: string) => {
       if (item.product.stock_quantity < item.quantity) {
         invalidItems.push({ 
           ...item, 
-          reason: `الكمية المتاحة: ${item.product.stock_quantity}` 
+          reason: `الكمية المتاحة: ${item.product.stock_quantity}`
         });
         continue;
       }

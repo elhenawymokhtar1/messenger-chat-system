@@ -148,7 +148,7 @@ const SubscriptionPlans: React.FC = () => {
       <div className="flex justify-center mb-8">
         <div className="bg-gray-100 p-1 rounded-lg">
           <button
-            onClick={(e) = aria-label="زر"> {
+            onClick={(e) => {
               e.preventDefault();
               // console.log('🔄 Switching to monthly billing');
               setSelectedBilling('monthly');
@@ -164,7 +164,7 @@ const SubscriptionPlans: React.FC = () => {
             شهري
           </button>
           <button
-            onClick={(e) = aria-label="زر"> {
+            onClick={(e) => {
               e.preventDefault();
               // console.log('🔄 Switching to yearly billing');
               setSelectedBilling('yearly');

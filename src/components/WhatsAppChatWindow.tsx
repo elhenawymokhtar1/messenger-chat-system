@@ -1,4 +1,4 @@
-import { useState, useEffect} from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -40,8 +40,8 @@ const WhatsAppChatWindow = ({ conversationId, isConnected }: WhatsAppChatWindowP
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   
-  const messagesEndRef =<HTMLDivElement>(null);
-  const fileInputRef =<HTMLInputElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // تحميل الرسائل عند تغيير المحادثة
   useEffect(() => {

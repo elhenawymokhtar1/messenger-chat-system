@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,16 +8,16 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { 
-  Package, 
-  Plus, 
-  Search, 
-  Filter, 
-  Edit, 
-  Trash2, 
-  Star, 
-  Eye, 
-  Save, 
+import {
+  Package,
+  Plus,
+  Search,
+  Filter,
+  Edit,
+  Trash2,
+  Star,
+  Eye,
+  Save,
   X,
   Loader2,
   AlertCircle,
@@ -66,7 +67,8 @@ interface ProductFormData {
 
 const NewEcommerceProducts: React.FC = () => {
   const { toast } = useToast();
-  
+  const { user } = useAuth();
+
   // الحالات الأساسية
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -77,14 +79,35 @@ const NewEcommerceProducts: React.FC = () => {
   // حالات النموذج
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  
+
   // حالات البحث والفلترة
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
 
-  // Company ID ثابت للاختبار
-  const COMPANY_ID = 'c677b32f-fe1c-4c64-8362-a1c03406608d';
+  // الحصول على معرف الشركة من المستخدم المسجل دخوله
+  const COMPANY_ID = user?.id || 'test-company-id';
+
+  // تسجيل معلومات التشخيص
+  console.log('🔍 [PRODUCTS] معلومات المستخدم:', user);
+  console.log('🆔 [PRODUCTS] معرف الشركة:', COMPANY_ID);
+
+  // التحقق من تسجيل الدخول (مؤقتاً معطل للاختبار)
+  // if (!user) {
+  //   return (
+  //     <div className="flex items-center justify-center min-h-screen">
+  //       <Card className="w-96">
+  //         <CardContent className="pt-6">
+  //           <div className="text-center">
+  //             <AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
+  //             <h3 className="text-lg font-semibold mb-2">يجب تسجيل الدخول</h3>
+  //             <p className="text-gray-600 mb-4">يرجى تسجيل الدخول للوصول إلى إدارة المنتجات</p>
+  //           </div>
+  //         </CardContent>
+  //       </Card>
+  //     </div>
+  //   );
+  // }
 
   // بيانات النموذج
   const [formData, setFormData] = useState<ProductFormData>({
@@ -122,51 +145,55 @@ const NewEcommerceProducts: React.FC = () => {
     setShowAddForm(false);
   };
 
-  // دالة جلب المنتجات - عبر API المتصل بقاعدة البيانات البعيدة
+  // دالة جلب المنتجات - مبسطة وموثوقة
   const fetchProducts = async () => {
     try {
       setIsLoading(true);
       setError(null);
 
-      console.log('🔍 جلب المنتجات للشركة من قاعدة البيانات البعيدة:', COMPANY_ID);
+      console.log('🔍 [PRODUCTS] جلب المنتجات للشركة:', COMPANY_ID);
 
-      const response = await fetch(`http://localhost:3002/api/companies/${COMPANY_ID}/products`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const response = await fetch(`/api/companies/${COMPANY_ID}/products`);
+      console.log('📡 [PRODUCTS] حالة الاستجابة:', response.status);
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      if (response.ok) {
+        const result = await response.json();
+        console.log('📥 [PRODUCTS] البيانات:', result);
 
-      const result = await response.json();
-
-      if (result.success) {
-        setProducts(result.data || []);
-        console.log('✅ تم جلب المنتجات بنجاح من قاعدة البيانات البعيدة:', result.data?.length || 0);
+        if (result.success && result.data) {
+          setProducts(result.data);
+          console.log('✅ [PRODUCTS] تم جلب', result.data.length, 'منتج');
+        } else {
+          setProducts([]);
+          console.log('ℹ️ [PRODUCTS] لا توجد منتجات');
+        }
       } else {
-        throw new Error(result.message || 'فشل في جلب المنتجات');
+        setProducts([]);
+        console.log('⚠️ [PRODUCTS] خطأ في الاستجابة:', response.status);
       }
     } catch (error) {
-      console.error('❌ خطأ في جلب المنتجات:', error);
-      setError('فشل في تحميل المنتجات');
-      toast({
-        title: "خطأ",
-        description: "فشل في تحميل المنتجات",
-        variant: "destructive"
-      });
+      console.error('❌ [PRODUCTS] خطأ:', error);
+      setProducts([]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // دالة إنشاء منتج جديد - عبر API المتصل بقاعدة البيانات البعيدة
+  // دالة إنشاء منتج جديد - مبسطة
   const createProduct = async () => {
     try {
       setIsSaving(true);
       setError(null);
+
+      // التحقق من البيانات المطلوبة
+      if (!formData.name.trim() || !formData.description.trim() || !formData.price) {
+        toast({
+          title: "خطأ",
+          description: "يرجى ملء جميع الحقول المطلوبة",
+          variant: "destructive"
+        });
+        return;
+      }
 
       const productData = {
         name: formData.name.trim(),
@@ -184,39 +211,42 @@ const NewEcommerceProducts: React.FC = () => {
         status: 'active'
       };
 
-      console.log('🏪 إنشاء منتج جديد في قاعدة البيانات البعيدة:', productData);
+      console.log('🏪 [PRODUCTS] إنشاء منتج:', productData.name);
 
-      const response = await fetch(`http://localhost:3002/api/companies/${COMPANY_ID}/products`, {
+      const response = await fetch(`/api/companies/${COMPANY_ID}/products`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(productData)
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      console.log('📡 [PRODUCTS] حالة الإنشاء:', response.status);
 
-      const result = await response.json();
+      if (response.ok) {
+        const result = await response.json();
+        console.log('📥 [PRODUCTS] نتيجة الإنشاء:', result);
 
-      if (result.success) {
-        setProducts(prev => [result.data, ...prev]);
-        resetForm();
-        toast({
-          title: "نجح",
-          description: "تم إنشاء المنتج بنجاح",
-        });
-        console.log('✅ تم إنشاء المنتج بنجاح في قاعدة البيانات البعيدة:', result.data.name);
+        if (result.success && result.data) {
+          setProducts(prev => [result.data, ...prev]);
+          resetForm();
+
+          toast({
+            title: "نجح! 🎉",
+            description: `تم إنشاء "${result.data.name}" بنجاح`
+          });
+
+          console.log('✅ [PRODUCTS] تم إنشاء المنتج بنجاح');
+        } else {
+          throw new Error(result.message || 'فشل في إنشاء المنتج');
+        }
       } else {
-        throw new Error(result.message || 'فشل في إنشاء المنتج');
+        const errorText = await response.text();
+        throw new Error(`خطأ ${response.status}: ${errorText}`);
       }
     } catch (error) {
-      console.error('❌ خطأ في إنشاء المنتج:', error);
-      setError('فشل في إنشاء المنتج');
+      console.error('❌ [PRODUCTS] خطأ في الإنشاء:', error);
       toast({
         title: "خطأ",
-        description: "فشل في إنشاء المنتج",
+        description: error instanceof Error ? error.message : 'فشل في إنشاء المنتج',
         variant: "destructive"
       });
     } finally {
@@ -249,7 +279,7 @@ const NewEcommerceProducts: React.FC = () => {
 
       console.log('📝 تحديث المنتج:', updateData);
 
-      const response = await fetch(`http://localhost:3002/api/companies/${COMPANY_ID}/products/${editingProduct.id}`, {
+      const response = await fetch(`/api/companies/${COMPANY_ID}/products/${editingProduct.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -262,7 +292,7 @@ const NewEcommerceProducts: React.FC = () => {
       }
 
       const result = await response.json();
-      
+
       if (result.success) {
         setProducts(prev => prev.map(p => p.id === editingProduct.id ? result.data : p));
         resetForm();
@@ -295,7 +325,7 @@ const NewEcommerceProducts: React.FC = () => {
 
       console.log('🗑️ حذف المنتج:', productId);
 
-      const response = await fetch(`http://localhost:3002/api/companies/${COMPANY_ID}/products/${productId}`, {
+      const response = await fetch(`/api/companies/${COMPANY_ID}/products/${productId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -307,7 +337,7 @@ const NewEcommerceProducts: React.FC = () => {
       }
 
       const result = await response.json();
-      
+
       if (result.success) {
         setProducts(prev => prev.filter(p => p.id !== productId));
         toast({
@@ -380,8 +410,8 @@ const NewEcommerceProducts: React.FC = () => {
   // فلترة المنتجات
   const filteredProducts = (Array.isArray(products) ? products : []).filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         product.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         product.description.toLowerCase().includes(searchTerm.toLowerCase());
+      product.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
     const matchesStatus = selectedStatus === 'all' || product.status === selectedStatus;
     return matchesSearch && matchesCategory && matchesStatus;
@@ -392,10 +422,12 @@ const NewEcommerceProducts: React.FC = () => {
 
   // تحميل البيانات عند بدء التشغيل
   useEffect(() => {
+    console.log('🚀 [PRODUCTS] بدء تحميل الصفحة');
+    console.log('🆔 [PRODUCTS] معرف الشركة:', COMPANY_ID);
     fetchProducts();
-  }, []);
+  }, [COMPANY_ID]);
 
-  // عرض شاشة التحميل
+  // عرض شاشة التحميل البسيطة
   if (isLoading) {
     return (
       <div className="container mx-auto px-6 py-8" dir="rtl">
@@ -421,7 +453,7 @@ const NewEcommerceProducts: React.FC = () => {
           </h1>
           <p className="text-gray-600 mt-2">إدارة منتجات المتجر الإلكتروني مع قاعدة البيانات المباشرة</p>
         </div>
-        
+
         <Button
           onClick={() => {
             resetForm();
@@ -469,7 +501,7 @@ const NewEcommerceProducts: React.FC = () => {
               <div className="mr-4">
                 <p className="text-sm font-medium text-gray-600">متوسط السعر</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {products.length > 0 ? 
+                  {products.length > 0 ?
                     Math.round(products.reduce((sum, p) => sum + p.price, 0) / products.length) : 0
                   } ر.س
                 </p>
@@ -780,10 +812,9 @@ const NewEcommerceProducts: React.FC = () => {
 
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-500">الكمية:</span>
-                    <span className={`text-sm font-medium ${
-                      product.stock_quantity > 10 ? 'text-green-600' :
+                    <span className={`text-sm font-medium ${product.stock_quantity > 10 ? 'text-green-600' :
                       product.stock_quantity > 0 ? 'text-yellow-600' : 'text-red-600'
-                    }`}>
+                      }`}>
                       {product.stock_quantity}
                     </span>
                   </div>

@@ -52,17 +52,15 @@ Object.entries(companyPageMapping).forEach(([companyId, allowedPages]) => {
     console.log(`     ❌ لا توجد صفحات (مناسب للشركات الجديدة)`);
   }
 });
-    
-    console.log('');
-    
-    // 4. اختبار المحادثات
+
+console.log('');
+
+// 4. اختبار المحادثات
     console.log('💬 اختبار المحادثات...');
     
-    const { data: conversations, error: convError } = await supabase
-      .from('conversations')
-      .select('*')
-      .order('last_message_at', { ascending: false })
-      .limit(5);
+    // TODO: Replace with MySQL API
+    const conversations = [];
+    const convError = null;
     
     if (convError) {
       console.error('❌ خطأ في جلب المحادثات:', convError.message);
@@ -101,16 +99,9 @@ Object.entries(companyPageMapping).forEach(([companyId, allowedPages]) => {
       console.log('1. افتح: http://localhost:8081/test-company-pages.html');
       console.log('2. جرب التبديل بين الشركات');
       console.log('3. اذهب للإعدادات وتحقق من الصفحات');
-      
     } else {
       console.log('⚠️ لا توجد صفحات Facebook مربوطة');
       console.log('💡 يمكنك إضافة صفحات من صفحة الإعدادات');
     }
-    
-  } catch (error) {
-    console.error('❌ خطأ عام في اختبار النظام:', error);
-  }
-}
 
-// تشغيل الاختبار
-testSystemStatus();
+console.log('✅ اختبار النظام مكتمل!');

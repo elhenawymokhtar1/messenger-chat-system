@@ -53,11 +53,8 @@ export const useCategories = () => {
         // جلب الفئات من Supabase مع فلترة حسب الشركة
         const { data, error } = await supabase
           // TODO: Replace with MySQL API
-          // TODO: Replace with MySQL API
-            )
-          `)
-          .eq('ecommerce_products.stores.company_id', company.id)
-          .order('sort_order', { ascending: true });
+          const data = [];
+          const error = null;
 
         if (error) {
           console.error('Error fetching categories:', error);

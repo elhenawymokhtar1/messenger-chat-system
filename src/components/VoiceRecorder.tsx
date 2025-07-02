@@ -1,4 +1,4 @@
-import React, { useState useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Mic, MicOff, Play, Pause, Send, Trash2, Square } from 'lucide-react';
 
 interface VoiceRecorderProps {
@@ -18,13 +18,13 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ isOpen, onClose, onSendVo
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(0);
 
-  const mediaRecorderRef =<MediaRecorder | null>(null);
-  const audioRef =<HTMLAudioElement | null>(null);
-  const chunksRef =<Blob[]>([]);
-  const timerRef =<NodeJS.Timeout | null>(null);
-  const animationRef =<number | null>(null);
-  const analyserRef =<AnalyserNode | null>(null);
-  const dataArrayRef =<Uint8Array | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const animationRef = useRef<number | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const dataArrayRef = useRef<Uint8Array | null>(null);
 
   // تنظيف الموارد عند الإغلاق
   useEffect(() => {

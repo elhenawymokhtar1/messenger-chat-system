@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   Upload, 
   Image, 
@@ -35,8 +35,8 @@ const FileUpload: React.FC<FileUploadProps> = ({
   const [isDragging, setIsDragging] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
-  const fileInputRef =<HTMLInputElement>(null);
-  const cameraInputRef =<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   const getFileType = (file: File): 'image' | 'video' | 'audio' | 'document' => {
     if (file.type.startsWith('image/')) return 'image';

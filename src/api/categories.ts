@@ -154,7 +154,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // حذف فئة
-router// TODO: Replace with MySQL API => {
+router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -209,11 +209,9 @@ router.patch('/:id/toggle', async (req, res) => {
     const { id } = req.params;
 
     // جلب الحالة الحالية
-    const { data: currentCategory, error: fetchError } = await supabase
-      // TODO: Replace with MySQL API
-      // TODO: Replace with MySQL API
-      .eq('id', id)
-      .single();
+    // TODO: Replace with MySQL API
+    const currentCategory = null; // استخدام MySQL API لجلب الفئة
+    const fetchError = null;
 
     if (fetchError || !currentCategory) {
       return res.status(404).json({ error: 'Category not found' });

@@ -3,7 +3,7 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
   Card,
   CardContent,
@@ -51,7 +51,7 @@ interface CompanyDetails {
 }
 
 const SuperAdminCompanyDetails: React.FC = () => {
-  const { companyId } =<{ companyId: string }>();
+  const { companyId } = useParams<{ companyId: string }>();
   const navigate = useNavigate();
   const [company, setCompany] = useState<CompanyDetails | null>(null);
   const [loading, setLoading] = useState(true);
