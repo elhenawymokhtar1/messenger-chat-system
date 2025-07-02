@@ -80,7 +80,7 @@ console.log('');
     // 5. النتيجة النهائية
     console.log('🎯 النتيجة النهائية:');
     
-    const hasPages = facebookSettings && facebookSettings.length > 0;
+    const hasPages = mockPages && mockPages.length > 0;
     const hasConversations = conversations && conversations.length > 0;
     
     if (hasPages) {

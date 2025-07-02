@@ -568,12 +568,6 @@ app.listen(PORT, async () => {
 });
 
 // معالجة الأخطاء العامة
-// بدء الخادم
-app.listen(PORT, () => {
-  console.log(`🚀 الخادم الموحد يعمل على المنفذ ${PORT}`);
-  console.log(`📡 API متاح على: http://localhost:${PORT}/api`);
-  console.log(`🏥 فحص الصحة: http://localhost:${PORT}/api/health`);
-});
 
 process.on('uncaughtException', (error) => {
   console.error('❌ [UNCAUGHT EXCEPTION]:', error);
