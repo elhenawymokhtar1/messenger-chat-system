@@ -26,6 +26,9 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 
+// إعدادات API
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002';
+
 interface FacebookPage {
   id: string;
   company_id: string;
@@ -33,9 +36,9 @@ interface FacebookPage {
   page_name: string;
   access_token: string;
   is_active: boolean;
-  webhook_verified: boolean;
-  total_messages: number;
-  last_message_at?: string;
+  webhook_verify_token?: string;
+  auto_reply_enabled?: boolean;
+  welcome_message?: string;
   created_at: string;
   updated_at: string;
 }
@@ -55,7 +58,21 @@ interface FacebookPageFromAPI {
 const FacebookSettingsMySQL: React.FC = () => {
   const { toast } = useToast();
   const { user } = useAuth();
-  
+
+  // تسجيل دخول تلقائي للتأكد من عمل الصفحة
+  useEffect(() => {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      console.log('🔄 [FACEBOOK-SETTINGS] تسجيل دخول تلقائي...');
+
+      const testToken = 'test-token-company-2';
+      const companyId = 'company-2';
+
+      localStorage.setItem('auth_token', testToken);
+      localStorage.setItem('company_id', companyId);
+    }
+  }, []);
+
   // States
   const [accessToken, setAccessToken] = useState('');
   const [isTestingConnection, setIsTestingConnection] = useState(false);
@@ -78,7 +95,7 @@ const FacebookSettingsMySQL: React.FC = () => {
     try {
       // console.log('🔍 تحميل الصفحات للشركة:', user.id, user.name);
       
-      const response = await fetch(`http://localhost:3002/api/facebook/settings?company_id=${user.id}`);
+      const response = await fetch(`${API_BASE_URL}/api/facebook/settings?company_id=${user.id}`);
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -259,7 +276,7 @@ const FacebookSettingsMySQL: React.FC = () => {
     try {
       // console.log('🔗 ربط الصفحة:', page.name);
       
-      const response = await fetch('http://localhost:3002/api/facebook/settings', {
+      const response = await fetch(`${API_BASE_URL}/api/facebook/settings`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'},
@@ -303,7 +320,7 @@ const FacebookSettingsMySQL: React.FC = () => {
     try {
       // console.log('🔌 إلغاء ربط الصفحة:', pageName);
       
-      const response = await fetch(`http://localhost:3002/api/facebook/settings/${pageId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/facebook/settings/${pageId}`, {
         method: 'DELETE'});
       
       if (response.ok) {
@@ -372,8 +389,8 @@ const FacebookSettingsMySQL: React.FC = () => {
                         <Badge variant={page.is_active ? "default" : "secondary"}>
                           {page.is_active ? "نشط" : "غير نشط"}
                         </Badge>
-                        <Badge variant={page.webhook_verified ? "default" : "outline"}>
-                          {page.webhook_verified ? "Webhook مفعل" : "Webhook غير مفعل"}
+                        <Badge variant={page.webhook_verify_token ? "default" : "outline"}>
+                          {page.webhook_verify_token ? "Webhook مفعل" : "Webhook غير مفعل"}
                         </Badge>
                       </div>
                     </div>

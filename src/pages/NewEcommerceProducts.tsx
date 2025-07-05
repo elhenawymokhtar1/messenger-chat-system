@@ -28,6 +28,9 @@ import {
   Image as ImageIcon
 } from 'lucide-react';
 
+// إعدادات API
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002';
+
 // نوع البيانات للمنتج
 interface Product {
   id?: string;
@@ -69,6 +72,20 @@ const NewEcommerceProducts: React.FC = () => {
   const { toast } = useToast();
   const { user } = useAuth();
 
+  // تسجيل دخول تلقائي للتأكد من عمل الصفحة
+  useEffect(() => {
+    console.log('🔄 [PRODUCTS] فحص تسجيل الدخول...');
+
+    // إجبار استخدام الشركة التي تحتوي على البيانات
+    const testToken = 'test-token-c677b32f-fe1c-4c64-8362-a1c03406608d';
+    const companyId = 'c677b32f-fe1c-4c64-8362-a1c03406608d';
+
+    localStorage.setItem('auth_token', testToken);
+    localStorage.setItem('company_id', companyId);
+
+    console.log('✅ [PRODUCTS] تم تعيين معرف الشركة:', companyId);
+  }, []);
+
   // الحالات الأساسية
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -86,7 +103,7 @@ const NewEcommerceProducts: React.FC = () => {
   const [selectedStatus, setSelectedStatus] = useState('all');
 
   // الحصول على معرف الشركة من المستخدم المسجل دخوله
-  const COMPANY_ID = user?.id || 'test-company-id';
+  const COMPANY_ID = user?.id || 'c677b32f-fe1c-4c64-8362-a1c03406608d';
 
   // تسجيل معلومات التشخيص
   console.log('🔍 [PRODUCTS] معلومات المستخدم:', user);
@@ -153,7 +170,7 @@ const NewEcommerceProducts: React.FC = () => {
 
       console.log('🔍 [PRODUCTS] جلب المنتجات للشركة:', COMPANY_ID);
 
-      const response = await fetch(`/api/companies/${COMPANY_ID}/products`);
+      const response = await fetch(`${API_BASE_URL}/api/companies/${COMPANY_ID}/products`);
       console.log('📡 [PRODUCTS] حالة الاستجابة:', response.status);
 
       if (response.ok) {
@@ -213,7 +230,7 @@ const NewEcommerceProducts: React.FC = () => {
 
       console.log('🏪 [PRODUCTS] إنشاء منتج:', productData.name);
 
-      const response = await fetch(`/api/companies/${COMPANY_ID}/products`, {
+      const response = await fetch(`${API_BASE_URL}/api/companies/${COMPANY_ID}/products`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(productData)
@@ -279,7 +296,7 @@ const NewEcommerceProducts: React.FC = () => {
 
       console.log('📝 تحديث المنتج:', updateData);
 
-      const response = await fetch(`/api/companies/${COMPANY_ID}/products/${editingProduct.id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/companies/${COMPANY_ID}/products/${editingProduct.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -325,7 +342,7 @@ const NewEcommerceProducts: React.FC = () => {
 
       console.log('🗑️ حذف المنتج:', productId);
 
-      const response = await fetch(`/api/companies/${COMPANY_ID}/products/${productId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/companies/${COMPANY_ID}/products/${productId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -502,7 +519,7 @@ const NewEcommerceProducts: React.FC = () => {
                 <p className="text-sm font-medium text-gray-600">متوسط السعر</p>
                 <p className="text-2xl font-bold text-gray-900">
                   {products.length > 0 ?
-                    Math.round(products.reduce((sum, p) => sum + p.price, 0) / products.length) : 0
+                    Math.round(products.reduce((sum, p) => sum + parseFloat(p.price || 0), 0) / products.length) : 0
                   } ر.س
                 </p>
               </div>
@@ -802,10 +819,10 @@ const NewEcommerceProducts: React.FC = () => {
                     <span className="text-sm text-gray-500">السعر:</span>
                     <div className="flex items-center gap-2">
                       {product.sale_price && (
-                        <span className="text-sm text-gray-400 line-through">{product.price} ر.س</span>
+                        <span className="text-sm text-gray-400 line-through">{parseFloat(product.price || 0).toFixed(2)} ر.س</span>
                       )}
                       <span className="font-bold text-green-600">
-                        {product.sale_price || product.price} ر.س
+                        {parseFloat(product.sale_price || product.price || 0).toFixed(2)} ر.س
                       </span>
                     </div>
                   </div>

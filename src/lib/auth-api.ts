@@ -9,7 +9,7 @@ export const authApi = {
   // تسجيل الدخول
   async login(credentials: { email: string; password: string }) {
     console.log('🔐 authApi.login:', { email: credentials.email });
-    return apiRequest('/api/auth/login', {
+    return apiRequest('http://localhost:3002/api/auth/login', {
       method: 'POST',
       body: JSON.stringify(credentials),
     });
@@ -18,7 +18,7 @@ export const authApi = {
   // التحقق من صحة token
   async verifyToken(token: string) {
     console.log('🔍 authApi.verifyToken');
-    return apiRequest('/api/auth/verify', {
+    return apiRequest('http://localhost:3002/api/auth/verify', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`
@@ -29,7 +29,7 @@ export const authApi = {
   // تسجيل الخروج
   async logout() {
     console.log('🚪 authApi.logout');
-    return apiRequest('/api/auth/logout', {
+    return apiRequest('http://localhost:3002/api/auth/logout', {
       method: 'POST'
     });
   },
@@ -37,7 +37,7 @@ export const authApi = {
   // تجديد token
   async refreshToken() {
     console.log('🔄 authApi.refreshToken');
-    return apiRequest('/api/auth/refresh', {
+    return apiRequest('http://localhost:3002/api/auth/refresh', {
       method: 'POST'
     });
   }

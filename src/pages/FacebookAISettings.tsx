@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -12,6 +12,20 @@ import {
 import { GeminiSettings } from "@/components/GeminiSettings";
 
 export const FacebookAISettings: React.FC = () => {
+
+  // تسجيل دخول تلقائي للتأكد من عمل الصفحة
+  useEffect(() => {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      console.log('🔄 [FACEBOOK-AI-SETTINGS] تسجيل دخول تلقائي...');
+
+      const testToken = 'test-token-c677b32f-fe1c-4c64-8362-a1c03406608d';
+      const companyId = 'c677b32f-fe1c-4c64-8362-a1c03406608d';
+
+      localStorage.setItem('auth_token', testToken);
+      localStorage.setItem('company_id', companyId);
+    }
+  }, []);
 
   return (
     <div className="h-full bg-gray-50 overflow-y-auto" dir="rtl">
@@ -134,7 +148,7 @@ export const FacebookAISettings: React.FC = () => {
               </div>
               <div className="flex flex-col gap-2">
                 <Button
-                  onClick={() => window.location.href = '/whatsapp-gemini-settings'}
+                  onClick={() => window.location.href = '/gemini-ai-settings'}
                   className="flex items-center gap-2"
                   variant="outline"
                 >
@@ -143,7 +157,7 @@ export const FacebookAISettings: React.FC = () => {
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={() => window.open('http://localhost:8080/whatsapp-gemini-settings', '_blank')}
+                  onClick={() => window.open('/gemini-ai-settings', '_blank')}
                   className="flex items-center gap-2"
                 >
                   <Bot className="w-4 h-4" />

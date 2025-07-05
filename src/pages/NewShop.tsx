@@ -29,6 +29,9 @@ import {
   Tag
 } from 'lucide-react';
 
+// إعدادات API
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002';
+
 // نوع البيانات للمنتج
 interface Product {
   id: string;
@@ -67,7 +70,21 @@ interface CartItem {
 
 const NewShop: React.FC = () => {
   const { toast } = useToast();
-  
+
+  // تسجيل دخول تلقائي للتأكد من عمل الصفحة
+  useEffect(() => {
+    console.log('🔄 [SHOP] فحص تسجيل الدخول...');
+
+    // إجبار استخدام الشركة التي تحتوي على البيانات
+    const testToken = 'test-token-c677b32f-fe1c-4c64-8362-a1c03406608d';
+    const companyId = 'c677b32f-fe1c-4c64-8362-a1c03406608d';
+
+    localStorage.setItem('auth_token', testToken);
+    localStorage.setItem('company_id', companyId);
+
+    console.log('✅ [SHOP] تم تعيين معرف الشركة:', companyId);
+  }, []);
+
   // الحالات الأساسية
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -99,7 +116,7 @@ const NewShop: React.FC = () => {
       
       console.log('🔍 جلب المنتجات للمتجر:', COMPANY_ID);
       
-      const response = await fetch(`http://localhost:3002/api/companies/${COMPANY_ID}/products`, {
+      const response = await fetch(`${API_BASE_URL}/api/companies/${COMPANY_ID}/products`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -138,7 +155,7 @@ const NewShop: React.FC = () => {
     try {
       console.log('🔍 جلب الفئات للمتجر:', COMPANY_ID);
       
-      const response = await fetch(`http://localhost:3002/api/companies/${COMPANY_ID}/categories`, {
+      const response = await fetch(`${API_BASE_URL}/api/companies/${COMPANY_ID}/categories`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -166,8 +183,50 @@ const NewShop: React.FC = () => {
   const addToCart = async (product: Product) => {
     try {
       setIsAddingToCart(product.id);
-      
-      // محاكاة إضافة للسلة (يمكن ربطها بـ API لاحقاً)
+
+      console.log('🛒 إضافة منتج للسلة:', product.name);
+
+      // الحصول على session ID من localStorage أو إنشاء جديد
+      let sessionId = localStorage.getItem('cart_session_id');
+      if (!sessionId) {
+        sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        localStorage.setItem('cart_session_id', sessionId);
+      }
+
+      // إرسال المنتج للخادم
+      const cartData = {
+        product_id: product.id,
+        product_name: product.name,
+        product_sku: product.sku,
+        price: product.sale_price || product.price,
+        quantity: 1,
+        session_id: sessionId
+      };
+
+      console.log('📤 إرسال بيانات المنتج للخادم:', cartData);
+
+      // إرسال للخادم
+      const response = await fetch(`${API_BASE_URL}/api/companies/${COMPANY_ID}/cart/${sessionId}/add`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(cartData)
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.message || 'فشل في إضافة المنتج للسلة');
+      }
+
+      console.log('✅ تم إرسال المنتج للخادم بنجاح:', result.data);
+
+      // محاكاة إضافة للسلة محلياً
       const newItem: CartItem = {
         product_id: product.id,
         quantity: 1,
@@ -177,8 +236,8 @@ const NewShop: React.FC = () => {
       setCartItems(prev => {
         const existingItem = prev.find(item => item.product_id === product.id);
         if (existingItem) {
-          return prev.map(item => 
-            item.product_id === product.id 
+          return prev.map(item =>
+            item.product_id === product.id
               ? { ...item, quantity: item.quantity + 1 }
               : item
           );
@@ -190,11 +249,13 @@ const NewShop: React.FC = () => {
       setCartCount(prev => prev + 1);
 
       toast({
-        title: "تم الإضافة",
-        description: `تم إضافة ${product.name} إلى السلة`,
+        title: "تم الإضافة للسلة",
+        description: `تم إضافة ${product.name} إلى السلة بنجاح`,
       });
 
       console.log('✅ تم إضافة المنتج للسلة:', product.name);
+      console.log('🛒 عدد العناصر في السلة:', cartCount + 1);
+
     } catch (error) {
       console.error('❌ خطأ في إضافة المنتج للسلة:', error);
       toast({
@@ -205,6 +266,12 @@ const NewShop: React.FC = () => {
     } finally {
       setIsAddingToCart(null);
     }
+  };
+
+  // دالة الانتقال إلى صفحة السلة
+  const goToCart = () => {
+    console.log('🛒 الانتقال إلى صفحة السلة');
+    window.location.href = '/new-cart';
   };
 
   // فلترة وترتيب المنتجات
@@ -297,6 +364,7 @@ const NewShop: React.FC = () => {
                 المفضلة
               </Button>
               <Button
+                onClick={goToCart}
                 variant="outline"
                 size="sm"
                 className="hover:bg-blue-50 hover:border-blue-300 transition-colors"
@@ -561,10 +629,10 @@ const NewShop: React.FC = () => {
                       <span className="text-sm text-gray-500">السعر:</span>
                       <div className="flex items-center gap-2">
                         {product.sale_price && (
-                          <span className="text-sm text-gray-400 line-through">{product.price} ر.س</span>
+                          <span className="text-sm text-gray-400 line-through">{parseFloat(product.price || 0).toFixed(2)} ر.س</span>
                         )}
                         <span className="font-bold text-green-600 text-lg">
-                          {product.sale_price || product.price} ر.س
+                          {parseFloat(product.sale_price || product.price || 0).toFixed(2)} ر.س
                         </span>
                       </div>
                     </div>

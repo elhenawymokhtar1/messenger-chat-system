@@ -181,52 +181,27 @@ const menuItems: MenuItem[] = [
     color: 'text-emerald-600',
     children: [
       {
-        title: 'إعدادات المتجر',
-        icon: Store,
-        path: '/store-management'
-      },
-      {
-        title: 'إدارة المتجر الجديد',
+        title: 'إدارة المتجر',
         icon: Store,
         path: '/new-store-management'
       },
       {
         title: 'المنتجات',
         icon: Package,
-        path: '/ecommerce-products'
-      },
-      {
-        title: 'المنتجات الجديدة',
-        icon: Package,
         path: '/new-ecommerce-products'
       },
       {
         title: 'الفئات',
-        icon: Layers,
-        path: '/categories'
-      },
-      {
-        title: 'الفئات الجديدة',
         icon: Layers,
         path: '/new-categories'
       },
       {
         title: 'المتجر',
         icon: ShoppingBag,
-        path: '/shop'
-      },
-      {
-        title: 'المتجر الجديد',
-        icon: ShoppingBag,
         path: '/new-shop'
       },
       {
         title: 'السلة',
-        icon: ShoppingCart,
-        path: '/cart'
-      },
-      {
-        title: 'السلة الجديدة',
         icon: ShoppingCart,
         path: '/new-cart'
       },

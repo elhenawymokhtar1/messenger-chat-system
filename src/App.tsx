@@ -21,7 +21,7 @@ import SimpleLogin from "./pages/SimpleLogin";
 import SimpleHome from "./pages/SimpleHome";
 import SimpleCompanyLogin from "./pages/SimpleCompanyLogin";
 import AuthTestPage from "./pages/AuthTestPage";
-import StoreManagement from "./pages/StoreManagement";
+
 import NewStoreManagement from "./pages/NewStoreManagement";
 import NewEcommerceProducts from "./pages/NewEcommerceProducts";
 import SimpleProducts from "./pages/SimpleProducts";
@@ -37,10 +37,15 @@ import NewCoupons from "./pages/NewCoupons";
 import NewShipping from "./pages/NewShipping";
 import NewReports from "./pages/NewReports";
 import NewStoreSetup from "./pages/NewStoreSetup";
+import ThankYou from "./pages/ThankYou";
 import NewProductVariants from "./pages/NewProductVariants";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import SettingsPage from "./pages/SettingsPage";
 import ImageTestPage from "./pages/ImageTestPage";
+import SuperAdminLogin from "./pages/SuperAdminLogin";
+import SuperAdminDashboard from "./pages/SuperAdminDashboard";
+import SuperAdminCompanyDetails from "./pages/SuperAdminCompanyDetails";
+import AuthDebug from "./pages/AuthDebug";
 const CompanyDashboard = React.lazy(() => import("./pages/CompanyDashboard"));
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -74,6 +79,14 @@ const App: React.FC = () => {
               <Route path="/company-login" element={<CompanyLogin />} />
               <Route path="/simple-company-login" element={<SimpleCompanyLogin />} />
               <Route path="/auth-test" element={<AuthTestPage />} />
+
+              {/* صفحات Super Admin */}
+              <Route path="/super-admin-login" element={<SuperAdminLogin />} />
+              <Route path="/super-admin-dashboard" element={<SuperAdminDashboard />} />
+              <Route path="/super-admin-company/:companyId" element={<SuperAdminCompanyDetails />} />
+
+              {/* صفحة تشخيص المصادقة */}
+              <Route path="/auth-debug" element={<AuthDebug />} />
 
               {/* صفحة اختبار الصور */}
               <Route path="/image-test" element={
@@ -128,11 +141,11 @@ const App: React.FC = () => {
               } />
 
               <Route path="/facebook-settings" element={
-                <ProperProtectedRoute>
+                <ProtectedRoute>
                   <AuthenticatedLayout>
                     <FacebookSettingsMySQL />
                   </AuthenticatedLayout>
-                </ProperProtectedRoute>
+                </ProtectedRoute>
               } />
 
               <Route path="/facebook-conversations" element={
@@ -143,13 +156,7 @@ const App: React.FC = () => {
                 </ProtectedRoute>
               } />
 
-              <Route path="/store-management" element={
-                <ProtectedRoute>
-                  <AuthenticatedLayout>
-                    <StoreManagement />
-                  </AuthenticatedLayout>
-                </ProtectedRoute>
-              } />
+
 
               <Route path="/new-store-management" element={
                 <ProtectedRoute>
@@ -262,6 +269,8 @@ const App: React.FC = () => {
                   </AuthenticatedLayout>
                 </ProtectedRoute>
               } />
+
+              <Route path="/thank-you" element={<ThankYou />} />
 
               <Route path="/new-store-setup" element={
                 <ProtectedRoute>

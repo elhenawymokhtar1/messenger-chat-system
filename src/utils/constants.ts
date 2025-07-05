@@ -4,12 +4,12 @@
  */
 
 export const API_ENDPOINTS = {
-  AUTH: '/api/auth',
-  COMPANIES: '/api/companies',
-  MESSAGES: '/api/messages',
-  FACEBOOK: '/api/facebook',
-  WHATSAPP: '/api/whatsapp',
-  GEMINI: '/api/gemini'
+  AUTH: 'http://localhost:3002/api/auth',
+  COMPANIES: 'http://localhost:3002/api/companies',
+  MESSAGES: 'http://localhost:3002/api/messages',
+  FACEBOOK: 'http://localhost:3002/api/facebook',
+  WHATSAPP: 'http://localhost:3002/api/whatsapp',
+  GEMINI: 'http://localhost:3002/api/gemini'
 } as const;
 
 export const HTTP_STATUS = {

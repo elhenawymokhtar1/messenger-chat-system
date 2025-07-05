@@ -221,8 +221,29 @@ const CompanyLogin: React.FC = () => {
               </div>
             </div>
           </form>
+          {/* بيانات تجريبية */}
+          <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <h3 className="font-semibold text-blue-800 mb-2">🧪 بيانات اختبار:</h3>
+            <div className="text-sm text-blue-700 space-y-1">
+              <p>📧 الإيميل: test@company.com</p>
+              <p>🔑 كلمة المرور: 123456</p>
+              <button
+                type="button"
+                onClick={() => {
+                  setFormData({
+                    email: 'test@company.com',
+                    password: '123456'
+                  });
+                }}
+                className="mt-2 px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700"
+              >
+                ملء البيانات تلقائياً
+              </button>
+            </div>
+          </div>
+
           {/* معلومات الدعم */}
-          <div className="mt-8 p-4 bg-gray-50 rounded-lg">
+          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
             <h3 className="font-semibold text-gray-800 mb-2">تحتاج مساعدة؟</h3>
             <div className="text-sm text-gray-600 space-y-1">
               <p>📧 البريد الإلكتروني: support@company.com</p>

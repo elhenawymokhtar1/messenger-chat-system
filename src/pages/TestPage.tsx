@@ -73,7 +73,7 @@ const TestPage: React.FC = () => {
 
   const testApiConnection = async (): Promise<TestResult> => {
     try {
-      const response = await fetch('/api/conversations?limit=1');
+      const response = await fetch('http://localhost:3002/api/conversations?limit=1');
       if (response.ok) {
         return {
           name: 'اتصال API',
@@ -99,7 +99,7 @@ const TestPage: React.FC = () => {
 
   const testConversations = async (): Promise<TestResult> => {
     try {
-      const response = await fetch('/api/conversations?limit=10');
+      const response = await fetch('http://localhost:3002/api/conversations?limit=10');
       if (response.ok) {
         const data = await response.json();
         setConversations(data || []);
@@ -129,7 +129,7 @@ const TestPage: React.FC = () => {
 
   const testMessages = async (): Promise<TestResult> => {
     try {
-      const response = await fetch('/api/messages/recent?limit=10');
+      const response = await fetch('http://localhost:3002/api/messages/recent?limit=10');
       if (response.ok) {
         const data = await response.json();
         setMessages(data.messages || []);
@@ -188,7 +188,7 @@ const TestPage: React.FC = () => {
 
   const testDatabase = async (): Promise<TestResult> => {
     try {
-      const response = await fetch('/api/process-message', {
+      const response = await fetch('http://localhost:3002/api/process-message', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ test: true })

@@ -25,16 +25,18 @@ async function createSpecificCompany() {
       console.log('🏢 إنشاء الشركة المطلوبة...');
       
       const passwordHash = await bcrypt.hash('123456', 12);
-      
+
       await conn.execute(`
-        INSERT INTO companies (id, name, email, password_hash, status, subscription_status, created_at, updated_at) 
-        VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())
-      `, [companyId, 'شركة تجريبية', 'test@example.com', passwordHash, 'active', 'active']);
+        INSERT INTO companies (id, name, email, password_hash, phone, city, country, status, subscription_status, is_verified, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+      `, [companyId, 'شركة المستخدم الجديد', 'user@company.com', passwordHash, '+201234567890', 'القاهرة', 'Egypt', 'active', 'trial', true]);
       
       console.log('✅ تم إنشاء الشركة بنجاح');
       console.log('🆔 معرف الشركة:', companyId);
-      console.log('📧 الإيميل: test@example.com');
+      console.log('📧 الإيميل: user@company.com');
       console.log('🔑 كلمة المرور: 123456');
+      console.log('📱 رقم الهاتف: +201234567890');
+      console.log('🏙️ المدينة: القاهرة');
     }
     
     await conn.end();

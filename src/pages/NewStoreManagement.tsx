@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,16 +8,16 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Store, Edit, Save, Globe, Mail, Phone, MapPin, Building, Power, PowerOff, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 
-// نوع البيانات للمتجر
+// نوع البيانات للمتجر (يطابق API)
 interface StoreData {
   id?: string;
-  name: string;
-  description: string;
-  phone: string;
-  email: string;
-  address: string;
-  website: string;
-  logo_url: string;
+  store_name: string;
+  store_description: string;
+  store_phone: string;
+  store_email: string;
+  store_address: string;
+  store_website: string;
+  store_logo: string;
   is_active: boolean;
   company_id: string;
   created_at?: string;
@@ -36,7 +37,8 @@ interface StoreFormData {
 
 const NewStoreManagement: React.FC = () => {
   const { toast } = useToast();
-  
+  const { user } = useAuth();
+
   // الحالات الأساسية
   const [store, setStore] = useState<StoreData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -45,8 +47,8 @@ const NewStoreManagement: React.FC = () => {
   const [isToggling, setIsToggling] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Company ID ثابت للاختبار (يمكن تغييره لاحقاً)
-  const COMPANY_ID = 'c677b32f-fe1c-4c64-8362-a1c03406608d';
+  // استخدام معرف الشركة من المستخدم المسجل
+  const COMPANY_ID = user?.id || 'c677b32f-fe1c-4c64-8362-a1c03406608d';
 
   // بيانات النموذج
   const [formData, setFormData] = useState<StoreFormData>({
@@ -61,11 +63,18 @@ const NewStoreManagement: React.FC = () => {
 
   // دالة جلب بيانات المتجر
   const fetchStore = async () => {
+    if (!COMPANY_ID) {
+      console.log('⚠️ لا يوجد معرف شركة');
+      setIsLoading(false);
+      return;
+    }
+
     try {
       setIsLoading(true);
       setError(null);
-      
+
       console.log('🔍 جلب بيانات المتجر للشركة:', COMPANY_ID);
+      console.log('👤 بيانات المستخدم:', user);
       
       const response = await fetch(`http://localhost:3002/api/companies/${COMPANY_ID}/store`, {
         method: 'GET',
@@ -83,15 +92,15 @@ const NewStoreManagement: React.FC = () => {
       if (result.success && result.data) {
         setStore(result.data);
         setFormData({
-          name: result.data.name || '',
-          description: result.data.description || '',
-          phone: result.data.phone || '',
-          email: result.data.email || '',
-          address: result.data.address || '',
-          website: result.data.website || '',
-          logo_url: result.data.logo_url || ''
+          name: result.data.store_name || '',
+          description: result.data.store_description || '',
+          phone: result.data.store_phone || '',
+          email: result.data.store_email || '',
+          address: result.data.store_address || '',
+          website: result.data.store_website || '',
+          logo_url: result.data.store_logo || ''
         });
-        console.log('✅ تم جلب بيانات المتجر بنجاح:', result.data.name);
+        console.log('✅ تم جلب بيانات المتجر بنجاح:', result.data.store_name);
       } else {
         console.log('⚠️ لا يوجد متجر للشركة');
         setStore(null);
@@ -116,13 +125,14 @@ const NewStoreManagement: React.FC = () => {
       setError(null);
 
       const storeData = {
-        name: formData.name.trim() || 'متجر جديد',
-        description: formData.description.trim() || 'وصف المتجر',
-        phone: formData.phone.trim() || '',
-        email: formData.email.trim() || '',
-        address: formData.address.trim() || '',
-        website: formData.website.trim() || '',
-        logo_url: formData.logo_url.trim() || ''
+        store_name: formData.name.trim() || 'متجر جديد',
+        store_description: formData.description.trim() || 'وصف المتجر',
+        store_phone: formData.phone.trim() || '',
+        store_email: formData.email.trim() || '',
+        store_address: formData.address.trim() || '',
+        store_website: formData.website.trim() || '',
+        store_logo: formData.logo_url.trim() || '',
+        is_active: true
       };
 
       console.log('🏪 إنشاء متجر جديد:', storeData);
@@ -173,13 +183,14 @@ const NewStoreManagement: React.FC = () => {
       setError(null);
 
       const updateData = {
-        name: formData.name.trim(),
-        description: formData.description.trim(),
-        phone: formData.phone.trim(),
-        email: formData.email.trim(),
-        address: formData.address.trim(),
-        website: formData.website.trim(),
-        logo_url: formData.logo_url.trim()
+        store_name: formData.name.trim(),
+        store_description: formData.description.trim(),
+        store_phone: formData.phone.trim(),
+        store_email: formData.email.trim(),
+        store_address: formData.address.trim(),
+        store_website: formData.website.trim(),
+        store_logo: formData.logo_url.trim(),
+        is_active: true
       };
 
       console.log('📝 تحديث المتجر:', updateData);
@@ -278,10 +289,27 @@ const NewStoreManagement: React.FC = () => {
     }));
   };
 
-  // تحميل البيانات عند بدء التشغيل
+  // تحميل البيانات عند بدء التشغيل أو تغيير المستخدم
   useEffect(() => {
-    fetchStore();
-  }, []);
+    if (user?.id) {
+      fetchStore();
+    }
+  }, [user?.id]);
+
+  // عرض رسالة إذا لم يكن هناك مستخدم مسجل
+  if (!user) {
+    return (
+      <div className="container mx-auto px-6 py-8" dir="rtl">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <AlertCircle className="h-12 w-12 mx-auto mb-4 text-red-600" />
+            <h2 className="text-xl font-semibold text-gray-700 mb-2">يرجى تسجيل الدخول أولاً</h2>
+            <p className="text-gray-500">تحتاج لتسجيل الدخول لإدارة المتجر</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // عرض شاشة التحميل
   if (isLoading) {
@@ -332,6 +360,12 @@ const NewStoreManagement: React.FC = () => {
         <div className="text-left">
           <p className="text-sm text-gray-500">معرف الشركة</p>
           <p className="text-xs font-mono bg-gray-100 px-2 py-1 rounded">{COMPANY_ID}</p>
+          {user && (
+            <div className="mt-2">
+              <p className="text-sm text-gray-500">اسم الشركة</p>
+              <p className="text-sm font-medium">{user.name}</p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -434,8 +468,8 @@ const NewStoreManagement: React.FC = () => {
                 <div className="flex items-center gap-3">
                   <Store className="w-6 h-6 text-blue-600" />
                   <div>
-                    <CardTitle>{store.name}</CardTitle>
-                    <CardDescription>{store.description}</CardDescription>
+                    <CardTitle>{store.store_name || 'غير محدد'}</CardTitle>
+                    <CardDescription>{store.store_description || 'غير محدد'}</CardDescription>
                   </div>
                 </div>
                 
@@ -563,19 +597,19 @@ const NewStoreManagement: React.FC = () => {
                     <div className="flex items-center gap-2">
                       <Phone className="w-4 h-4 text-gray-500" />
                       <span className="text-sm text-gray-600">الهاتف:</span>
-                      <span>{store.phone || 'غير محدد'}</span>
+                      <span>{store.store_phone || 'غير محدد'}</span>
                     </div>
-                    
+
                     <div className="flex items-center gap-2">
                       <Mail className="w-4 h-4 text-gray-500" />
                       <span className="text-sm text-gray-600">البريد:</span>
-                      <span>{store.email || 'غير محدد'}</span>
+                      <span>{store.store_email || 'غير محدد'}</span>
                     </div>
-                    
+
                     <div className="flex items-center gap-2">
                       <MapPin className="w-4 h-4 text-gray-500" />
                       <span className="text-sm text-gray-600">العنوان:</span>
-                      <span>{store.address || 'غير محدد'}</span>
+                      <span>{store.store_address || 'غير محدد'}</span>
                     </div>
                   </div>
                   
@@ -583,7 +617,7 @@ const NewStoreManagement: React.FC = () => {
                     <div className="flex items-center gap-2">
                       <Globe className="w-4 h-4 text-gray-500" />
                       <span className="text-sm text-gray-600">الموقع:</span>
-                      <span>{store.website || 'غير محدد'}</span>
+                      <span>{store.store_website || 'غير محدد'}</span>
                     </div>
                     
                     <div className="flex items-center gap-2">

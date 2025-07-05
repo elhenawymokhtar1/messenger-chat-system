@@ -43,7 +43,7 @@ const WhatsAppAdvanced: React.FC = () => {
 
   const checkConnectionStatus = async () => {
     try {
-      const response = await fetch('/api/whatsapp-baileys/status');
+      const response = await fetch('http://localhost:3002/api/whatsapp-baileys/status');
       const data = await response.json();
       setIsConnected(data.isConnected);
       if (data.qrCode) {
@@ -56,7 +56,7 @@ const WhatsAppAdvanced: React.FC = () => {
 
   const loadStats = async () => {
     try {
-      const response = await fetch('/api/whatsapp-baileys/stats');
+      const response = await fetch('http://localhost:3002/api/whatsapp-baileys/stats');
       const data = await response.json();
       setStats(data.stats || stats);
     } catch (error) {
@@ -67,14 +67,14 @@ const WhatsAppAdvanced: React.FC = () => {
   const startWhatsApp = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/whatsapp-baileys/start', {
+      const response = await fetch('http://localhost:3002/api/whatsapp-baileys/start', {
         method: 'POST'
       });
       
       if (response.ok) {
         // بدء فحص QR Code كل ثانيتين
         const interval = setInterval(async () => {
-          const statusResponse = await fetch('/api/whatsapp-baileys/status');
+          const statusResponse = await fetch('http://localhost:3002/api/whatsapp-baileys/status');
           const statusData = await statusResponse.json();
           
           if (statusData.qrCode) {
@@ -100,7 +100,7 @@ const WhatsAppAdvanced: React.FC = () => {
 
   const disconnect = async () => {
     try {
-      const response = await fetch('/api/whatsapp-baileys/disconnect', {
+      const response = await fetch('http://localhost:3002/api/whatsapp-baileys/disconnect', {
         method: 'POST'
       });
       

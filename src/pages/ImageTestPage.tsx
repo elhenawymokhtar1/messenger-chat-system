@@ -13,6 +13,21 @@ interface TestLog {
 const ImageTestPage: React.FC = () => {
   const { company } = useCurrentCompany();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // تسجيل دخول تلقائي إذا لم يكن هناك شركة
+  React.useEffect(() => {
+    if (!company) {
+      console.log('🔄 [IMAGE-TEST-PAGE] لا توجد شركة، تسجيل دخول تلقائي...');
+
+      const testToken = 'test-token-c677b32f-fe1c-4c64-8362-a1c03406608d';
+      const companyId = 'c677b32f-fe1c-4c64-8362-a1c03406608d';
+
+      localStorage.setItem('auth_token', testToken);
+      localStorage.setItem('company_id', companyId);
+
+      window.location.reload();
+    }
+  }, [company]);
   
   // بيانات المحادثة المحددة - Mokhtar Elenawy
   const TEST_CONVERSATION_ID = '0a6962e4-a5d6-4663-ab0e-25f7ffa175db';

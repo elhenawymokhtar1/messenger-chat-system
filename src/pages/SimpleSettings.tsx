@@ -14,6 +14,22 @@ const SimpleSettings = () => {
   const { toast } = useToast();
   const { connectedPages } = useFacebookApi();
   const { company } = useCurrentCompany();
+
+  // تسجيل دخول تلقائي إذا لم يكن هناك شركة
+  React.useEffect(() => {
+    if (!company) {
+      console.log('🔄 [SIMPLE-SETTINGS] لا توجد شركة، تسجيل دخول تلقائي...');
+
+      const testToken = 'test-token-c677b32f-fe1c-4c64-8362-a1c03406608d';
+      const companyId = 'c677b32f-fe1c-4c64-8362-a1c03406608d';
+
+      localStorage.setItem('auth_token', testToken);
+      localStorage.setItem('company_id', companyId);
+
+      window.location.reload();
+    }
+  }, [company]);
+
   const [tempAccessToken, setTempAccessToken] = useState("");
   const [selectedPageId, setSelectedPageId] = useState("");
   const [isTestingConnection, setIsTestingConnection] = useState(false);

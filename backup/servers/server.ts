@@ -1129,7 +1129,7 @@ app.get('/api/facebook/settings', async (req, res) => {
 
     // فلترة حسب company_id إذا تم تمريره
     if (company_id) {
-      console.log(`🏢 API Server: Filtering by company_id: ${company_id}`);
+      console.log(`[COMPANY] API Server: Filtering by company_id: ${company_id}`);
       query = query.eq('company_id', company_id);
     }
 

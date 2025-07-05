@@ -4,7 +4,7 @@
  */
 
 // إعدادات الخادم
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3003';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002';
 
 /**
  * دالة مساعدة لإرسال الطلبات - محسنة ومضمونة
@@ -183,7 +183,21 @@ export class CompanyServiceMySQL {
         body: JSON.stringify({ email, password }),
       });
 
-      return response;
+      console.log('📥 [FRONTEND] استجابة تسجيل الدخول:', response);
+
+      // تحويل الاستجابة للتنسيق المتوقع
+      if (response.success && response.data?.company) {
+        return {
+          success: true,
+          message: response.message || 'تم تسجيل الدخول بنجاح',
+          company: response.data.company
+        };
+      } else {
+        return {
+          success: false,
+          message: response.message || 'فشل في تسجيل الدخول'
+        };
+      }
     } catch (error) {
       console.error('❌ [FRONTEND] خطأ في تسجيل الدخول:', error);
       return {

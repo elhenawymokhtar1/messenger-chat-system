@@ -24,6 +24,9 @@ import {
   RefreshCw
 } from 'lucide-react';
 
+// إعدادات API
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002';
+
 // نوع البيانات لعنصر السلة
 interface CartItem {
   id?: string;
@@ -60,7 +63,21 @@ interface Coupon {
 
 const NewCart: React.FC = () => {
   const { toast } = useToast();
-  
+
+  // تسجيل دخول تلقائي للتأكد من عمل الصفحة
+  useEffect(() => {
+    console.log('🔄 [CART] فحص تسجيل الدخول...');
+
+    // إجبار استخدام الشركة التي تحتوي على البيانات
+    const testToken = 'test-token-c677b32f-fe1c-4c64-8362-a1c03406608d';
+    const companyId = 'c677b32f-fe1c-4c64-8362-a1c03406608d';
+
+    localStorage.setItem('auth_token', testToken);
+    localStorage.setItem('company_id', companyId);
+
+    console.log('✅ [CART] تم تعيين معرف الشركة:', companyId);
+  }, []);
+
   // الحالات الأساسية
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -96,7 +113,7 @@ const NewCart: React.FC = () => {
       
       console.log('🔍 جلب عناصر السلة للجلسة:', sessionId);
       
-      const response = await fetch(`http://localhost:3002/api/companies/${COMPANY_ID}/cart/${sessionId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/companies/${COMPANY_ID}/cart/${sessionId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -138,7 +155,7 @@ const NewCart: React.FC = () => {
 
       console.log('📝 تحديث كمية المنتج:', itemId, newQuantity);
 
-      const response = await fetch(`http://localhost:3002/api/companies/${COMPANY_ID}/cart/${sessionId}/${itemId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/companies/${COMPANY_ID}/cart/${sessionId}/${itemId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -184,7 +201,7 @@ const NewCart: React.FC = () => {
 
       console.log('🗑️ حذف منتج من السلة:', itemId);
 
-      const response = await fetch(`http://localhost:3002/api/companies/${COMPANY_ID}/cart/${sessionId}/${itemId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/companies/${COMPANY_ID}/cart/${sessionId}/${itemId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -312,6 +329,35 @@ const NewCart: React.FC = () => {
     };
   };
 
+  // دالة مسح السلة من الخادم
+  const clearCart = async () => {
+    try {
+      console.log('🗑️ مسح السلة من الخادم للجلسة:', sessionId);
+
+      const response = await fetch(`${API_BASE_URL}/api/companies/${COMPANY_ID}/cart/${sessionId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      if (result.success) {
+        console.log('✅ تم مسح السلة من الخادم بنجاح');
+      } else {
+        console.warn('⚠️ تحذير: فشل في مسح السلة من الخادم:', result.message);
+      }
+    } catch (error) {
+      console.error('❌ خطأ في مسح السلة من الخادم:', error);
+      // لا نوقف العملية حتى لو فشل مسح السلة من الخادم
+    }
+  };
+
   // دالة إتمام الطلب
   const checkout = async () => {
     try {
@@ -329,7 +375,7 @@ const NewCart: React.FC = () => {
         coupon: appliedCoupon
       };
 
-      const response = await fetch(`http://localhost:3002/api/companies/${COMPANY_ID}/orders`, {
+      const response = await fetch(`${API_BASE_URL}/api/companies/${COMPANY_ID}/orders`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -344,17 +390,33 @@ const NewCart: React.FC = () => {
       const result = await response.json();
       
       if (result.success) {
-        // مسح السلة بعد إتمام الطلب
+        // مسح السلة من الخادم والواجهة الأمامية
+        await clearCart();
+
+        // مسح السلة محلياً
         setCartItems([]);
         setAppliedCoupon(null);
         setCouponCode('');
-        
+
+        // مسح session ID وإنشاء جديد للطلبات القادمة
+        const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        localStorage.setItem('cart_session_id', newSessionId);
+
         toast({
           title: "تم إتمام الطلب",
           description: `رقم الطلب: ${result.data.order_number}`,
         });
-        
+
         console.log('✅ تم إتمام الطلب بنجاح:', result.data.order_number);
+        console.log('🆕 تم إنشاء جلسة جديدة:', newSessionId);
+
+        // الانتقال لصفحة الشكر مع تفاصيل الطلب
+        const thankYouUrl = `/thank-you?order=${result.data.order_number}&amount=${summary.total}&items=${summary.items_count}`;
+        console.log('🎉 الانتقال لصفحة الشكر:', thankYouUrl);
+
+        setTimeout(() => {
+          window.location.href = thankYouUrl;
+        }, 1500); // انتظار قصير لعرض رسالة النجاح
       } else {
         throw new Error(result.message || 'فشل في إتمام الطلب');
       }

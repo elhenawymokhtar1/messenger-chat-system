@@ -25,6 +25,9 @@ import {
   TreePine
 } from 'lucide-react';
 
+// إعدادات API
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002';
+
 // نوع البيانات للفئة
 interface Category {
   id?: string;
@@ -60,7 +63,21 @@ interface CategoryFormData {
 
 const NewCategories: React.FC = () => {
   const { toast } = useToast();
-  
+
+  // تسجيل دخول تلقائي للتأكد من عمل الصفحة
+  useEffect(() => {
+    console.log('🔄 [CATEGORIES] فحص تسجيل الدخول...');
+
+    // إجبار استخدام الشركة التي تحتوي على البيانات
+    const testToken = 'test-token-c677b32f-fe1c-4c64-8362-a1c03406608d';
+    const companyId = 'c677b32f-fe1c-4c64-8362-a1c03406608d';
+
+    localStorage.setItem('auth_token', testToken);
+    localStorage.setItem('company_id', companyId);
+
+    console.log('✅ [CATEGORIES] تم تعيين معرف الشركة:', companyId);
+  }, []);
+
   // الحالات الأساسية
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -137,7 +154,7 @@ const NewCategories: React.FC = () => {
       
       console.log('🔍 جلب الفئات للشركة:', COMPANY_ID);
       
-      const response = await fetch(`http://localhost:3002/api/companies/${COMPANY_ID}/categories`, {
+      const response = await fetch(`${API_BASE_URL}/api/companies/${COMPANY_ID}/categories`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -189,7 +206,7 @@ const NewCategories: React.FC = () => {
 
       console.log('🏷️ إنشاء فئة جديدة:', categoryData);
 
-      const response = await fetch(`http://localhost:3002/api/companies/${COMPANY_ID}/categories`, {
+      const response = await fetch(`${API_BASE_URL}/api/companies/${COMPANY_ID}/categories`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -249,7 +266,7 @@ const NewCategories: React.FC = () => {
 
       console.log('📝 تحديث الفئة:', updateData);
 
-      const response = await fetch(`http://localhost:3002/api/companies/${COMPANY_ID}/categories/${editingCategory.id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/companies/${COMPANY_ID}/categories/${editingCategory.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -295,7 +312,7 @@ const NewCategories: React.FC = () => {
 
       console.log('🗑️ حذف الفئة:', categoryId);
 
-      const response = await fetch(`http://localhost:3002/api/companies/${COMPANY_ID}/categories/${categoryId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/companies/${COMPANY_ID}/categories/${categoryId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

@@ -1752,7 +1752,7 @@ ${storeInfo.welcomeMessage}
       };
 
       // محاولة إنشاء الأوردر باستخدام API مباشرة
-      const response = await fetch('/api/create-order-direct', {
+      const response = await fetch('http://localhost:3002/api/create-order-direct', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

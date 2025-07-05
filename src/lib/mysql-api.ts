@@ -159,7 +159,7 @@ export const companyApi = {
 export const facebookApi = {
   // الحصول على إعدادات فيسبوك للشركة
   async getSettings(companyId: string) {
-    return apiRequest(`/api/facebook/settings?company_id=${companyId}`);
+    return apiRequest(`http://localhost:3002/api/facebook/settings?company_id=${companyId}`);
   },
 
   // إضافة صفحة فيسبوك جديدة
@@ -169,7 +169,7 @@ export const facebookApi = {
     page_name: string;
     access_token: string;
   }) {
-    return apiRequest('/api/facebook/settings', {
+    return apiRequest('http://localhost:3002/api/facebook/settings', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -444,12 +444,12 @@ export const storeApi = {
 export const systemApi = {
   // فحص صحة النظام
   async health() {
-    return apiRequest('/api/health');
+    return apiRequest('http://localhost:3002/api/health');
   },
 
   // معلومات النظام
   async info() {
-    return apiRequest('/api/system/info');
+    return apiRequest('http://localhost:3002/api/system/info');
   },
 };
 
@@ -517,7 +517,7 @@ export function createSubscription(
 export const authApi = {
   // تسجيل الدخول
   async login(email: string, password: string) {
-    return apiRequest('/api/auth/login', {
+    return apiRequest('http://localhost:3002/api/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     });
@@ -525,14 +525,14 @@ export const authApi = {
 
   // تسجيل الخروج
   async logout() {
-    return apiRequest('/api/auth/logout', {
+    return apiRequest('http://localhost:3002/api/auth/logout', {
       method: 'POST',
     });
   },
 
   // الحصول على المستخدم الحالي
   async getCurrentUser() {
-    return apiRequest('/api/auth/user');
+    return apiRequest('http://localhost:3002/api/auth/user');
   },
 };
 

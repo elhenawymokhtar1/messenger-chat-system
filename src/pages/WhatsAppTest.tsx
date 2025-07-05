@@ -34,7 +34,7 @@ const WhatsAppTest: React.FC = () => {
   const checkStatus = async () => {
     try {
       addLog('فحص حالة الاتصال...');
-      const response = await fetch('/api/whatsapp-baileys/status');
+      const response = await fetch('http://localhost:3002/api/whatsapp-baileys/status');
       const data = await response.json();
       
       setIsConnected(data.isConnected);
@@ -53,7 +53,7 @@ const WhatsAppTest: React.FC = () => {
     setIsLoading(true);
     try {
       addLog('بدء خدمة WhatsApp...');
-      const response = await fetch('/api/whatsapp-baileys/start', {
+      const response = await fetch('http://localhost:3002/api/whatsapp-baileys/start', {
         method: 'POST'
       });
       
@@ -86,7 +86,7 @@ const WhatsAppTest: React.FC = () => {
 
     try {
       addLog(`إرسال رسالة إلى ${testPhone}: ${testMessage}`);
-      const response = await fetch('/api/whatsapp-baileys/send-message', {
+      const response = await fetch('http://localhost:3002/api/whatsapp-baileys/send-message', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -114,7 +114,7 @@ const WhatsAppTest: React.FC = () => {
 
   const loadMessages = async () => {
     try {
-      const response = await fetch('/api/whatsapp-baileys/messages');
+      const response = await fetch('http://localhost:3002/api/whatsapp-baileys/messages');
       const data = await response.json();
       
       if (data.success) {
@@ -128,7 +128,7 @@ const WhatsAppTest: React.FC = () => {
 
   const loadStats = async () => {
     try {
-      const response = await fetch('/api/whatsapp-baileys/stats');
+      const response = await fetch('http://localhost:3002/api/whatsapp-baileys/stats');
       const data = await response.json();
       
       if (data.success) {
@@ -143,7 +143,7 @@ const WhatsAppTest: React.FC = () => {
   const disconnect = async () => {
     try {
       addLog('قطع الاتصال...');
-      const response = await fetch('/api/whatsapp-baileys/disconnect', {
+      const response = await fetch('http://localhost:3002/api/whatsapp-baileys/disconnect', {
         method: 'POST'
       });
       

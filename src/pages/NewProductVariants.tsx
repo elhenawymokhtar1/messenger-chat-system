@@ -946,15 +946,15 @@ const NewProductVariants: React.FC = () => {
                   <div className="text-center">
                     <div className="flex items-center gap-2">
                       {variant.sale_price && (
-                        <span className="text-sm text-gray-400 line-through">{variant.price} ر.س</span>
+                        <span className="text-sm text-gray-400 line-through">{parseFloat(variant.price || 0).toFixed(2)} ر.س</span>
                       )}
                       <span className="font-bold text-green-600 text-lg">
-                        {variant.sale_price || variant.price} ر.س
+                        {parseFloat(variant.sale_price || variant.price || 0).toFixed(2)} ر.س
                       </span>
                     </div>
                     {variant.sale_price && (
                       <Badge className="bg-red-500 text-xs">
-                        خصم {Math.round(((variant.price - variant.sale_price) / variant.price) * 100)}%
+                        خصم {Math.round(((parseFloat(variant.price || 0) - parseFloat(variant.sale_price || 0)) / parseFloat(variant.price || 1)) * 100)}%
                       </Badge>
                     )}
                   </div>

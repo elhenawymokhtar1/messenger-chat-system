@@ -49,7 +49,7 @@ const WhatsAppConnection: React.FC = () => {
 
   const checkConnectionStatus = async () => {
     try {
-      const response = await fetch('/api/whatsapp-baileys/status');
+      const response = await fetch('http://localhost:3002/api/whatsapp-baileys/status');
       const data = await response.json();
       setIsConnected(data.isConnected);
       setConnectionStatus(data.state || 'disconnected');
@@ -63,7 +63,7 @@ const WhatsAppConnection: React.FC = () => {
 
   const loadStats = async () => {
     try {
-      const response = await fetch('/api/whatsapp-baileys/stats');
+      const response = await fetch('http://localhost:3002/api/whatsapp-baileys/stats');
       const data = await response.json();
       if (data.success) {
         setStats(data.stats);
@@ -75,7 +75,7 @@ const WhatsAppConnection: React.FC = () => {
 
   const loadSettings = async () => {
     try {
-      const response = await fetch('/api/whatsapp-baileys/settings');
+      const response = await fetch('http://localhost:3002/api/whatsapp-baileys/settings');
       const data = await response.json();
       if (data.success) {
         setSettings({
@@ -92,14 +92,14 @@ const WhatsAppConnection: React.FC = () => {
   const startWhatsApp = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/whatsapp-baileys/start', {
+      const response = await fetch('http://localhost:3002/api/whatsapp-baileys/start', {
         method: 'POST'
       });
       
       if (response.ok) {
         // بدء فحص QR Code كل ثانيتين
         const interval = setInterval(async () => {
-          const statusResponse = await fetch('/api/whatsapp-baileys/status');
+          const statusResponse = await fetch('http://localhost:3002/api/whatsapp-baileys/status');
           const statusData = await statusResponse.json();
           
           if (statusData.qrCode) {
@@ -126,7 +126,7 @@ const WhatsAppConnection: React.FC = () => {
 
   const disconnect = async () => {
     try {
-      const response = await fetch('/api/whatsapp-baileys/disconnect', {
+      const response = await fetch('http://localhost:3002/api/whatsapp-baileys/disconnect', {
         method: 'POST'
       });
       
@@ -143,7 +143,7 @@ const WhatsAppConnection: React.FC = () => {
 
   const saveSettings = async () => {
     try {
-      const response = await fetch('/api/whatsapp-baileys/settings', {
+      const response = await fetch('http://localhost:3002/api/whatsapp-baileys/settings', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'

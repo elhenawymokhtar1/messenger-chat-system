@@ -33,11 +33,24 @@ export const useAuth = () => {
 
   const checkAuthStatus = async () => {
     try {
+      console.log('🔍 [AUTH] بدء التحقق من حالة المصادقة...');
       const companyData = localStorage.getItem('company');
+
       if (companyData) {
         try {
           const company = JSON.parse(companyData);
-          if (company.id && company.email && company.name) {
+          console.log('📋 [AUTH] بيانات محفوظة موجودة:', {
+            id: company.id,
+            email: company.email,
+            name: company.name,
+            hasId: !!company.id,
+            hasEmail: !!company.email,
+            hasName: !!company.name
+          });
+
+          // تحقق مرن - يكفي وجود ID والاسم
+          if (company.id && company.name) {
+            console.log('✅ [AUTH] تم العثور على بيانات صحيحة:', company.name);
             setAuthState({
               isAuthenticated: true,
               user: company,
@@ -54,7 +67,8 @@ export const useAuth = () => {
       } else {
         console.log('ℹ️ [AUTH] لا توجد بيانات محفوظة');
       }
-      
+
+      console.log('❌ [AUTH] فشل التحقق - إعادة تعيين حالة المصادقة');
       setAuthState({
         isAuthenticated: false,
         user: null,
@@ -91,23 +105,39 @@ export const useAuth = () => {
   }, []);
 
   const login = (userData: any) => {
-    const requiredFields = ['id', 'name', 'email'];
+    console.log('🔐 [AUTH] محاولة تسجيل دخول:', userData);
+
+    const requiredFields = ['id', 'name'];
     const missingFields = requiredFields.filter(field => !userData[field]);
     if (missingFields.length > 0) {
       console.error('❌ [AUTH] بيانات ناقصة للتسجيل:', missingFields);
       return;
     }
+
     const loginData = {
       ...userData,
       loginTime: new Date().toISOString(),
       lastActivity: new Date().toISOString()
     };
+
+    console.log('💾 [AUTH] حفظ بيانات تسجيل الدخول:', loginData);
     localStorage.setItem('company', JSON.stringify(loginData));
+
+    // التحقق من الحفظ
+    const savedData = localStorage.getItem('company');
+    if (savedData) {
+      console.log('✅ [AUTH] تم حفظ البيانات بنجاح');
+    } else {
+      console.error('❌ [AUTH] فشل في حفظ البيانات');
+    }
+
     setAuthState({
       isAuthenticated: true,
-      user: userData,
+      user: loginData,
       loading: false
     });
+
+    console.log('🎉 [AUTH] تم تسجيل الدخول بنجاح');
   };
 
   const logout = () => {

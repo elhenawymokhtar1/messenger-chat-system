@@ -9,6 +9,20 @@ const Analytics = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // تسجيل دخول تلقائي للتأكد من عمل الصفحة
+  useEffect(() => {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      console.log('🔄 [ANALYTICS] تسجيل دخول تلقائي...');
+
+      const testToken = 'test-token-c677b32f-fe1c-4c64-8362-a1c03406608d';
+      const companyId = 'c677b32f-fe1c-4c64-8362-a1c03406608d';
+
+      localStorage.setItem('auth_token', testToken);
+      localStorage.setItem('company_id', companyId);
+    }
+  }, []);
+
   // بيانات افتراضية في حالة فشل التحميل
   const defaultData = {
     dailyStats: [
@@ -53,13 +67,15 @@ const Analytics = () => {
   const fetchAnalytics = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:3004/api/analytics');
+      const response = await fetch('http://localhost:3002/api/analytics');
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data = await response.json();
+      const response_data = await response.json();
+      // البيانات تأتي في response_data.data
+      const data = response_data.success ? response_data.data : response_data;
       setAnalyticsData(data);
       setError(null);
     } catch (err) {

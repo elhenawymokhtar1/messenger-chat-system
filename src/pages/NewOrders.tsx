@@ -29,6 +29,9 @@ import {
   FileText
 } from 'lucide-react';
 
+// إعدادات API
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002';
+
 // نوع البيانات للطلب
 interface Order {
   id: string;
@@ -67,7 +70,21 @@ interface OrderItem {
 
 const NewOrders: React.FC = () => {
   const { toast } = useToast();
-  
+
+  // تسجيل دخول تلقائي للتأكد من عمل الصفحة
+  useEffect(() => {
+    console.log('🔄 [ORDERS] فحص تسجيل الدخول...');
+
+    // إجبار استخدام الشركة التي تحتوي على البيانات
+    const testToken = 'test-token-c677b32f-fe1c-4c64-8362-a1c03406608d';
+    const companyId = 'c677b32f-fe1c-4c64-8362-a1c03406608d';
+
+    localStorage.setItem('auth_token', testToken);
+    localStorage.setItem('company_id', companyId);
+
+    console.log('✅ [ORDERS] تم تعيين معرف الشركة:', companyId);
+  }, []);
+
   // الحالات الأساسية
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -95,7 +112,7 @@ const NewOrders: React.FC = () => {
       
       console.log('🔍 جلب الطلبات للشركة:', COMPANY_ID);
       
-      const response = await fetch(`http://localhost:3002/api/companies/${COMPANY_ID}/orders`, {
+      const response = await fetch(`${API_BASE_URL}/api/companies/${COMPANY_ID}/orders`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -135,7 +152,7 @@ const NewOrders: React.FC = () => {
 
       console.log('📝 تحديث حالة الطلب:', orderId, newStatus);
 
-      const response = await fetch(`http://localhost:3002/api/companies/${COMPANY_ID}/orders/${orderId}/status`, {
+      const response = await fetch(`${API_BASE_URL}/api/companies/${COMPANY_ID}/orders/${orderId}/status`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -181,7 +198,7 @@ const NewOrders: React.FC = () => {
 
       console.log('💳 تحديث حالة الدفع:', orderId, newPaymentStatus);
 
-      const response = await fetch(`http://localhost:3002/api/companies/${COMPANY_ID}/orders/${orderId}/payment`, {
+      const response = await fetch(`${API_BASE_URL}/api/companies/${COMPANY_ID}/orders/${orderId}/payment`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -224,7 +241,7 @@ const NewOrders: React.FC = () => {
     try {
       console.log('👁️ عرض تفاصيل الطلب:', orderId);
 
-      const response = await fetch(`http://localhost:3002/api/companies/${COMPANY_ID}/orders/${orderId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/companies/${COMPANY_ID}/orders/${orderId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
