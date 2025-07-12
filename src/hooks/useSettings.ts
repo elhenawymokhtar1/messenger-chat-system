@@ -95,8 +95,8 @@ export const useSettings = () => {
     try {
       const settingsToSave = newSettings ? { ...settings, ...newSettings } : settings;
       
-      // حفظ في localStorage
-      localStorage.setItem('systemSettings', JSON.stringify(settingsToSave));
+      // حفظ في sessionStorage بدلاً من localStorage
+      sessionStorage.setItem('systemSettings', JSON.stringify(settingsToSave));
       
       // TODO: إرسال للخادم في المستقبل
       // await saveSettingsToServer(settingsToSave);

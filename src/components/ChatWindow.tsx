@@ -295,12 +295,27 @@ const ChatWindow = ({ conversationId }: ChatWindowProps) => {
                         alt="صورة"
                         className="max-w-48 max-h-48 rounded border object-cover cursor-pointer"
                         onClick={() => window.open(msg.image_url!, '_blank')}
+                        onLoad={() => {
+                          console.log('✅ [DEBUG] تم تحميل الصورة بنجاح:', msg.image_url);
+                        }}
                         onError={(e) => {
-                          console.error('Error loading image:', msg.image_url);
+                          console.error('❌ [DEBUG] فشل تحميل الصورة:', msg.image_url);
                           // إخفاء الصورة إذا فشل تحميلها
                           (e.target as HTMLImageElement).style.display = 'none';
                         }}
                       />
+                    )}
+
+                    {/* سجل للتشخيص */}
+                    {msg.message_type === 'image' && (
+                      console.log('🔍 [DEBUG] رسالة صورة في ChatWindow:', {
+                        id: msg.id,
+                        image_url: msg.image_url,
+                        message_type: msg.message_type,
+                        sender_type: msg.sender_type,
+                        hasImageUrl: !!msg.image_url,
+                        imageUrlValue: msg.image_url
+                      })
                     )}
 
                     {/* عرض النص - إخفاء الروابط الطويلة للصور */}

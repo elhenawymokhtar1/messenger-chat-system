@@ -3,7 +3,6 @@
  * تاريخ الإنشاء: 22 يونيو 2025
  */
 
-import { supabase } from '../integrations/supabase/client';
 import bcrypt from 'bcryptjs';
 
 // 📋 أنواع البيانات
@@ -251,10 +250,13 @@ export class SubscriptionService {
       const passwordHash = await bcrypt.hash(companyData.password, 12);
 
       // إنشاء الشركة
-      const { data: company, error } = await supabase
-        // TODO: Replace with MySQL API
-        const data = null;
-        const error = null;
+      // TODO: Replace with MySQL API
+      const company = {
+        id: 'c677b32f-fe1c-4c64-8362-a1c03406608d', // معرف تجريبي
+        name: companyData.name,
+        email: companyData.email
+      };
+      const error = null;
 
       if (error) throw error;
 
@@ -350,12 +352,46 @@ export class SubscriptionService {
    */
   static async getCompanySubscription(companyId: string): Promise<CompanySubscription | null> {
     try {
-      // TODO: Replace with MySQL API
-      const data = null;
-      const error = null;
+      console.log('📊 [SUBSCRIPTION] جلب اشتراك الشركة:', companyId);
 
-      if (error) throw error;
-      return data;
+      // TODO: Replace with MySQL API
+      // مؤقتاً نرجع بيانات وهمية حتى يتم تطوير MySQL API
+      const mockSubscription: CompanySubscription = {
+        id: 'sub_' + companyId,
+        company_id: companyId,
+        plan_id: 'professional',
+        billing_cycle: 'monthly',
+        start_date: new Date().toISOString(),
+        end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
+        amount: 49,
+        currency: 'USD',
+        status: 'active',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        plan: {
+          id: 'professional',
+          name: 'Professional',
+          name_ar: 'المتقدمة',
+          description: 'Best for growing businesses',
+          description_ar: 'الأفضل للشركات النامية',
+          monthly_price: 49,
+          yearly_price: 490,
+          max_products: 1000,
+          max_messages_per_month: 5000,
+          max_images: 500,
+          max_active_conversations: 100,
+          max_users: 5,
+          features: {
+            ai_responses: true,
+            advanced_analytics: true,
+            priority_support: true,
+            custom_integrations: true
+          },
+          display_order: 2
+        }
+      };
+
+      return mockSubscription;
     } catch (error) {
       console.error('❌ خطأ في جلب اشتراك الشركة:', error);
       return null;

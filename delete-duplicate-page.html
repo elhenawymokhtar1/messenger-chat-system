@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>حذف الصفحة المكررة</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 24px;
+        }
+        
+        .info-box {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .info-box h3 {
+            margin: 0 0 10px 0;
+            color: #495057;
+        }
+        
+        .info-box p {
+            margin: 5px 0;
+            color: #6c757d;
+        }
+        
+        .btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            margin: 10px 0;
+            transition: background 0.3s;
+        }
+        
+        .btn:hover {
+            background: #c82333;
+        }
+        
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        .btn-success {
+            background: #28a745;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗑️ حذف الصفحة المكررة</h1>
+        
+        <div class="info-box">
+            <h3>📄 معلومات الصفحة:</h3>
+            <p><strong>اسم الصفحة:</strong> سولا 132</p>
+            <p><strong>معرف الصفحة:</strong> 250528358137901</p>
+            <p><strong>المشكلة:</strong> الصفحة مربوطة مسبقاً في قاعدة البيانات</p>
+        </div>
+        
+        <div class="info-box">
+            <h3>⚠️ تحذير:</h3>
+            <p>سيتم حذف الصفحة من قاعدة البيانات نهائياً. يمكنك إعادة ربطها بعد الحذف.</p>
+        </div>
+        
+        <button class="btn" onclick="deletePage()">🗑️ حذف الصفحة المكررة</button>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>جاري حذف الصفحة...</p>
+        </div>
+        
+        <div class="result" id="result"></div>
+        
+        <button class="btn btn-success" onclick="goToSettings()" style="display: none;" id="goToSettingsBtn">
+            ↩️ العودة لإعدادات فيسبوك
+        </button>
+    </div>
+
+    <script>
+        async function deletePage() {
+            const pageId = '250528358137901';
+            const btn = document.querySelector('.btn');
+            const loading = document.getElementById('loading');
+            const result = document.getElementById('result');
+            const goToSettingsBtn = document.getElementById('goToSettingsBtn');
+            
+            // إخفاء النتائج السابقة
+            result.style.display = 'none';
+            result.className = 'result';
+            
+            // تعطيل الزر وإظهار التحميل
+            btn.disabled = true;
+            loading.style.display = 'block';
+            
+            try {
+                console.log('🗑️ بدء حذف الصفحة:', pageId);
+                
+                const response = await fetch(`http://localhost:3002/api/facebook/settings/${pageId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    console.log('✅ تم حذف الصفحة بنجاح');
+                    
+                    result.className = 'result success';
+                    result.innerHTML = `
+                        <h4>✅ تم الحذف بنجاح!</h4>
+                        <p>تم حذف صفحة "سولا 132" من قاعدة البيانات.</p>
+                        <p>يمكنك الآن العودة لإعدادات فيسبوك وإعادة ربط الصفحة.</p>
+                    `;
+                    result.style.display = 'block';
+                    
+                    // إظهار زر العودة
+                    goToSettingsBtn.style.display = 'block';
+                    
+                } else {
+                    throw new Error(data.error || 'فشل في حذف الصفحة');
+                }
+                
+            } catch (error) {
+                console.error('❌ خطأ في حذف الصفحة:', error);
+                
+                result.className = 'result error';
+                result.innerHTML = `
+                    <h4>❌ فشل في الحذف</h4>
+                    <p><strong>الخطأ:</strong> ${error.message}</p>
+                    <p>تأكد من أن الخادم يعمل على المنفذ 3002.</p>
+                `;
+                result.style.display = 'block';
+            } finally {
+                // إخفاء التحميل وإعادة تفعيل الزر
+                loading.style.display = 'none';
+                btn.disabled = false;
+            }
+        }
+        
+        function goToSettings() {
+            window.location.href = 'http://localhost:8080/facebook-settings';
+        }
+        
+        // فحص حالة الخادم عند تحميل الصفحة
+        window.onload = async function() {
+            try {
+                const response = await fetch('http://localhost:3002/api/health');
+                if (response.ok) {
+                    console.log('✅ الخادم يعمل بشكل صحيح');
+                } else {
+                    console.warn('⚠️ الخادم لا يستجيب بشكل صحيح');
+                }
+            } catch (error) {
+                console.error('❌ لا يمكن الوصول للخادم:', error);
+                
+                const result = document.getElementById('result');
+                result.className = 'result error';
+                result.innerHTML = `
+                    <h4>❌ خطأ في الاتصال</h4>
+                    <p>لا يمكن الوصول للخادم على المنفذ 3002.</p>
+                    <p>تأكد من تشغيل الخادم أولاً.</p>
+                `;
+                result.style.display = 'block';
+                
+                document.querySelector('.btn').disabled = true;
+            }
+        };
+    </script>
+</body>
+</html>

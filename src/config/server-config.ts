@@ -34,8 +34,8 @@ export const SERVER_CONFIG = {
       MAX_REQUESTS: 100
     },
     CORS: {
-      ORIGIN: process.env.NODE_ENV === 'production' 
-        ? ['http://localhost:8082', 'http://192.168.1.3:8082']
+      ORIGIN: process.env.NODE_ENV === 'production'
+        ? ['http://localhost:8080', 'http://localhost:8082', 'http://192.168.1.3:8080', 'http://192.168.1.3:8082']
         : true,
       CREDENTIALS: true
     }

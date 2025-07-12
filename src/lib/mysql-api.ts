@@ -2,9 +2,15 @@
 // تحل محل Supabase client
 
 // إعدادات الخادم
+// في بيئة التطوير، نستخدم proxy من Vite، لذا نستخدم مسار نسبي
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002';
 // تم التحويل للنظام المباشر - نستخدم نفس الخادم الرئيسي
-const STORE_API_BASE_URL = import.meta.env.VITE_STORE_API_URL || 'http://localhost:3002';
+const STORE_API_BASE_URL = import.meta.env.VITE_STORE_API_URL || '';
+
+console.log('🔧 [DEBUG] Environment variables:');
+console.log('🔧 [DEBUG] import.meta.env.VITE_API_URL:', import.meta.env.VITE_API_URL);
+console.log('🔧 [DEBUG] API_BASE_URL:', API_BASE_URL);
+console.log('🔧 [DEBUG] All env vars:', import.meta.env);
 
 // دالة مساعدة لإجراء طلبات HTTP
 async function apiRequest<T = any>(
@@ -23,8 +29,13 @@ async function apiRequest<T = any>(
 
     console.log('🌐 إرسال طلب إلى:', url);
     console.log('🔧 خيارات الطلب:', { ...defaultOptions, ...options });
+    console.log('🔧 API_BASE_URL:', API_BASE_URL);
 
     const response = await fetch(url, { ...defaultOptions, ...options });
+
+    console.log('📡 [RESPONSE] Status:', response.status);
+    console.log('📡 [RESPONSE] StatusText:', response.statusText);
+    console.log('📡 [RESPONSE] Headers:', Object.fromEntries(response.headers.entries()));
 
     console.log('📡 استجابة الخادم:', {
       status: response.status,
@@ -197,14 +208,15 @@ export const facebookApi = {
 
 export const conversationsApi = {
   // الحصول على محادثات الشركة (الدالة الرئيسية)
-  async getConversations(companyId: string, limit = 50, recentOnly = true) {
+  async getConversations(companyId: string, limit = 50, recentOnly = false) {
+    console.log('🚀 [START] conversationsApi.getConversations called!');
     console.log('🔍 conversationsApi.getConversations:', { companyId, limit, recentOnly });
 
     // إضافة timestamp لكسر cache
     const timestamp = Date.now();
     const url = `/api/companies/${companyId}/conversations?limit=${limit}&recent_only=${recentOnly}&_t=${timestamp}`;
 
-    console.log('📡 طلب API:', `${API_BASE_URL}${url}`);
+    console.log('📡 طلب API:', url);
 
     const result = await apiRequest(url);
 
@@ -250,7 +262,7 @@ export const conversationsApi = {
 
 export const messagesApi = {
   // الحصول على رسائل محادثة معينة (الدالة الرئيسية)
-  async getMessages(conversationId: string, companyId: string, limit = 50, recentOnly = true) {
+  async getMessages(conversationId: string, companyId: string, limit = 50, recentOnly = false) {
     console.log('🔍 messagesApi.getMessages:', { conversationId, companyId, limit, recentOnly });
 
     // إضافة timestamp لكسر cache

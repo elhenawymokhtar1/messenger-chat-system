@@ -29,9 +29,9 @@ const upload = multer({
   }
 });
 
-// إعداد Supabase
-// TODO: Replace with MySQL API
-// إعداد قاعدة البيانات المحلية بدلاً من Supabase
+// إعداد MySQL
+import { WhatsAppService } from '../services/database';
+import { BaileysWhatsAppService } from '../services/baileysWhatsAppService';
 
 /**
  * بدء خدمة WhatsApp
@@ -274,19 +274,16 @@ router.post('/fix-connection', async (req, res) => {
  */
 router.get('/messages', async (req, res) => {
   try {
-    const { data: messages, error } = await supabase
-      // TODO: Replace with MySQL API
-      // TODO: Replace with MySQL API
-      .order('created_at', { ascending: false })
-      .limit(50);
-    
-    if (error) {
-      throw error;
-    }
-    
+    console.log('📱 [API] جلب رسائل WhatsApp...');
+
+    // جلب آخر 50 رسالة من WhatsApp
+    const messages = await WhatsAppService.getRecentMessages(50);
+
+    console.log(`📱 [API] تم جلب ${messages.length} رسالة WhatsApp`);
+
     res.json({
       success: true,
-      messages: messages || []
+      messages: messages
     });
   } catch (error) {
     console.error('❌ [API] خطأ في جلب الرسائل:', error);
@@ -302,33 +299,19 @@ router.get('/messages', async (req, res) => {
  */
 router.get('/stats', async (req, res) => {
   try {
-    // إجمالي الرسائل
-    const { count: totalMessages } = await supabase
-      // TODO: Replace with MySQL API
-      // TODO: Replace with MySQL API;
-    
-    // رسائل اليوم
-    const today = new Date().toISOString().split('T')[0];
-    const { count: todayMessages } = await supabase
-      // TODO: Replace with MySQL API
-      // TODO: Replace with MySQL API
-      .gte('created_at', `${today}T00:00:00.000Z`)
-      .lt('created_at', `${today}T23:59:59.999Z`);
-    
-    // المحادثات النشطة (أرقام فريدة)
-    const { data: uniqueNumbers } = await supabase
-      // TODO: Replace with MySQL API
-      // TODO: Replace with MySQL API
-      .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
-    
-    const activeChats = new Set(uniqueNumbers?.map(m => m.phone_number) || []).size;
-    
+    console.log('📊 [API] جلب إحصائيات WhatsApp...');
+
+    // جلب الإحصائيات من قاعدة البيانات
+    const stats = await WhatsAppService.getStats();
+
+    console.log('📊 [API] إحصائيات WhatsApp:', stats);
+
     res.json({
       success: true,
       stats: {
-        totalMessages: totalMessages || 0,
-        todayMessages: todayMessages || 0,
-        activeChats: activeChats || 0
+        totalMessages: stats.totalMessages || 0,
+        todayMessages: stats.todayMessages || 0,
+        activeChats: stats.activeChats || 0
       }
     });
   } catch (error) {
@@ -341,21 +324,89 @@ router.get('/stats', async (req, res) => {
 });
 
 /**
+ * إرسال رسالة WhatsApp
+ */
+router.post('/send-message', async (req, res) => {
+  try {
+    const { phoneNumber, message, contactName } = req.body;
+
+    if (!phoneNumber || !message) {
+      return res.status(400).json({
+        success: false,
+        error: 'رقم الهاتف والرسالة مطلوبان'
+      });
+    }
+
+    console.log(`📤 [API] إرسال رسالة WhatsApp إلى: ${phoneNumber}`);
+
+    // حفظ الرسالة في قاعدة البيانات كرسالة صادرة
+    const messageData = {
+      message_id: `whatsapp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      phone_number: phoneNumber,
+      contact_name: contactName || phoneNumber,
+      message_text: message,
+      message_type: 'outgoing' as const
+    };
+
+    const success = await WhatsAppService.saveMessage(messageData);
+
+    if (success) {
+      console.log(`✅ [API] تم حفظ رسالة WhatsApp الصادرة`);
+
+      // إرسال فعلي عبر Baileys
+      try {
+        const sent = await BaileysWhatsAppService.sendMessage(phoneNumber, message);
+        if (sent) {
+          console.log('📱 [API] تم إرسال الرسالة عبر Baileys بنجاح');
+          res.json({
+            success: true,
+            message: 'تم إرسال الرسالة بنجاح',
+            messageId: messageData.message_id,
+            sent: true
+          });
+        } else {
+          console.log('⚠️ [API] فشل إرسال الرسالة عبر Baileys');
+          res.json({
+            success: true,
+            message: 'تم حفظ الرسالة ولكن فشل الإرسال (WhatsApp غير متصل)',
+            messageId: messageData.message_id,
+            sent: false
+          });
+        }
+      } catch (error) {
+        console.error('❌ [API] خطأ في إرسال الرسالة عبر Baileys:', error);
+        res.json({
+          success: true,
+          message: 'تم حفظ الرسالة ولكن فشل الإرسال',
+          messageId: messageData.message_id,
+          sent: false,
+          error: error.message
+        });
+      }
+    } else {
+      res.status(500).json({
+        success: false,
+        error: 'فشل في حفظ الرسالة'
+      });
+    }
+  } catch (error) {
+    console.error('❌ [API] خطأ في إرسال رسالة WhatsApp:', error);
+    res.status(500).json({
+      success: false,
+      error: 'فشل في إرسال الرسالة'
+    });
+  }
+});
+
+/**
  * الحصول على جهات الاتصال
  */
 router.get('/contacts', async (req, res) => {
   try {
     console.log('📞 [API] جلب جهات الاتصال...');
 
-    // جلب أرقام فريدة من الرسائل مع آخر رسالة
-    const { data: messages, error } = await supabase
-      // TODO: Replace with MySQL API
-      // TODO: Replace with MySQL API
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      throw error;
-    }
+    // جلب أرقام فريدة من رسائل WhatsApp مع آخر رسالة
+    const messages = await WhatsAppService.getContacts();
 
     // تجميع جهات الاتصال الفريدة
     const contactsMap = new Map();
@@ -396,20 +447,10 @@ router.get('/contacts', async (req, res) => {
 router.get('/contact/:phoneNumber', async (req, res) => {
   try {
     const { phoneNumber } = req.params;
-    console.log(`📞 [API] جلب معلومات جهة الاتصال: ${phoneNumber}`);
+    console.log(`📞 [API] جلب معلومات جهة الاتصال WhatsApp: ${phoneNumber}`);
 
     // جلب آخر رسالة لهذا الرقم للحصول على الاسم
-    const { data: lastMessage, error } = await supabase
-      // TODO: Replace with MySQL API
-      // TODO: Replace with MySQL API
-      .eq('phone_number', phoneNumber)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .single();
-
-    if (error && error.code !== 'PGRST116') {
-      throw error;
-    }
+    const lastMessage = await WhatsAppService.getContact(phoneNumber);
 
     const contact = {
       phone: phoneNumber,
@@ -417,6 +458,8 @@ router.get('/contact/:phoneNumber', async (req, res) => {
       isOnline: false, // يمكن تحسينه لاحقاً
       lastSeen: lastMessage?.created_at || null
     };
+
+    console.log(`📞 [API] تم جلب معلومات جهة الاتصال WhatsApp: ${contact.name}`);
 
     res.json({
       success: true,
@@ -437,16 +480,10 @@ router.get('/contact/:phoneNumber', async (req, res) => {
 router.get('/conversation/:phoneNumber', async (req, res) => {
   try {
     const { phoneNumber } = req.params;
+    console.log(`📱 [API] جلب محادثة WhatsApp للرقم: ${phoneNumber}`);
 
-    const { data: messages, error } = await supabase
-      // TODO: Replace with MySQL API
-      // TODO: Replace with MySQL API
-      .eq('phone_number', phoneNumber)
-      .order('created_at', { ascending: true });
-
-    if (error) {
-      throw error;
-    }
+    const messages = await WhatsAppService.getConversation(phoneNumber);
+    console.log(`📱 [API] تم جلب ${messages.length} رسالة WhatsApp للرقم ${phoneNumber}`);
 
     res.json({
       success: true,
@@ -726,6 +763,176 @@ router.get('/health', async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'فشل في فحص صحة الاتصال'
+    });
+  }
+});
+
+/**
+ * إضافة بيانات تجريبية لـ WhatsApp
+ */
+router.post('/add-sample-data', async (req, res) => {
+  try {
+    console.log('📱 [API] إضافة بيانات تجريبية لـ WhatsApp...');
+
+    const sampleMessages = [
+      // محادثة أحمد محمد
+      {
+        message_id: 'whatsapp_sample_1_' + Date.now(),
+        phone_number: '+201234567890',
+        contact_name: 'أحمد محمد',
+        message_text: 'مرحباً، أريد الاستفسار عن المنتجات المتوفرة',
+        message_type: 'incoming' as const
+      },
+      {
+        message_id: 'whatsapp_sample_2_' + Date.now(),
+        phone_number: '+201234567890',
+        contact_name: 'أحمد محمد',
+        message_text: 'مرحباً بك! يسعدنا خدمتك. لدينا مجموعة متنوعة من المنتجات عالية الجودة',
+        message_type: 'outgoing' as const
+      },
+
+      // محادثة فاطمة علي
+      {
+        message_id: 'whatsapp_sample_3_' + Date.now(),
+        phone_number: '+201987654321',
+        contact_name: 'فاطمة علي',
+        message_text: 'هل يمكنني معرفة أسعار الأحذية النسائية؟',
+        message_type: 'incoming' as const
+      },
+      {
+        message_id: 'whatsapp_sample_4_' + Date.now(),
+        phone_number: '+201987654321',
+        contact_name: 'فاطمة علي',
+        message_text: 'بالطبع! أسعار الأحذية النسائية تبدأ من 299 جنيه وتصل إلى 899 جنيه حسب النوع والجودة',
+        message_type: 'outgoing' as const
+      },
+
+      // محادثة محمد حسن
+      {
+        message_id: 'whatsapp_sample_5_' + Date.now(),
+        phone_number: '+201555666777',
+        contact_name: 'محمد حسن',
+        message_text: 'متى يمكنني استلام الطلب؟',
+        message_type: 'incoming' as const
+      },
+      {
+        message_id: 'whatsapp_sample_6_' + Date.now(),
+        phone_number: '+201555666777',
+        contact_name: 'محمد حسن',
+        message_text: 'سيتم تسليم طلبك خلال 2-3 أيام عمل. سنرسل لك رسالة تأكيد مع رقم التتبع',
+        message_type: 'outgoing' as const
+      },
+
+      // محادثة جديدة - سارة أحمد
+      {
+        message_id: 'whatsapp_sample_7_' + Date.now(),
+        phone_number: '+201111222333',
+        contact_name: 'سارة أحمد',
+        message_text: 'هل لديكم خدمة توصيل مجاني؟',
+        message_type: 'incoming' as const
+      },
+      {
+        message_id: 'whatsapp_sample_8_' + Date.now(),
+        phone_number: '+201111222333',
+        contact_name: 'سارة أحمد',
+        message_text: 'نعم! التوصيل مجاني للطلبات أكثر من 500 جنيه داخل القاهرة والجيزة',
+        message_type: 'outgoing' as const
+      },
+
+      // محادثة جديدة - كريم محمود
+      {
+        message_id: 'whatsapp_sample_9_' + Date.now(),
+        phone_number: '+201444555666',
+        contact_name: 'كريم محمود',
+        message_text: 'أريد إرجاع منتج اشتريته الأسبوع الماضي',
+        message_type: 'incoming' as const
+      },
+      {
+        message_id: 'whatsapp_sample_10_' + Date.now(),
+        phone_number: '+201444555666',
+        contact_name: 'كريم محمود',
+        message_text: 'بالطبع يمكنك الإرجاع خلال 14 يوم. يرجى إرسال صورة الفاتورة ورقم الطلب',
+        message_type: 'outgoing' as const
+      }
+    ];
+
+    let successCount = 0;
+    for (const message of sampleMessages) {
+      const success = await WhatsAppService.saveMessage(message);
+      if (success) successCount++;
+    }
+
+    console.log(`✅ [API] تم إضافة ${successCount}/${sampleMessages.length} رسالة تجريبية لـ WhatsApp`);
+
+    res.json({
+      success: true,
+      message: `تم إضافة ${successCount} رسالة تجريبية بنجاح`,
+      added: successCount,
+      total: sampleMessages.length
+    });
+  } catch (error) {
+    console.error('❌ [API] خطأ في إضافة البيانات التجريبية:', error);
+    res.status(500).json({
+      success: false,
+      error: 'فشل في إضافة البيانات التجريبية'
+    });
+  }
+});
+
+/**
+ * إيقاف خدمة WhatsApp وتنظيف الجلسة
+ */
+router.post('/stop', async (req, res) => {
+  try {
+    console.log('🛑 [API] إيقاف خدمة WhatsApp...');
+
+    await BaileysWhatsAppService.disconnect();
+
+    console.log('✅ [API] تم إيقاف خدمة WhatsApp بنجاح');
+
+    res.json({
+      success: true,
+      message: 'تم إيقاف خدمة WhatsApp بنجاح'
+    });
+  } catch (error) {
+    console.error('❌ [API] خطأ في إيقاف خدمة WhatsApp:', error);
+    res.status(500).json({
+      success: false,
+      error: 'فشل في إيقاف خدمة WhatsApp'
+    });
+  }
+});
+
+/**
+ * إعادة تعيين وتنظيف جلسة WhatsApp
+ */
+router.post('/reset', async (req, res) => {
+  try {
+    console.log('🔄 [API] إعادة تعيين جلسة WhatsApp...');
+
+    // إيقاف الخدمة أولاً
+    await BaileysWhatsAppService.disconnect();
+
+    // تنظيف الجلسة
+    await BaileysWhatsAppService.fixConnectionIssues();
+
+    // انتظار قليل
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    // بدء جديد
+    await BaileysWhatsAppService.initialize();
+
+    console.log('✅ [API] تم إعادة تعيين جلسة WhatsApp بنجاح');
+
+    res.json({
+      success: true,
+      message: 'تم إعادة تعيين جلسة WhatsApp بنجاح'
+    });
+  } catch (error) {
+    console.error('❌ [API] خطأ في إعادة تعيين جلسة WhatsApp:', error);
+    res.status(500).json({
+      success: false,
+      error: 'فشل في إعادة تعيين جلسة WhatsApp'
     });
   }
 });

@@ -44,7 +44,8 @@ const WhatsAppConversationsList = ({
   }, [isConnected]);
 
   const loadContacts = async (showLoader = true) => {
-    if (!isConnected) return;
+    // إزالة شرط الاتصال لعرض البيانات التجريبية
+    // if (!isConnected) return;
 
     if (showLoader) setIsLoading(true);
 

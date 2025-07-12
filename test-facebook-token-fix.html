@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار إصلاح Facebook Token</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+            direction: rtl;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        .warning { background-color: #fff3cd; border-color: #ffeaa7; }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background-color: #0056b3; }
+        button:disabled { background-color: #6c757d; cursor: not-allowed; }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+        .token-input {
+            font-family: monospace;
+            font-size: 12px;
+        }
+        pre {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 اختبار إصلاح Facebook Token</h1>
+        <p>هذا الاختبار يتحقق من إصلاح مشكلة اكتشاف Page Token في زر الاختبار</p>
+
+        <div class="test-section info">
+            <h3>📝 إدخال Access Token</h3>
+            <input type="text" id="accessToken" class="token-input" 
+                   placeholder="أدخل Facebook Access Token هنا..."
+                   value="EAAUpPO0SIEABPNO5BipQx1RiOg4olth5eAQoS9kPbwpYACX8if7ZBbwD0aVbqw0GQUJ65owidaeIaghBi1HwG1cqRW7TVWdNZA50KD9qqhVezlq9VrzQnQtMywEPHYTt0lZCCiCmV358G1jeXaO9iQwEpWZBOZBFzZCCZA6FRP8IVuuIq66yazhFIXObGOOrlpVEzWcVjRZBPzHllOASY69DXSTQ">
+            <button onclick="testToken()" id="testBtn">🔍 اختبار Token</button>
+            <button onclick="clearResults()">🧹 مسح النتائج</button>
+        </div>
+
+        <div id="results"></div>
+    </div>
+
+    <script>
+        function showResult(title, content, type = 'info') {
+            const resultsDiv = document.getElementById('results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-section ${type}`;
+            resultDiv.innerHTML = `
+                <h3>${title}</h3>
+                <pre>${typeof content === 'object' ? JSON.stringify(content, null, 2) : content}</pre>
+            `;
+            resultsDiv.appendChild(resultDiv);
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+
+        async function testToken() {
+            const token = document.getElementById('accessToken').value.trim();
+            const testBtn = document.getElementById('testBtn');
+            
+            if (!token) {
+                showResult('❌ خطأ', 'يرجى إدخال Access Token', 'error');
+                return;
+            }
+
+            testBtn.disabled = true;
+            testBtn.textContent = '🔄 جاري الاختبار...';
+
+            try {
+                showResult('🔍 بدء الاختبار', `اختبار Token: ${token.substring(0, 20)}...`, 'info');
+
+                // الخطوة 1: اختبار /me endpoint
+                showResult('📡 الخطوة 1', 'اختبار /me endpoint...', 'info');
+                
+                const meResponse = await fetch(`https://graph.facebook.com/v21.0/me?access_token=${token}`);
+                const meData = await meResponse.json();
+
+                if (meData.error) {
+                    showResult('❌ خطأ في /me', meData.error.message, 'error');
+                    return;
+                }
+
+                showResult('✅ نجح /me', meData, 'success');
+
+                // الخطوة 2: محاولة جلب الصفحات
+                showResult('📡 الخطوة 2', 'محاولة جلب الصفحات...', 'info');
+                
+                let pages = [];
+                let tokenType = 'غير محدد';
+
+                // التحقق من نوع الـ Token
+                if (meData.id && meData.name) {
+                    // هذا Page Token
+                    pages = [{
+                        id: meData.id,
+                        name: meData.name,
+                        access_token: token,
+                        category: meData.category || 'صفحة',
+                        tasks: ['MANAGE', 'CREATE_CONTENT', 'MESSAGING']
+                    }];
+                    tokenType = 'Page Token';
+                    showResult('✅ تم اكتشاف Page Token', `الصفحة: ${meData.name} (${meData.id})`, 'success');
+                } else {
+                    // محاولة جلب كـ User Token
+                    try {
+                        const accountsResponse = await fetch(`https://graph.facebook.com/v21.0/me/accounts?access_token=${token}`);
+                        const accountsData = await accountsResponse.json();
+                        
+                        if (accountsData.error) {
+                            showResult('⚠️ لا يمكن جلب الصفحات', 'قد يكون Page Token', 'warning');
+                            pages = [];
+                            tokenType = 'Page Token (محتمل)';
+                        } else {
+                            pages = accountsData.data || [];
+                            tokenType = 'User Token';
+                            showResult('✅ تم جلب الصفحات كـ User Token', `${pages.length} صفحة`, 'success');
+                        }
+                    } catch (error) {
+                        showResult('❌ خطأ في جلب الصفحات', error.message, 'error');
+                        pages = [];
+                        tokenType = 'خطأ';
+                    }
+                }
+
+                // النتيجة النهائية
+                const finalResult = {
+                    tokenType: tokenType,
+                    user: meData,
+                    pages: pages,
+                    pagesCount: pages.length
+                };
+
+                showResult('🎉 النتيجة النهائية', finalResult, 'success');
+
+                // محاكاة ما سيحدث في الواجهة
+                if (pages.length > 0) {
+                    showResult('✅ ستظهر في الواجهة', `${pages.length} صفحة متاحة للربط`, 'success');
+                } else {
+                    showResult('⚠️ لن تظهر صفحات', 'لا توجد صفحات متاحة للربط', 'warning');
+                }
+
+            } catch (error) {
+                showResult('❌ خطأ عام', error.message, 'error');
+            } finally {
+                testBtn.disabled = false;
+                testBtn.textContent = '🔍 اختبار Token';
+            }
+        }
+
+        // اختبار تلقائي عند تحميل الصفحة
+        window.onload = function() {
+            showResult('🚀 مرحباً', 'جاهز لاختبار Facebook Token المحدث!', 'info');
+        };
+    </script>
+</body>
+</html>

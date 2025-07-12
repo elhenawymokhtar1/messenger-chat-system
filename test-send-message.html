@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار إرسال الرسائل</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .endpoint-test {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .endpoint-test h3 {
+            margin-top: 0;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 اختبار إرسال الرسائل</h1>
+        
+        <!-- اختبار الاتصال بالخادم -->
+        <div class="endpoint-test">
+            <h3>1️⃣ اختبار الاتصال بالخادم</h3>
+            <button onclick="testConnection()">اختبار الاتصال</button>
+            <div id="connectionResult"></div>
+        </div>
+
+        <!-- اختبار جلب المحادثات -->
+        <div class="endpoint-test">
+            <h3>2️⃣ اختبار جلب المحادثات</h3>
+            <button onclick="testGetConversations()">جلب المحادثات</button>
+            <div id="conversationsResult"></div>
+        </div>
+
+        <!-- اختبار إرسال رسالة -->
+        <div class="endpoint-test">
+            <h3>3️⃣ اختبار إرسال رسالة</h3>
+            <div class="form-group">
+                <label>معرف المحادثة:</label>
+                <input type="text" id="conversationId" value="3caeb8ae-3210-4157-b529-16189b14c235">
+            </div>
+            <div class="form-group">
+                <label>معرف الشركة:</label>
+                <input type="text" id="companyId" value="c677b32f-fe1c-4c64-8362-a1c03406608d">
+            </div>
+            <div class="form-group">
+                <label>نص الرسالة:</label>
+                <textarea id="messageText" placeholder="اكتب رسالتك هنا...">مرحبا! هذه رسالة اختبار من صفحة الاختبار 🧪</textarea>
+            </div>
+            <div class="form-group">
+                <label>الخادم:</label>
+                <select id="serverUrl">
+                    <option value="http://localhost:3002">MySQL Server (Port 3002)</option>
+                    <option value="http://localhost:3001">Alternative Server (Port 3001)</option>
+                    <option value="http://localhost:3000">Frontend Server (Port 3000)</option>
+                </select>
+            </div>
+            <button onclick="testSendMessage()">إرسال الرسالة</button>
+            <div id="sendResult"></div>
+        </div>
+
+        <!-- اختبار endpoints مختلفة -->
+        <div class="endpoint-test">
+            <h3>4️⃣ اختبار endpoints مختلفة</h3>
+            <button onclick="testDifferentEndpoints()">اختبار جميع الـ endpoints</button>
+            <div id="endpointsResult"></div>
+        </div>
+    </div>
+
+    <script>
+        // اختبار الاتصال بالخادم
+        async function testConnection() {
+            const resultDiv = document.getElementById('connectionResult');
+            resultDiv.innerHTML = '<div class="info">جاري الاختبار...</div>';
+            
+            try {
+                const response = await fetch('http://localhost:3002/api/health');
+                const data = await response.text();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `<div class="success">✅ الخادم يعمل!\nالاستجابة: ${data}</div>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ خطأ في الخادم!\nكود الخطأ: ${response.status}\nالاستجابة: ${data}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ فشل الاتصال بالخادم!\nالخطأ: ${error.message}</div>`;
+            }
+        }
+
+        // اختبار جلب المحادثات
+        async function testGetConversations() {
+            const resultDiv = document.getElementById('conversationsResult');
+            resultDiv.innerHTML = '<div class="info">جاري جلب المحادثات...</div>';
+            
+            try {
+                const companyId = document.getElementById('companyId').value;
+                const response = await fetch(`http://localhost:3002/api/companies/${companyId}/conversations?limit=5`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `<div class="success">✅ تم جلب المحادثات بنجاح!\nعدد المحادثات: ${data.length}\nأول محادثة: ${JSON.stringify(data[0], null, 2)}</div>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ فشل جلب المحادثات!\nكود الخطأ: ${response.status}\nالاستجابة: ${JSON.stringify(data, null, 2)}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ خطأ في جلب المحادثات!\nالخطأ: ${error.message}</div>`;
+            }
+        }
+
+        // اختبار إرسال رسالة
+        async function testSendMessage() {
+            const resultDiv = document.getElementById('sendResult');
+            resultDiv.innerHTML = '<div class="info">جاري إرسال الرسالة...</div>';
+            
+            const conversationId = document.getElementById('conversationId').value;
+            const companyId = document.getElementById('companyId').value;
+            const messageText = document.getElementById('messageText').value;
+            const serverUrl = document.getElementById('serverUrl').value;
+            
+            const messageData = {
+                message_text: messageText,
+                company_id: companyId,
+                conversation_id: conversationId,
+                message_type: 'text',
+                is_from_page: true
+            };
+            
+            try {
+                const response = await fetch(`${serverUrl}/api/conversations/${conversationId}/messages`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(messageData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `<div class="success">✅ تم إرسال الرسالة بنجاح!\nالاستجابة: ${JSON.stringify(data, null, 2)}</div>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ فشل إرسال الرسالة!\nكود الخطأ: ${response.status}\nالاستجابة: ${JSON.stringify(data, null, 2)}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ خطأ في إرسال الرسالة!\nالخطأ: ${error.message}</div>`;
+            }
+        }
+
+        // اختبار endpoints مختلفة
+        async function testDifferentEndpoints() {
+            const resultDiv = document.getElementById('endpointsResult');
+            resultDiv.innerHTML = '<div class="info">جاري اختبار الـ endpoints...</div>';
+            
+            const conversationId = document.getElementById('conversationId').value;
+            const companyId = document.getElementById('companyId').value;
+            const messageText = "رسالة اختبار من endpoint مختلف";
+            
+            const endpoints = [
+                {
+                    name: "POST /api/conversations/{id}/messages",
+                    url: `http://localhost:3002/api/conversations/${conversationId}/messages`,
+                    method: 'POST',
+                    body: {
+                        message_text: messageText,
+                        company_id: companyId,
+                        message_type: 'text',
+                        is_from_page: true
+                    }
+                },
+                {
+                    name: "POST /api/send-message",
+                    url: `http://localhost:3002/api/send-message`,
+                    method: 'POST',
+                    body: {
+                        conversation_id: conversationId,
+                        message_text: messageText,
+                        company_id: companyId,
+                        message_type: 'text',
+                        is_from_page: true
+                    }
+                },
+                {
+                    name: "POST /api/messages",
+                    url: `http://localhost:3002/api/messages`,
+                    method: 'POST',
+                    body: {
+                        conversation_id: conversationId,
+                        message_text: messageText,
+                        company_id: companyId,
+                        message_type: 'text',
+                        is_from_page: true
+                    }
+                }
+            ];
+            
+            let results = "نتائج اختبار الـ endpoints:\n\n";
+            
+            for (const endpoint of endpoints) {
+                try {
+                    const response = await fetch(endpoint.url, {
+                        method: endpoint.method,
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(endpoint.body)
+                    });
+                    
+                    const data = await response.text();
+                    results += `${endpoint.name}: ${response.status} - ${data.substring(0, 100)}...\n\n`;
+                } catch (error) {
+                    results += `${endpoint.name}: خطأ - ${error.message}\n\n`;
+                }
+            }
+            
+            resultDiv.innerHTML = `<div class="info">${results}</div>`;
+        }
+
+        // تشغيل اختبار الاتصال عند تحميل الصفحة
+        window.onload = function() {
+            testConnection();
+        };
+    </script>
+</body>
+</html>

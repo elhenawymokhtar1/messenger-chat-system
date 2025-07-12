@@ -26,57 +26,57 @@ import {
 import { SubscriptionService, Company, CompanySubscription, UsageStats } from '@/services/subscriptionService';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { useCurrentCompany } from '@/hooks/useCurrentCompany';
 
 const CompanyDashboard: React.FC = () => {
-  const [company, setCompany] = useState<Company | null>(null);
   const [subscription, setSubscription] = useState<CompanySubscription | null>(null);
   const [usage, setUsage] = useState<UsageStats | null>(null);
   const [loading, setLoading] = useState(true);
-  
+
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  // استخدام نظام المصادقة الموحد
+  const { company, loading: companyLoading, clearCompany, reloadCompany } = useCurrentCompany();
+
   useEffect(() => {
     loadDashboardData();
-  }, []);
+  }, [company]);
+
+  // إعادة توجيه إذا لم توجد شركة
+  useEffect(() => {
+    if (!companyLoading && !company) {
+      console.log('⚠️ لا توجد شركة حالية، محاولة إعادة تحميل البيانات...');
+      reloadCompany();
+
+      // إذا لم تنجح إعادة التحميل، توجيه لتسجيل الدخول
+      setTimeout(() => {
+        const companyData = localStorage.getItem('company');
+        if (!companyData) {
+          console.log('⚠️ لا توجد بيانات في localStorage، إعادة توجيه لتسجيل الدخول');
+          navigate('/company-login');
+        }
+      }, 100);
+    }
+  }, [company, companyLoading, navigate, reloadCompany]);
 
   const loadDashboardData = async () => {
     try {
       setLoading(true);
 
-      // الحصول على بيانات الشركة من localStorage أو استخدام بيانات تجريبية
-      const companyData = localStorage.getItem('company');
-      let parsedCompany;
-
-      if (!companyData) {
-        // بيانات تجريبية للشركة
-        parsedCompany = {
-          id: 'demo-company-123',
-          name: 'شركة التجارة الإلكترونية',
-          email: 'demo@company.com',
-          phone: '+20123456789',
-          website: 'https://demo-company.com',
-          address: 'شارع التحرير، القاهرة',
-          city: 'القاهرة',
-          country: 'مصر',
-          status: 'active',
-          is_verified: true,
-          created_at: new Date().toISOString(),
-          last_login_at: new Date().toISOString()
-        };
-
-        // حفظ البيانات التجريبية في localStorage
-        localStorage.setItem('company', JSON.stringify(parsedCompany));
-      } else {
-        parsedCompany = JSON.parse(companyData);
+      // التحقق من وجود شركة حالية
+      if (!company) {
+        console.log('⚠️ [loadDashboardData] لا توجد شركة حالية، تخطي تحميل البيانات');
+        setLoading(false);
+        return;
       }
 
-      setCompany(parsedCompany);
+      console.log('🏢 تحميل بيانات لوحة التحكم للشركة:', company.name);
 
       // بيانات تجريبية للاشتراك
       const mockSubscription: CompanySubscription = {
         id: 'sub-123',
-        company_id: parsedCompany.id,
+        company_id: company.id,
         plan_id: 'basic',
         billing_cycle: 'monthly',
         start_date: new Date().toISOString(),
@@ -135,12 +135,20 @@ const CompanyDashboard: React.FC = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('company');
+    clearCompany();
     navigate('/company-login');
     toast({
       title: "تم تسجيل الخروج",
       description: "نراك قريباً!"});
   };
+
+  // تحميل البيانات عندما تصبح الشركة متاحة
+  useEffect(() => {
+    if (company && !companyLoading) {
+      console.log('🏢 [useEffect] الشركة متاحة، تحميل بيانات لوحة التحكم...');
+      loadDashboardData();
+    }
+  }, [company, companyLoading]);
 
   const getUsagePercentage = (current: number, limit: number): number => {
     if (limit === -1) return 0; // غير محدود
@@ -221,7 +229,7 @@ const CompanyDashboard: React.FC = () => {
                 <Settings className="h-4 w-4 mr-2" />
                 الإعدادات
               </Button>
-              
+
               <Button variant="outline" size="sm" onClick={handleLogout}>
                 <LogOut className="h-4 w-4 mr-2" />
                 تسجيل الخروج

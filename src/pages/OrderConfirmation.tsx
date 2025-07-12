@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useOrders } from "@/hooks/useOrders";
+import { useCheckout } from "@/hooks/useCheckout";
 import { 
   CheckCircle, 
   Package, 
@@ -20,16 +20,16 @@ import { Link, useParams } from 'react-router-dom';
 
 const OrderConfirmation = () => {
   const { orderId } = useParams<{ orderId: string }>();
-  const { getOrderById } = useOrders();
+  const { getOrderDetails } = useCheckout();
   const [orderData, setOrderData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchOrder = async () => {
       if (!orderId) return;
-      
+
       try {
-        const data = await getOrderById(orderId);
+        const data = await getOrderDetails(orderId);
         setOrderData(data);
       } catch (error) {
         console.error('Error fetching order:', error);
@@ -39,7 +39,7 @@ const OrderConfirmation = () => {
     };
 
     fetchOrder();
-  }, [orderId, getOrderById]);
+  }, [orderId, getOrderDetails]);
 
   const getStatusColor = (status: string) => {
     switch (status) {

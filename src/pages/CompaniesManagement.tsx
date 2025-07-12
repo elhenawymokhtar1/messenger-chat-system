@@ -93,7 +93,7 @@ const CompaniesManagement: React.FC = () => {
     try {
       setLoading(true);
       
-      const response = await fetch('http://localhost:3002/api/subscriptions/admin/companies');
+      const response = await fetch('http://localhost:3002/api/companies');
       const result = await response.json();
 
       if (result.success) {
@@ -122,7 +122,7 @@ const CompaniesManagement: React.FC = () => {
   const handleStatusChange = async (companyId: string, newStatus: string) => {
     try {
       // API call لتحديث حالة الشركة
-      const response = await fetch(`http://localhost:3002/api/subscriptions/admin/companies/${companyId}/status`, {
+      const response = await fetch(`http://localhost:3002/api/companies/${companyId}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'},
@@ -139,6 +139,33 @@ const CompaniesManagement: React.FC = () => {
     } catch (error) {
       console.error('Error updating company status:', error);
       toast.error('حدث خطأ في تحديث حالة الشركة');
+    }
+  };
+
+  const handleDeleteCompany = async (company: Company) => {
+    if (!confirm(`هل أنت متأكد من حذف شركة "${company.name}"؟\n\nسيتم حذف جميع البيانات المرتبطة بها نهائياً.`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:3002/api/debug/delete-test-company/${company.email}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast.success(`تم حذف شركة "${company.name}" بنجاح`);
+        loadCompanies(); // إعادة تحميل البيانات
+      } else {
+        toast.error(result.error || 'فشل في حذف الشركة');
+      }
+    } catch (error) {
+      console.error('Error deleting company:', error);
+      toast.error('حدث خطأ في حذف الشركة');
     }
   };
 
@@ -412,6 +439,15 @@ const CompaniesManagement: React.FC = () => {
                           <Edit className="h-4 w-4" />
                         </Button>
 
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          onClick={() => handleDeleteCompany(company)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+
                         <Select
                           value={company.status}
                           onValueChange={(newStatus) => handleStatusChange(company.id, newStatus)}
@@ -583,7 +619,7 @@ const EditCompanyForm: React.FC<EditCompanyFormProps> = ({ company, onSave, onCa
     setLoading(true);
 
     try {
-      const response = await fetch(`http://localhost:3002/api/subscriptions/admin/companies/${company.id}`, {
+      const response = await fetch(`http://localhost:3002/api/companies/${company.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'},

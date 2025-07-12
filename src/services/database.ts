@@ -139,19 +139,89 @@ export interface FacebookSettings {
 
 export class FacebookService {
   /**
-   * الحصول على إعدادات فيسبوك للشركة
+   * الحصول على إعدادات فيسبوك للشركة من الجدول الموحد
    */
   static async getByCompanyId(companyId: string): Promise<FacebookSettings[]> {
-    return await executeQuery<FacebookSettings>(
-      'SELECT * FROM facebook_settings WHERE company_id = ? AND is_active = TRUE',
+    // استخدام الجدول الموحد الجديد
+    const pages = await executeQuery<FacebookSettings>(
+      'SELECT * FROM facebook_pages_unified WHERE company_id = ? AND is_active = TRUE ORDER BY created_at DESC',
       [companyId]
     );
+
+    console.log(`📊 FacebookService: Found ${pages.length} pages for company ${companyId} from unified table`);
+
+    return pages;
   }
 
   /**
-   * الحصول على إعدادات بمعرف الصفحة
+   * الحصول على إعدادات فيسبوك للشركة من الجداول القديمة (للمقارنة)
+   */
+  static async getByCompanyIdLegacy(companyId: string): Promise<FacebookSettings[]> {
+    // جلب الصفحات من جدول facebook_settings
+    const facebookSettings = await executeQuery<FacebookSettings>(
+      'SELECT * FROM facebook_settings WHERE company_id = ? ORDER BY created_at DESC',
+      [companyId]
+    );
+
+    // جلب الصفحات من جدول facebook_pages
+    const facebookPages = await executeQuery<any>(
+      'SELECT * FROM facebook_pages WHERE company_id = ? ORDER BY created_at DESC',
+      [companyId]
+    );
+
+    // دمج النتائج وتوحيد التنسيق
+    const allPages = [
+      ...facebookSettings.map(page => ({
+        ...page,
+        source: 'facebook_settings'
+      })),
+      ...facebookPages.map(page => ({
+        ...page,
+        page_id: page.page_id || page.facebook_page_id,
+        page_name: page.page_name || page.name,
+        source: 'facebook_pages',
+        // إضافة الحقول المفقودة مع قيم افتراضية
+        webhook_enabled: page.webhook_enabled || false,
+        webhook_url: page.webhook_url || null,
+        webhook_verify_token: page.webhook_verify_token || null,
+        auto_reply_enabled: page.auto_reply_enabled || false,
+        welcome_message: page.welcome_message || null
+      }))
+    ];
+
+    console.log(`📊 FacebookService Legacy: Found ${facebookSettings.length} pages in facebook_settings`);
+    console.log(`📊 FacebookService Legacy: Found ${facebookPages.length} pages in facebook_pages`);
+    console.log(`📊 FacebookService Legacy: Total ${allPages.length} pages for company ${companyId}`);
+
+    return allPages;
+  }
+
+  /**
+   * الحصول على إعدادات بمعرف الصفحة من الجدول الموحد
    */
   static async getByPageId(pageId: string): Promise<FacebookSettings | null> {
+    const settings = await executeQuery<FacebookSettings>(
+      'SELECT * FROM facebook_pages_unified WHERE page_id = ?',
+      [pageId]
+    );
+    return settings[0] || null;
+  }
+
+  /**
+   * الحصول على إعدادات بمعرف الصفحة والشركة من الجدول الموحد
+   */
+  static async getByPageIdAndCompany(pageId: string, companyId: string): Promise<FacebookSettings | null> {
+    const settings = await executeQuery<FacebookSettings>(
+      'SELECT * FROM facebook_pages_unified WHERE page_id = ? AND company_id = ?',
+      [pageId, companyId]
+    );
+    return settings[0] || null;
+  }
+
+  /**
+   * الحصول على إعدادات بمعرف الصفحة من الجداول القديمة (للمقارنة)
+   */
+  static async getByPageIdLegacy(pageId: string): Promise<FacebookSettings | null> {
     const settings = await executeQuery<FacebookSettings>(
       'SELECT * FROM facebook_settings WHERE page_id = ?',
       [pageId]
@@ -160,9 +230,39 @@ export class FacebookService {
   }
 
   /**
-   * إنشاء إعدادات فيسبوك جديدة
+   * إنشاء إعدادات فيسبوك جديدة في الجدول الموحد
    */
   static async create(data: Partial<FacebookSettings>): Promise<string> {
+    const id = `page_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+    await executeQuery(`
+      INSERT INTO facebook_pages_unified (
+        id, company_id, page_id, page_name, access_token,
+        is_active, webhook_verified, webhook_enabled, source_table,
+        created_at, updated_at
+      ) VALUES (
+        ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW()
+      )
+    `, [
+      id,
+      data.company_id,
+      data.page_id,
+      data.page_name,
+      data.access_token,
+      data.is_active || true,
+      data.webhook_verified || false,
+      data.webhook_enabled || false,
+      'unified'
+    ]);
+
+    console.log(`📊 FacebookService: Created new page ${data.page_name} (${data.page_id}) in unified table`);
+    return id;
+  }
+
+  /**
+   * إنشاء إعدادات فيسبوك جديدة في الجداول القديمة (للمقارنة)
+   */
+  static async createLegacy(data: Partial<FacebookSettings>): Promise<string> {
     const result = await executeInsert(`
       INSERT INTO facebook_settings (
         id, company_id, page_id, page_name, access_token,
@@ -206,9 +306,21 @@ export class FacebookService {
   }
 
   /**
-   * حذف إعدادات فيسبوك بمعرف الصفحة
+   * حذف إعدادات فيسبوك بمعرف الصفحة من الجدول الموحد (soft delete)
    */
   static async deleteByPageId(pageId: string): Promise<boolean> {
+    const result = await executeUpdate(`
+      UPDATE facebook_pages_unified SET is_active = FALSE, updated_at = NOW() WHERE page_id = ?
+    `, [pageId]);
+
+    console.log(`📊 FacebookService: Soft deleted page ${pageId} from unified table`);
+    return result.affectedRows > 0;
+  }
+
+  /**
+   * حذف إعدادات فيسبوك بمعرف الصفحة من الجداول القديمة (للمقارنة)
+   */
+  static async deleteByPageIdLegacy(pageId: string): Promise<boolean> {
     const result = await executeUpdate(`
       DELETE FROM facebook_settings WHERE page_id = ?
     `, [pageId]);
@@ -225,7 +337,8 @@ export interface Conversation {
   id: string;
   company_id: string;
   facebook_page_id: string;
-  user_id: string;
+  participant_id: string;  // تم تغيير من user_id إلى participant_id
+  user_id?: string;        // إبقاء user_id كخاصية اختيارية للتوافق مع الكود القديم
   user_name?: string;
   status: string;
   priority: string;
@@ -266,22 +379,73 @@ export class ConversationService {
     return await executeQuery<Conversation>(
       `SELECT
         c.*,
-        COALESCE(c.customer_name, c.user_name, CONCAT('مستخدم ', SUBSTRING(c.customer_facebook_id, -4))) as customer_name,
-        (SELECT m.message_text
+        COALESCE(c.customer_name, CONCAT('مستخدم ', SUBSTRING(c.id, -4))) as customer_name,
+
+        -- عدد الرسائل غير المقروءة (مؤقتاً نحسب كل الرسائل من العملاء)
+        (SELECT COUNT(*)
          FROM messages m
          WHERE m.conversation_id = c.id
-         ORDER BY COALESCE(m.sent_at, m.created_at) DESC
-         LIMIT 1
+         AND m.is_from_page = 0
+        ) as unread_count,
+
+        -- آخر رسالة مع معلومات المرسل
+        COALESCE(
+          (SELECT
+             CASE
+               WHEN m.message_type = 'image' THEN '📷 صورة'
+               WHEN m.message_type = 'file' THEN '📎 ملف'
+               WHEN m.message_type = 'audio' THEN '🎵 رسالة صوتية'
+               WHEN m.message_text IS NULL OR m.message_text = '' THEN
+                 CASE m.message_type
+                   WHEN 'image' THEN '📷 صورة'
+                   ELSE 'رسالة'
+                 END
+               ELSE m.message_text
+             END
+           FROM messages m
+           WHERE m.conversation_id = c.id
+           ORDER BY m.created_at DESC
+           LIMIT 1
+          ), 'لا توجد رسائل'
         ) as last_message,
+
+        -- نوع آخر رسالة
         (SELECT m.message_type
          FROM messages m
          WHERE m.conversation_id = c.id
-         ORDER BY COALESCE(m.sent_at, m.created_at) DESC
+         ORDER BY m.created_at DESC
          LIMIT 1
-        ) as last_message_type
+        ) as last_message_type,
+
+        -- هل آخر رسالة من الصفحة (أنت) أم من العميل
+        COALESCE(
+          (SELECT m.is_from_page
+           FROM messages m
+           WHERE m.conversation_id = c.id
+           ORDER BY m.created_at DESC
+           LIMIT 1
+          ), 0
+        ) as last_message_is_from_page,
+
+        -- وقت آخر رسالة
+        COALESCE(
+          (SELECT m.created_at
+           FROM messages m
+           WHERE m.conversation_id = c.id
+           ORDER BY m.created_at DESC
+           LIMIT 1
+          ), c.updated_at
+        ) as last_message_time
        FROM conversations c
        WHERE c.company_id = ?
-       ORDER BY COALESCE(c.last_message_at, c.created_at) DESC
+       ORDER BY COALESCE(
+         (SELECT m.created_at
+          FROM messages m
+          WHERE m.conversation_id = c.id
+          ORDER BY m.created_at DESC
+          LIMIT 1
+         ), c.updated_at
+       ) DESC
        LIMIT ?`,
       [companyId, limit]
     );
@@ -291,41 +455,102 @@ export class ConversationService {
    * الحصول على محادثات الشركة مع عدد الرسائل الحديثة فقط (آخر 24 ساعة)
    */
   static async getByCompanyIdWithRecentMessages(companyId: string, limit = 50): Promise<Conversation[]> {
-    return await executeQuery<Conversation>(
+    console.log('🔍🔍🔍 [DEBUG] استدعاء getByCompanyIdWithRecentMessages مع companyId:', companyId);
+
+    const result = await executeQuery<Conversation>(
       `SELECT
         c.*,
-        COALESCE(c.customer_name, c.user_name, CONCAT('مستخدم ', SUBSTRING(c.customer_facebook_id, -4))) as customer_name,
-        COALESCE(c.last_message_at, c.created_at) as display_time,
+        COALESCE(c.customer_name, CONCAT('مستخدم ', SUBSTRING(c.id, -4))) as customer_name,
+        c.updated_at as display_time,
+
+        -- عدد الرسائل غير المقروءة (مؤقتاً نحسب كل الرسائل من العملاء)
         (SELECT COUNT(*)
          FROM messages m
          WHERE m.conversation_id = c.id
-         AND COALESCE(m.sent_at, m.created_at) >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
-        ) as recent_messages_count,
-        (SELECT COUNT(*)
-         FROM messages m
-         WHERE m.conversation_id = c.id
-         AND COALESCE(m.sent_at, m.created_at) >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
-         AND m.direction = 'incoming'
-         AND m.is_read = 0
+         AND m.is_from_page = 0
         ) as unread_count,
-        (SELECT m.message_text
-         FROM messages m
-         WHERE m.conversation_id = c.id
-         ORDER BY COALESCE(m.sent_at, m.created_at) DESC
-         LIMIT 1
+
+        -- آخر رسالة مع معلومات المرسل
+        COALESCE(
+          (SELECT
+             CASE
+               WHEN m.message_type = 'image' THEN '📷 صورة'
+               WHEN m.message_type = 'file' THEN '📎 ملف'
+               WHEN m.message_type = 'audio' THEN '🎵 رسالة صوتية'
+               WHEN m.message_text IS NULL OR m.message_text = '' THEN
+                 CASE m.message_type
+                   WHEN 'image' THEN '📷 صورة'
+                   ELSE 'رسالة'
+                 END
+               ELSE m.message_text
+             END
+           FROM messages m
+           WHERE m.conversation_id = c.id
+           ORDER BY m.created_at DESC
+           LIMIT 1
+          ), 'لا توجد رسائل'
         ) as last_message,
-        (SELECT m.message_type
-         FROM messages m
-         WHERE m.conversation_id = c.id
-         ORDER BY COALESCE(m.sent_at, m.created_at) DESC
-         LIMIT 1
-        ) as last_message_type
+
+        -- نوع آخر رسالة
+        COALESCE(
+          (SELECT m.message_type
+           FROM messages m
+           WHERE m.conversation_id = c.id
+           ORDER BY m.created_at DESC
+           LIMIT 1
+          ), 'text'
+        ) as last_message_type,
+
+        -- هل آخر رسالة من الصفحة (أنت) أم من العميل
+        COALESCE(
+          (SELECT m.is_from_page
+           FROM messages m
+           WHERE m.conversation_id = c.id
+           ORDER BY m.created_at DESC
+           LIMIT 1
+          ), 0
+        ) as last_message_is_from_page,
+
+        -- وقت آخر رسالة
+        COALESCE(
+          (SELECT m.created_at
+           FROM messages m
+           WHERE m.conversation_id = c.id
+           ORDER BY m.created_at DESC
+           LIMIT 1
+          ), c.updated_at
+        ) as last_message_time,
+
+        0 as recent_messages_count
        FROM conversations c
        WHERE c.company_id = ?
-       ORDER BY COALESCE(c.last_message_at, c.created_at) DESC
+       ORDER BY COALESCE(
+         (SELECT m.created_at
+          FROM messages m
+          WHERE m.conversation_id = c.id
+          ORDER BY m.created_at DESC
+          LIMIT 1
+         ), c.updated_at
+       ) DESC
        LIMIT ?`,
       [companyId, limit]
     );
+
+    console.log('🔍🔍🔍 [DEBUG] نتائج getByCompanyIdWithRecentMessages:', {
+      count: result.length,
+      first: result[0] ? {
+        id: result[0].id.slice(-8),
+        customer_name: result[0].customer_name,
+        last_message: result[0].last_message,
+        last_message_is_from_page: result[0].last_message_is_from_page,
+        unread_count: result[0].unread_count,
+        last_message_time: result[0].last_message_time,
+        created_at: result[0].created_at,
+        updated_at: result[0].updated_at
+      } : null
+    });
+
+    return result;
   }
 
   /**
@@ -355,31 +580,80 @@ export class ConversationService {
    * تحديث إحصائيات المحادثة
    */
   static async updateStats(conversationId: string): Promise<boolean> {
-    const result = await executeUpdate(`
-      UPDATE conversations 
-      SET 
-        total_messages = (
-          SELECT COUNT(*) 
-          FROM messages 
-          WHERE conversation_id = ?
-        ),
-        unread_messages = (
-          SELECT COUNT(*) 
-          FROM messages 
-          WHERE conversation_id = ? 
-          AND direction = 'incoming' 
-          AND is_read = FALSE
-        ),
-        last_message_at = (
-          SELECT MAX(sent_at) 
-          FROM messages 
-          WHERE conversation_id = ?
-        ),
-        updated_at = CURRENT_TIMESTAMP
-      WHERE id = ?
-    `, [conversationId, conversationId, conversationId, conversationId]);
+    try {
+      console.log('🔄 [DEBUG] بدء تحديث إحصائيات المحادثة:', conversationId);
 
-    return result.affectedRows > 0;
+      // عندما ترد على رسالة، نصفر عدد الرسائل غير المقروءة
+      // ونحدث آخر رسالة لتكون من الصفحة
+      const result = await executeQuery(`
+        UPDATE conversations SET
+          unread_count = 0,
+          updated_at = NOW()
+        WHERE id = ?
+      `, [conversationId]);
+
+      console.log('✅ [DEBUG] تم تحديث إحصائيات المحادثة:', conversationId, 'تأثر', result.affectedRows, 'صف');
+
+      // التحقق من أن التحديث تم بنجاح
+      if (result.affectedRows === 0) {
+        console.warn('⚠️ [DEBUG] لم يتم العثور على محادثة بالمعرف:', conversationId);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('❌ [DEBUG] خطأ في تحديث إحصائيات المحادثة:', conversationId, error);
+      return false;
+    }
+  }
+
+  /**
+   * تحديث إحصائيات المحادثة مع تفاصيل آخر رسالة
+   */
+  static async updateConversationStats(
+    conversationId: string,
+    lastMessage: string,
+    lastMessageTime: string,
+    lastMessageIsFromPage: number
+  ): Promise<boolean> {
+    try {
+      console.log(`🔄 [DEBUG] تحديث إحصائيات المحادثة ${conversationId} مع:`, {
+        lastMessage,
+        lastMessageTime,
+        lastMessageIsFromPage
+      });
+
+      await executeQuery(`
+        UPDATE conversations SET
+          last_message = ?,
+          last_message_time = ?,
+          last_message_is_from_page = ?,
+          updated_at = NOW()
+        WHERE id = ?
+      `, [lastMessage, lastMessageTime, lastMessageIsFromPage, conversationId]);
+
+      console.log('✅ تم تحديث إحصائيات المحادثة بنجاح:', conversationId);
+      return true;
+    } catch (error) {
+      console.error('❌ خطأ في تحديث إحصائيات المحادثة:', error);
+      return false;
+    }
+  }
+
+  /**
+   * تحديث وقت آخر نشاط للمحادثة
+   */
+  static async updateLastActivity(conversationId: string): Promise<boolean> {
+    try {
+      await executeQuery(
+        'UPDATE conversations SET updated_at = NOW() WHERE id = ?',
+        [conversationId]
+      );
+      return true;
+    } catch (error) {
+      console.error('❌ خطأ في تحديث آخر نشاط للمحادثة:', error);
+      return false;
+    }
   }
 }
 
@@ -398,12 +672,14 @@ export interface Message {
   message_type: string;
   attachments?: any;
   direction: string;
+  is_from_page?: number; // 0 أو 1 (TINYINT في قاعدة البيانات)
   status: string;
   is_read: boolean;
   ai_processed: boolean;
   ai_response?: string;
   sent_at?: string;
   created_at: string;
+  image_url?: string; // رابط الصورة
 }
 
 export class MessageService {
@@ -415,30 +691,41 @@ export class MessageService {
     const { randomUUID } = await import('crypto');
     const messageId = randomUUID();
 
+    console.log('💾 [DEBUG] إنشاء رسالة جديدة:', {
+      messageId,
+      conversation_id: data.conversation_id,
+      message_type: data.message_type,
+      sender_id: data.sender_id,
+      is_from_page: data.is_from_page,
+      image_url: data.image_url
+    });
+
+    // إزالة company_id مؤقتاً حتى يتم إضافة العمود
     await executeInsert(`
       INSERT INTO messages (
-        id, conversation_id, company_id, facebook_message_id,
-        sender_id, recipient_id, message_text, message_type,
-        attachments, direction, status, is_read, sent_at, image_url
+        id, conversation_id, facebook_message_id,
+        sender_id, message_text, message_type,
+        is_from_page, attachments, created_at, image_url
       ) VALUES (
-        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
       )
     `, [
       messageId,
       data.conversation_id,
-      data.company_id,
       data.facebook_message_id || null,
       data.sender_id,
-      data.recipient_id,
       data.message_text || null,
       data.message_type || 'text',
+      data.is_from_page || false,
       data.attachments ? JSON.stringify(data.attachments) : null,
-      data.direction,
-      data.status || 'sent',
-      data.is_read || false,
       data.sent_at || new Date().toISOString(),
       data.image_url || null
     ]);
+
+    console.log('✅ [DEBUG] تم إنشاء الرسالة بنجاح:', messageId);
+
+    // تحديث وقت آخر نشاط للمحادثة
+    await ConversationService.updateLastActivity(data.conversation_id);
 
     return messageId;
   }
@@ -451,12 +738,17 @@ export class MessageService {
     const messages = await executeQuery<Message>(
       `SELECT * FROM messages
        WHERE conversation_id = ?
-       ORDER BY COALESCE(sent_at, created_at) DESC
+       ORDER BY created_at DESC
        LIMIT ?`,
       [conversationId, limit]
     );
 
     // عكس الترتيب لعرض الرسائل من الأقدم للأحدث
+    console.log('📊 [DEBUG] عدد الرسائل من قاعدة البيانات:', messages.length);
+    if (messages && messages.length > 0) {
+      console.log('📊 [DEBUG] أول رسالة من قاعدة البيانات:', messages[0]);
+      console.log('📊 [DEBUG] أعمدة الرسالة من قاعدة البيانات:', Object.keys(messages[0]));
+    }
     return messages.reverse();
   }
 
@@ -468,13 +760,30 @@ export class MessageService {
     const messages = await executeQuery<Message>(
       `SELECT * FROM messages
        WHERE conversation_id = ?
-       AND COALESCE(sent_at, created_at) >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
-       ORDER BY COALESCE(sent_at, created_at) DESC
+       AND created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+       ORDER BY created_at DESC
        LIMIT ?`,
       [conversationId, limit]
     );
 
     // عكس الترتيب لعرض الرسائل من الأقدم للأحدث
+    console.log('📊 [DEBUG] عدد الرسائل الحديثة من قاعدة البيانات:', messages.length);
+    if (messages && messages.length > 0) {
+      console.log('📊 [DEBUG] أول رسالة حديثة من قاعدة البيانات:', messages[0]);
+      console.log('📊 [DEBUG] أعمدة الرسالة الحديثة من قاعدة البيانات:', Object.keys(messages[0]));
+
+      // تشخيص مفصل لكل رسالة
+      messages.forEach((msg, index) => {
+        console.log(`🔍 [DB] Message ${index + 1}:`, {
+          id: msg.id,
+          sender_id: msg.sender_id,
+          is_from_page: msg.is_from_page,
+          is_from_page_type: typeof msg.is_from_page,
+          direction: msg.direction,
+          message_text: msg.message_text?.substring(0, 30)
+        });
+      });
+    }
     return messages.reverse();
   }
 
@@ -483,11 +792,11 @@ export class MessageService {
    */
   static async getRecentByCompanyId(companyId: string, limit = 100): Promise<Message[]> {
     return await executeQuery<Message>(
-      `SELECT m.*, c.user_name, c.facebook_page_id
+      `SELECT m.*, c.customer_name, c.facebook_page_id
        FROM messages m
        JOIN conversations c ON m.conversation_id = c.id
        WHERE m.company_id = ?
-       ORDER BY COALESCE(m.sent_at, m.created_at) DESC
+       ORDER BY m.created_at DESC
        LIMIT ?`,
       [companyId, limit]
     );
@@ -499,10 +808,9 @@ export class MessageService {
   static async updateStatus(messageId: string, status: string, isRead?: boolean): Promise<boolean> {
     const result = await executeUpdate(`
       UPDATE messages SET
-        status = ?,
-        is_read = COALESCE(?, is_read)
+        status = ?
       WHERE id = ?
-    `, [status, isRead, messageId]);
+    `, [status, messageId]);
 
     return result.affectedRows > 0;
   }
@@ -519,6 +827,26 @@ export class MessageService {
     `, [aiResponse, messageId]);
 
     return result.affectedRows > 0;
+  }
+
+  /**
+   * تصحيح البيانات - إصلاح is_from_page للرسائل الإدارية
+   */
+  static async fixAdminMessages(): Promise<any> {
+    try {
+      const query = `
+        UPDATE messages
+        SET is_from_page = 1
+        WHERE sender_id = 'admin' AND (is_from_page = 0 OR is_from_page IS NULL)
+      `;
+
+      const result = await executeUpdate(query, []);
+      console.log('✅ [FIX] تم تصحيح رسائل الإدارة:', result);
+      return result;
+    } catch (error) {
+      console.error('❌ [FIX] خطأ في تصحيح رسائل الإدارة:', error);
+      throw error;
+    }
   }
 }
 
@@ -605,6 +933,196 @@ export class GeminiService {
 }
 
 // ===================================
+// 📱 خدمات WhatsApp
+// ===================================
+
+export interface WhatsAppMessage {
+  id?: number;
+  message_id: string;
+  phone_number: string;
+  contact_name?: string;
+  message_text: string;
+  message_type: 'incoming' | 'outgoing';
+  file_url?: string;
+  file_name?: string;
+  created_at?: string;
+}
+
+export class WhatsAppService {
+  /**
+   * حفظ رسالة WhatsApp
+   */
+  static async saveMessage(message: WhatsAppMessage): Promise<boolean> {
+    try {
+      await executeInsert(`
+        INSERT INTO whatsapp_messages (
+          message_id, phone_number, contact_name, message_text,
+          message_type, file_url, file_name, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+      `, [
+        message.message_id,
+        message.phone_number,
+        message.contact_name || null,
+        message.message_text,
+        message.message_type,
+        message.file_url || null,
+        message.file_name || null
+      ]);
+      return true;
+    } catch (error) {
+      console.error('❌ [WHATSAPP] خطأ في حفظ الرسالة:', error);
+      return false;
+    }
+  }
+
+  /**
+   * جلب محادثات WhatsApp
+   */
+  static async getContacts(): Promise<any[]> {
+    return await executeQuery(`
+      SELECT
+        phone_number,
+        contact_name,
+        message_text,
+        created_at,
+        message_type
+      FROM whatsapp_messages
+      WHERE phone_number IN (
+        SELECT DISTINCT phone_number
+        FROM whatsapp_messages
+        ORDER BY created_at DESC
+      )
+      ORDER BY created_at DESC
+    `);
+  }
+
+  /**
+   * جلب رسائل محادثة معينة
+   */
+  static async getConversation(phoneNumber: string): Promise<WhatsAppMessage[]> {
+    return await executeQuery<WhatsAppMessage>(`
+      SELECT
+        message_id,
+        phone_number,
+        contact_name,
+        message_text,
+        message_type,
+        created_at,
+        file_url,
+        file_name
+      FROM whatsapp_messages
+      WHERE phone_number = ?
+      ORDER BY created_at ASC
+    `, [phoneNumber]);
+  }
+
+  /**
+   * جلب معلومات جهة اتصال
+   */
+  static async getContact(phoneNumber: string): Promise<any> {
+    const [rows] = await executeQuery(`
+      SELECT
+        contact_name,
+        created_at
+      FROM whatsapp_messages
+      WHERE phone_number = ?
+      ORDER BY created_at DESC
+      LIMIT 1
+    `, [phoneNumber]);
+
+    return rows || null;
+  }
+
+  /**
+   * جلب آخر الرسائل
+   */
+  static async getRecentMessages(limit: number = 50): Promise<WhatsAppMessage[]> {
+    return await executeQuery<WhatsAppMessage>(`
+      SELECT
+        message_id,
+        phone_number,
+        contact_name,
+        message_text,
+        message_type,
+        created_at,
+        file_url,
+        file_name
+      FROM whatsapp_messages
+      ORDER BY created_at DESC
+      LIMIT ?
+    `, [limit]);
+  }
+
+  /**
+   * جلب إحصائيات WhatsApp
+   */
+  static async getStats(): Promise<any> {
+    try {
+      // إجمالي الرسائل
+      const [totalResult] = await executeQuery(`
+        SELECT COUNT(*) as total FROM whatsapp_messages
+      `);
+      const totalMessages = totalResult?.total || 0;
+
+      // رسائل اليوم
+      const [todayResult] = await executeQuery(`
+        SELECT COUNT(*) as today FROM whatsapp_messages
+        WHERE DATE(created_at) = CURDATE()
+      `);
+      const todayMessages = todayResult?.today || 0;
+
+      // المحادثات النشطة (أرقام فريدة في آخر 7 أيام)
+      const [activeResult] = await executeQuery(`
+        SELECT COUNT(DISTINCT phone_number) as active
+        FROM whatsapp_messages
+        WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+      `);
+      const activeChats = activeResult?.active || 0;
+
+      return {
+        totalMessages,
+        todayMessages,
+        activeChats
+      };
+    } catch (error) {
+      console.error('❌ [WHATSAPP] خطأ في جلب الإحصائيات:', error);
+      return {
+        totalMessages: 0,
+        todayMessages: 0,
+        activeChats: 0
+      };
+    }
+  }
+
+  /**
+   * إنشاء جدول WhatsApp إذا لم يكن موجوداً
+   */
+  static async createTableIfNotExists(): Promise<void> {
+    try {
+      await executeQuery(`
+        CREATE TABLE IF NOT EXISTS whatsapp_messages (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          message_id VARCHAR(255) NOT NULL,
+          phone_number VARCHAR(50) NOT NULL,
+          contact_name VARCHAR(255),
+          message_text TEXT,
+          message_type ENUM('incoming', 'outgoing') NOT NULL,
+          file_url TEXT,
+          file_name VARCHAR(255),
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          INDEX idx_phone_number (phone_number),
+          INDEX idx_created_at (created_at),
+          INDEX idx_message_type (message_type)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+      `);
+      console.log('✅ [WHATSAPP] تم إنشاء جدول whatsapp_messages بنجاح');
+    } catch (error) {
+      console.error('❌ [WHATSAPP] خطأ في إنشاء جدول whatsapp_messages:', error);
+    }
+  }
+}
+
+// ===================================
 // 📊 خدمات عامة
 // ===================================
 
@@ -622,7 +1140,7 @@ export class DatabaseService {
       SELECT
         (SELECT COUNT(*) FROM conversations WHERE company_id = ?) as totalConversations,
         (SELECT COUNT(*) FROM messages WHERE company_id = ?) as totalMessages,
-        (SELECT COUNT(*) FROM messages WHERE company_id = ? AND direction = 'incoming' AND is_read = FALSE) as unreadMessages,
+        (SELECT COUNT(*) FROM messages WHERE company_id = ? AND direction = 'incoming') as unreadMessages,
         (SELECT COUNT(*) FROM facebook_settings WHERE company_id = ? AND is_active = TRUE) as activePages
     `, [companyId, companyId, companyId, companyId]);
 

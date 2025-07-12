@@ -467,31 +467,44 @@ export class SimpleGeminiService {
       }
 
       // بناء الاستعلام مع عزل الشركات
-      let query = supabase
-        // TODO: Replace with MySQL API
-        // TODO: Replace with MySQL API
-        `)
-        .eq('status', 'active');
+      // TODO: Replace with MySQL API - temporarily disabled
+      console.log('⚠️ [GEMINI] Product query temporarily disabled - needs MySQL implementation');
+      // let query = supabase
+      //   .from('products')
+      //   .select(`
+      //     id, name, price, short_description, image_url, category, featured,
+      //     stores!inner(company_id)
+      //   `)
+      //   .eq('status', 'active');
 
       // فلترة حسب الشركة إذا كان متوفراً
       if (companyId) {
-        query = query.eq('stores.company_id', companyId);
-        console.log('🔒 [GEMINI] Filtering products by company:', companyId);
+        // TODO: Replace with MySQL API - temporarily disabled
+        console.log('🔒 [GEMINI] Company filtering temporarily disabled - needs MySQL implementation for company:', companyId);
+        // query = query.eq('stores.company_id', companyId);
       } else {
         console.log('⚠️ [GEMINI] No company filter applied - showing all products');
       }
 
       if (categoryFilter) {
-        query = query.ilike('category', `%${categoryFilter}%`);
-        if (searchTerm) {
-          query = query.ilike('name', `%${searchTerm}%`);
-        }
-        query = query.limit(5);
+        // TODO: Replace with MySQL API - temporarily disabled
+        console.log('⚠️ [GEMINI] Category filter temporarily disabled - needs MySQL implementation');
+        // query = query.ilike('category', `%${categoryFilter}%`);
+        // if (searchTerm) {
+        //   query = query.ilike('name', `%${searchTerm}%`);
+        // }
+        // query = query.limit(5);
       } else {
-        query = query.order('featured', { ascending: false }).limit(8);
+        // TODO: Replace with MySQL API - temporarily disabled
+        console.log('⚠️ [GEMINI] Product ordering temporarily disabled - needs MySQL implementation');
+        // query = query.order('featured', { ascending: false }).limit(8);
       }
 
-      const { data: products } = await query;
+      // TODO: Replace with MySQL API - temporarily disabled
+      console.log('⚠️ [GEMINI] Product fetching temporarily disabled - needs MySQL implementation');
+      return 'عذراً، خدمة المنتجات غير متوفرة حالياً. نحن نعمل على تحديث النظام.';
+
+      // const { data: products } = await query;
 
       // إذا كان هناك منتج واحد فقط، اعتبره الافتراضي
       if (products && products.length === 1 && !categoryFilter) {
@@ -1298,24 +1311,29 @@ ${storeInfo.welcomeMessage}
       if (conversationId.startsWith('temp_') || conversationId.startsWith('test-')) {
         // محادثة مؤقتة أو اختبار - استخدم جدول test_messages مباشرة
         console.log(`💾 [SIMPLE GEMINI] Saving bot response to test_messages with conversation_id: "${conversationId}"`);
-        await // TODO: Replace with MySQL API
+        // TODO: Replace with MySQL API - temporarily disabled
+        console.log('⚠️ [GEMINI] Test message saving temporarily disabled - needs MySQL implementation');
       } else {
         // محادثة حقيقية - تحقق من النوع
-        const { data: conversation } = await supabase
-          // TODO: Replace with MySQL API
-          // TODO: Replace with MySQL API
-          .eq('id', conversationId)
-          .single();
+        // TODO: Replace with MySQL API - temporarily disabled
+        console.log('⚠️ [GEMINI] Real conversation message saving temporarily disabled - needs MySQL implementation');
+        // const { data: conversation } = await supabase
+        //   .from('conversations')
+        //   .select('*')
+        //   .eq('id', conversationId)
+        //   .single();
 
-        if (conversation?.facebook_page_id === 'test-page') {
-          // محادثة اختبار - استخدم جدول test_messages
-          console.log('💾 [SIMPLE GEMINI] Saving to test_messages for test conversation');
-          await // TODO: Replace with MySQL API
-        } else {
-          // محادثة حقيقية - استخدم جدول messages العادي
-          console.log('💾 [SIMPLE GEMINI] Saving to messages for real conversation');
-          await // TODO: Replace with MySQL API
-        }
+        // TODO: Replace with MySQL API - temporarily disabled
+        console.log('⚠️ [GEMINI] Message saving temporarily disabled - needs MySQL implementation');
+        // if (conversation?.facebook_page_id === 'test-page') {
+        //   // محادثة اختبار - استخدم جدول test_messages
+        //   console.log('💾 [SIMPLE GEMINI] Saving to test_messages for test conversation');
+        //   await // TODO: Replace with MySQL API
+        // } else {
+        //   // محادثة حقيقية - استخدم جدول messages العادي
+        //   console.log('💾 [SIMPLE GEMINI] Saving to messages for real conversation');
+        //   await // TODO: Replace with MySQL API
+        // }
       }
 
       // إرسال عبر Facebook (فقط للمحادثات الحقيقية)
@@ -1469,18 +1487,28 @@ ${storeInfo.welcomeMessage}
     isAutoReply: boolean = false
   ): Promise<boolean> {
     try {
-      const { error } = await supabase
-        // TODO: Replace with MySQL API
-        // TODO: Replace with MySQL API.toISOString()
-        });
-
-      if (error) {
-        console.error('❌ [SIMPLE GEMINI] Error saving message to database:', error);
-        return false;
-      }
-
-      console.log('✅ [SIMPLE GEMINI] Message saved to database successfully');
+      // TODO: Replace with MySQL API - temporarily disabled
+      console.log('⚠️ [GEMINI] Message saving temporarily disabled - needs MySQL implementation');
+      console.log(`📝 [GEMINI] Would save message: ${message} (${senderType})`);
       return true;
+
+      // const { error } = await supabase
+      //   .from('messages')
+      //   .insert({
+      //     conversation_id: conversationId,
+      //     content: message,
+      //     sender_type: senderType,
+      //     is_auto_reply: isAutoReply,
+      //     created_at: new Date().toISOString()
+      //   });
+      //
+      // if (error) {
+      //   console.error('❌ [SIMPLE GEMINI] Error saving message to database:', error);
+      //   return false;
+      // }
+      //
+      // console.log('✅ [SIMPLE GEMINI] Message saved to database successfully');
+      // return true;
     } catch (error) {
       console.error('❌ [SIMPLE GEMINI] Error in saveMessageToDatabase:', error);
       return false;
@@ -1496,16 +1524,24 @@ ${storeInfo.welcomeMessage}
     message: string
   ): Promise<void> {
     try {
-      const { error } = await supabase
-        // TODO: Replace with MySQL API
-        // TODO: Replace with MySQL API.toISOString()
-        });
+      // TODO: Replace with MySQL API - temporarily disabled
+      console.log('⚠️ [GEMINI] System alert creation temporarily disabled - needs MySQL implementation');
+      console.log(`🚨 [GEMINI] Would create alert: ${alertType} - ${message}`);
 
-      if (error) {
-        console.error('❌ [SIMPLE GEMINI] Error creating system alert:', error);
-      } else {
-        console.log('✅ [SIMPLE GEMINI] System alert created successfully');
-      }
+      // const { error } = await supabase
+      //   .from('system_alerts')
+      //   .insert({
+      //     conversation_id: conversationId,
+      //     alert_type: alertType,
+      //     message: message,
+      //     created_at: new Date().toISOString()
+      //   });
+      //
+      // if (error) {
+      //   console.error('❌ [SIMPLE GEMINI] Error creating system alert:', error);
+      // } else {
+      //   console.log('✅ [SIMPLE GEMINI] System alert created successfully');
+      // }
     } catch (error) {
       console.error('❌ [SIMPLE GEMINI] Error in createSystemAlert:', error);
     }

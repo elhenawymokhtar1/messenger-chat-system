@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useCurrentCompany } from '@/hooks/useCurrentCompany';
 import {
   MessageCircle,
   Facebook,
@@ -382,29 +383,21 @@ export default function Sidebar({ className }: SidebarProps) {
   const [expandedItems, setExpandedItems] = useState<string[]>(['إدارة الشركة']);
   const location = useLocation();
   const navigate = useNavigate();
+  const { clearCompany, company: currentCompany } = useCurrentCompany();
 
   const handleLogout = () => {
-    // إزالة بيانات المصادقة
-    localStorage.removeItem('company');
-    localStorage.removeItem('userToken');
+    // إزالة بيانات المصادقة باستخدام React Query
+    clearCompany();
 
     // الانتقال لصفحة تسجيل الدخول
     navigate('/company-login', { replace: true });
   };
 
   const getCompanyInfo = () => {
-    try {
-      const companyData = localStorage.getItem('company');
-      if (companyData) {
-        return JSON.parse(companyData);
-      }
-    } catch (error) {
-      console.error('خطأ في جلب بيانات الشركة:', error);
-    }
-    return null;
+    return currentCompany;
   };
 
-  const company = getCompanyInfo();
+  const companyInfo = getCompanyInfo();
 
   const toggleExpanded = (title: string) => {
     setExpandedItems(prev => 
@@ -528,10 +521,10 @@ export default function Sidebar({ className }: SidebarProps) {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-gray-900 truncate">
-                {company?.name || 'اسم الشركة'}
+                {companyInfo?.name || 'اسم الشركة'}
               </p>
               <p className="text-xs text-gray-500 truncate">
-                {company?.email || 'company@example.com'}
+                {companyInfo?.email || 'company@example.com'}
               </p>
             </div>
           </div>

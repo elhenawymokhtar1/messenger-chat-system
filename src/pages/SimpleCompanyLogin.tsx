@@ -5,7 +5,7 @@
 
 import React, { useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useSimpleProperAuth';
+import { useCurrentCompany } from '@/hooks/useCurrentCompany';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,7 +14,32 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, LogIn, Building } from 'lucide-react';
 
 const SimpleCompanyLogin = () => {
-  const { login, isAuthenticated, loading } = useAuth();
+  // هذا الملف معطل مؤقتاً - استخدم CompanyLogin بدلاً منه
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle className="text-center">صفحة معطلة</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Alert>
+            <AlertDescription>
+              هذه الصفحة معطلة مؤقتاً. يرجى استخدام صفحة تسجيل الدخول الرئيسية.
+            </AlertDescription>
+          </Alert>
+          <Button
+            className="w-full mt-4"
+            onClick={() => window.location.href = '/company-login'}
+          >
+            الذهاب لصفحة تسجيل الدخول
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
+  const { company, loading } = useCurrentCompany();
+  const isAuthenticated = !!company;
   const [formData, setFormData] = useState({
     email: 'test@conversations.com',
     password: 'password123'

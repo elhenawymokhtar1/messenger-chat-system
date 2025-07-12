@@ -74,6 +74,35 @@ export class PlanLimitsService {
       };
     }
   }
+
+  /**
+   * ⚠️ الحصول على تحذيرات الاستخدام
+   */
+  static async getUsageWarnings(companyId: string) {
+    try {
+      console.log('⚠️ [WARNINGS] جلب تحذيرات الاستخدام للشركة:', companyId);
+
+      // TODO: Replace with MySQL API
+      // مؤقتاً نرجع تحذيرات افتراضية حتى يتم تطوير MySQL API
+
+      const warnings = [
+        // يمكن إضافة تحذيرات هنا حسب الحاجة
+      ];
+
+      return {
+        success: true,
+        warnings
+      };
+
+    } catch (error) {
+      console.error('❌ [WARNINGS] خطأ في جلب التحذيرات:', error);
+
+      return {
+        success: false,
+        warnings: []
+      };
+    }
+  }
 }
 
 export default PlanLimitsService;

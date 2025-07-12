@@ -10,7 +10,7 @@ import { toast } from "sonner";
 export interface RealMessage {
   id: string;
   conversation_id: string;
-  sender_type: 'customer' | 'page' | 'system' | 'agent';
+  sender_type: 'customer' | 'admin' | 'page' | 'system' | 'agent';  // إضافة 'admin'
   sender_name?: string;
   message_text?: string;  // للتوافق مع Frontend
   content?: string;       // للتوافق مع API
@@ -23,6 +23,7 @@ export interface RealMessage {
   is_read?: boolean;
   status?: string;
   attachments?: any[];
+  is_from_page?: number;  // إضافة is_from_page
 }
 
 export const useRealMessages = (conversationId?: string, companyId?: string, recentOnly = true) => {
@@ -62,19 +63,35 @@ export const useRealMessages = (conversationId?: string, companyId?: string, rec
       }
 
       console.log('✅ تم جلب الرسائل:', response.data?.length || 0);
-      console.log('📋 [DEBUG] Messages data:', response.data);
-      console.log('📋 [DEBUG] First message:', response.data?.[0]);
 
       // تحويل البيانات للتوافق مع Frontend
-      const transformedMessages = (response.data || []).map((msg: any) => ({
-        ...msg,
-        message_text: msg.content || msg.message_text,  // تحويل content إلى message_text
-        created_at: msg.timestamp || msg.created_at,    // تحويل timestamp إلى created_at
-        sender_type: msg.sender_type === 'agent' ? 'page' : msg.sender_type  // تحويل agent إلى page
-      }));
+      const transformedMessages = (response.data || []).map((msg: any) => {
+        const transformed = {
+          ...msg,
+          message_text: msg.content || msg.message_text,  // تحويل content إلى message_text
+          created_at: msg.timestamp || msg.created_at,    // تحويل timestamp إلى created_at
+          // تحديد sender_type بناءً على sender_id أولاً، ثم is_from_page
+          sender_type: (msg.sender_id === 'admin' || msg.sender_id === '250528358137901' || msg.is_from_page === 1) ? 'admin' : 'customer',
+          is_from_page: msg.is_from_page,  // الحفاظ على is_from_page الأصلي
+          image_url: msg.image_url,        // تمرير image_url
+          content: msg.content || msg.message_text  // تمرير content للتوافق مع ChatWindow
+        };
 
-      console.log('🔄 [DEBUG] Transformed messages:', transformedMessages);
-      console.log('🔄 [DEBUG] First transformed message:', transformedMessages?.[0]);
+        // إضافة سجل للصور
+        if (msg.message_type === 'image' || msg.image_url) {
+          console.log('🖼️ [DEBUG] رسالة صورة:', {
+            id: msg.id,
+            message_type: msg.message_type,
+            image_url: msg.image_url,
+            sender_type: transformed.sender_type,
+            is_from_page: msg.is_from_page
+          });
+        }
+
+        return transformed;
+      });
+
+      console.log('🔄 [DEBUG] Transformed messages:', transformedMessages.length, 'messages');
 
       return transformedMessages;
     },

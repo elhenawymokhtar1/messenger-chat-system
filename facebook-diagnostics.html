@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 تشخيص مشاكل Facebook Settings</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+        
+        .section {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .section h3 {
+            margin: 0 0 15px 0;
+            color: #495057;
+            font-size: 18px;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 5px;
+        }
+        
+        .test-item {
+            margin: 10px 0;
+            padding: 12px;
+            background: white;
+            border-radius: 6px;
+            border-left: 4px solid #6c757d;
+            font-family: monospace;
+            font-size: 13px;
+        }
+        
+        .test-item.success {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+        
+        .test-item.error {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+        
+        .test-item.warning {
+            border-left-color: #ffc107;
+            background: #fff3cd;
+        }
+        
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+            transition: background 0.3s;
+        }
+        
+        .btn:hover {
+            background: #0056b3;
+        }
+        
+        .btn-success {
+            background: #28a745;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+        }
+        
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .json-display {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .controls {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-left: 8px;
+        }
+        
+        .status-indicator.online {
+            background: #28a745;
+        }
+        
+        .status-indicator.offline {
+            background: #dc3545;
+        }
+        
+        .status-indicator.unknown {
+            background: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 تشخيص مشاكل Facebook Settings</h1>
+        
+        <div class="controls">
+            <button class="btn" onclick="runFullDiagnostics()">🚀 تشخيص شامل</button>
+            <button class="btn btn-success" onclick="testLocalStorage()">💾 فحص localStorage</button>
+            <button class="btn btn-warning" onclick="testServers()">🖥️ فحص الخوادم</button>
+            <button class="btn btn-danger" onclick="clearAllData()">🗑️ مسح البيانات</button>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>جاري التشخيص...</p>
+        </div>
+        
+        <!-- فحص localStorage -->
+        <div class="section">
+            <h3>💾 فحص localStorage</h3>
+            <div id="localStorage-results"></div>
+        </div>
+        
+        <!-- فحص الخوادم -->
+        <div class="section">
+            <h3>🖥️ فحص الخوادم</h3>
+            <div id="servers-results"></div>
+        </div>
+        
+        <!-- فحص Facebook API -->
+        <div class="section">
+            <h3>📘 فحص Facebook API</h3>
+            <div id="facebook-api-results"></div>
+        </div>
+        
+        <!-- فحص قاعدة البيانات -->
+        <div class="section">
+            <h3>🗄️ فحص قاعدة البيانات</h3>
+            <div id="database-results"></div>
+        </div>
+        
+        <!-- تفاصيل الأخطاء -->
+        <div class="section">
+            <h3>🐛 تفاصيل الأخطاء والحلول</h3>
+            <div id="error-details"></div>
+        </div>
+        
+        <!-- البيانات الخام -->
+        <div class="section">
+            <h3>📊 البيانات الخام</h3>
+            <div id="raw-data" class="json-display"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3002';
+        const FRONTEND_BASE = 'http://localhost:8080';
+        
+        let diagnosticsData = {
+            localStorage: {},
+            servers: {},
+            facebookApi: {},
+            database: {},
+            errors: [],
+            timestamp: new Date().toISOString()
+        };
+
+        function showLoading(show = true) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+
+        function addResult(containerId, message, type = 'info', data = null) {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = `test-item ${type}`;
+            
+            let content = message;
+            if (data) {
+                content += `<br><small>${JSON.stringify(data, null, 2)}</small>`;
+            }
+            
+            div.innerHTML = content;
+            container.appendChild(div);
+        }
+
+        function clearResults() {
+            const containers = ['localStorage-results', 'servers-results', 'facebook-api-results', 'database-results', 'error-details'];
+            containers.forEach(id => {
+                document.getElementById(id).innerHTML = '';
+            });
+        }
+
+        async function testLocalStorage() {
+            clearResults();
+            addResult('localStorage-results', '🔍 فحص localStorage...', 'info');
+            
+            const keys = ['auth_token', 'company_id', 'company', 'userToken'];
+            const localStorageData = {};
+            
+            keys.forEach(key => {
+                const value = localStorage.getItem(key);
+                localStorageData[key] = value;
+                
+                if (value) {
+                    if (key === 'company') {
+                        try {
+                            const parsed = JSON.parse(value);
+                            addResult('localStorage-results', `✅ ${key}: موجود وصحيح`, 'success', {
+                                id: parsed.id,
+                                name: parsed.name,
+                                email: parsed.email
+                            });
+                        } catch (e) {
+                            addResult('localStorage-results', `❌ ${key}: موجود لكن تالف`, 'error', value.substring(0, 100));
+                        }
+                    } else {
+                        addResult('localStorage-results', `✅ ${key}: ${value}`, 'success');
+                    }
+                } else {
+                    addResult('localStorage-results', `❌ ${key}: غير موجود`, 'error');
+                }
+            });
+            
+            diagnosticsData.localStorage = localStorageData;
+            updateRawData();
+        }
+
+        async function testServers() {
+            addResult('servers-results', '🔍 فحص الخوادم...', 'info');
+            
+            // فحص خادم API (3002)
+            try {
+                const response = await fetch(`${API_BASE}/api/health`);
+                if (response.ok) {
+                    const data = await response.json();
+                    addResult('servers-results', '✅ خادم API (3002): يعمل بشكل صحيح', 'success', data);
+                    diagnosticsData.servers.api = { status: 'online', data };
+                } else {
+                    addResult('servers-results', `❌ خادم API (3002): خطأ ${response.status}`, 'error');
+                    diagnosticsData.servers.api = { status: 'error', code: response.status };
+                }
+            } catch (error) {
+                addResult('servers-results', `❌ خادم API (3002): غير متاح`, 'error', error.message);
+                diagnosticsData.servers.api = { status: 'offline', error: error.message };
+            }
+            
+            // فحص خادم Frontend (8080)
+            try {
+                const response = await fetch(`${FRONTEND_BASE}/`);
+                if (response.ok) {
+                    addResult('servers-results', '✅ خادم Frontend (8080): يعمل بشكل صحيح', 'success');
+                    diagnosticsData.servers.frontend = { status: 'online' };
+                } else {
+                    addResult('servers-results', `⚠️ خادم Frontend (8080): استجابة غير متوقعة`, 'warning');
+                    diagnosticsData.servers.frontend = { status: 'warning', code: response.status };
+                }
+            } catch (error) {
+                addResult('servers-results', `❌ خادم Frontend (8080): غير متاح`, 'error', error.message);
+                diagnosticsData.servers.frontend = { status: 'offline', error: error.message };
+            }
+            
+            updateRawData();
+        }
+
+        async function testFacebookApi() {
+            addResult('facebook-api-results', '🔍 فحص Facebook API...', 'info');
+
+            const companyId = localStorage.getItem('company_id');
+            if (!companyId) {
+                addResult('facebook-api-results', '❌ لا يوجد company_id في localStorage', 'error');
+                return;
+            }
+
+            // فحص جلب إعدادات Facebook
+            try {
+                const response = await fetch(`${API_BASE}/api/facebook/settings?company_id=${companyId}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    addResult('facebook-api-results', `✅ جلب إعدادات Facebook: نجح (${Array.isArray(data) ? data.length : 0} صفحة)`, 'success', data);
+                    diagnosticsData.facebookApi.settings = { status: 'success', data };
+                } else {
+                    addResult('facebook-api-results', `❌ جلب إعدادات Facebook: فشل`, 'error', data);
+                    diagnosticsData.facebookApi.settings = { status: 'error', data };
+                }
+            } catch (error) {
+                addResult('facebook-api-results', `❌ جلب إعدادات Facebook: خطأ في الاتصال`, 'error', error.message);
+                diagnosticsData.facebookApi.settings = { status: 'error', error: error.message };
+            }
+
+            updateRawData();
+        }
+
+        async function testDatabase() {
+            addResult('database-results', '🔍 فحص قاعدة البيانات...', 'info');
+
+            // فحص صحة قاعدة البيانات
+            try {
+                const response = await fetch(`${API_BASE}/api/db-test`);
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    addResult('database-results', '✅ اتصال قاعدة البيانات: نجح', 'success', data);
+                    diagnosticsData.database.connection = { status: 'success', data };
+                } else {
+                    addResult('database-results', '❌ اتصال قاعدة البيانات: فشل', 'error', data);
+                    diagnosticsData.database.connection = { status: 'error', data };
+                }
+            } catch (error) {
+                addResult('database-results', '❌ اتصال قاعدة البيانات: خطأ', 'error', error.message);
+                diagnosticsData.database.connection = { status: 'error', error: error.message };
+            }
+
+            // فحص بيانات Facebook في قاعدة البيانات
+            try {
+                const response = await fetch(`${API_BASE}/api/db-facebook-check`);
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    addResult('database-results', `✅ بيانات Facebook: ${data.total} صفحة موجودة`, 'success', data);
+                    diagnosticsData.database.facebookData = { status: 'success', data };
+                } else {
+                    addResult('database-results', '❌ بيانات Facebook: خطأ في الجلب', 'error', data);
+                    diagnosticsData.database.facebookData = { status: 'error', data };
+                }
+            } catch (error) {
+                addResult('database-results', '❌ بيانات Facebook: خطأ في الاتصال', 'error', error.message);
+                diagnosticsData.database.facebookData = { status: 'error', error: error.message };
+            }
+
+            updateRawData();
+        }
+
+        async function analyzeErrors() {
+            addResult('error-details', '🔍 تحليل الأخطاء...', 'info');
+
+            const errors = [];
+            const solutions = [];
+
+            // تحليل localStorage
+            const companyId = localStorage.getItem('company_id');
+            const authToken = localStorage.getItem('auth_token');
+            const company = localStorage.getItem('company');
+
+            if (!companyId) {
+                errors.push('❌ company_id غير موجود في localStorage');
+                solutions.push('✅ الحل: تعيين company_id = c677b32f-fe1c-4c64-8362-a1c03406608d');
+            }
+
+            if (!authToken) {
+                errors.push('❌ auth_token غير موجود في localStorage');
+                solutions.push('✅ الحل: تعيين auth_token = test-token-c677b32f-fe1c-4c64-8362-a1c03406608d');
+            }
+
+            if (!company) {
+                errors.push('❌ company غير موجود في localStorage');
+                solutions.push('✅ الحل: تعيين بيانات الشركة في localStorage');
+            } else {
+                try {
+                    const parsed = JSON.parse(company);
+                    if (!parsed.id || parsed.id !== companyId) {
+                        errors.push('❌ company.id لا يطابق company_id');
+                        solutions.push('✅ الحل: تصحيح بيانات الشركة');
+                    }
+                } catch (e) {
+                    errors.push('❌ بيانات company تالفة في localStorage');
+                    solutions.push('✅ الحل: إعادة تعيين بيانات الشركة');
+                }
+            }
+
+            // تحليل الخوادم
+            if (diagnosticsData.servers.api?.status !== 'online') {
+                errors.push('❌ خادم API (3002) غير متاح');
+                solutions.push('✅ الحل: تشغيل خادم API بالأمر: node database-connected-server.cjs');
+            }
+
+            // عرض النتائج
+            if (errors.length === 0) {
+                addResult('error-details', '🎉 لا توجد أخطاء! النظام يعمل بشكل صحيح', 'success');
+            } else {
+                errors.forEach(error => addResult('error-details', error, 'error'));
+                solutions.forEach(solution => addResult('error-details', solution, 'warning'));
+            }
+
+            diagnosticsData.errors = errors;
+            diagnosticsData.solutions = solutions;
+            updateRawData();
+        }
+
+        function clearAllData() {
+            if (confirm('هل أنت متأكد من مسح جميع البيانات؟')) {
+                const keys = ['auth_token', 'company_id', 'company', 'userToken'];
+                keys.forEach(key => localStorage.removeItem(key));
+
+                addResult('error-details', '🗑️ تم مسح جميع البيانات من localStorage', 'warning');
+                testLocalStorage();
+            }
+        }
+
+        function updateRawData() {
+            document.getElementById('raw-data').textContent = JSON.stringify(diagnosticsData, null, 2);
+        }
+
+        async function runFullDiagnostics() {
+            clearResults();
+            showLoading(true);
+
+            try {
+                await testLocalStorage();
+                await testServers();
+                await testFacebookApi();
+                await testDatabase();
+                await analyzeErrors();
+            } catch (error) {
+                addResult('error-details', `❌ خطأ في التشخيص: ${error.message}`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // تشغيل تلقائي عند تحميل الصفحة
+        window.onload = function() {
+            updateRawData();
+            testLocalStorage();
+        };
+    </script>
+</body>
+</html>

@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { useCart } from "@/hooks/useCart";
-import { useOrders } from "@/hooks/useOrders";
+import { useNewCart } from "@/hooks/useNewCart";
+import { useCheckout } from "@/hooks/useCheckout";
 import { useToast } from "@/hooks/use-toast";
 import { 
   CreditCard, 
@@ -40,8 +40,8 @@ interface PaymentMethod {
 }
 
 const Checkout = () => {
-  const { cartItems, getCartSummary, clearCart } = useCart();
-  const { createOrder, isCreating } = useOrders();
+  const { cartItems, getCartSummary, clearCart, sessionId } = useNewCart();
+  const { checkout, isCheckingOut } = useCheckout();
   const { toast } = useToast();
   const navigate = useNavigate();
   
@@ -134,28 +134,41 @@ const Checkout = () => {
     setIsProcessing(true);
 
     try {
-      const orderData = {
-        customer_name: customerInfo.name,
-        customer_email: customerInfo.email,
-        customer_phone: customerInfo.phone,
-        customer_address: `${customerInfo.address}, ${customerInfo.city}`,
+      const checkoutData = {
+        customer_info: {
+          name: customerInfo.name,
+          email: customerInfo.email,
+          phone: customerInfo.phone,
+        },
+        shipping_address: {
+          street: customerInfo.address,
+          city: customerInfo.city,
+          postal_code: '',
+          country: 'السعودية'
+        },
         payment_method: selectedPayment,
         notes: customerInfo.notes,
-        subtotal: summary.subtotal,
-        tax_amount: summary.tax,
-        shipping_amount: summary.shipping,
-        total_amount: summary.total,
+        session_id: sessionId,
         items: cartItems.map(item => ({
           product_id: item.product_id,
-          product_name: item.product?.name || 'منتج غير معروف',
+          product_name: item.product_name,
+          product_sku: item.product_sku,
           quantity: item.quantity,
-          price: item.price,
-          total: item.price * item.quantity
-        }))
+          unit_price: item.unit_price,
+          sale_price: item.sale_price,
+          total_price: item.total_price
+        })),
+        summary: {
+          subtotal: summary.subtotal,
+          tax: summary.tax,
+          shipping: summary.shipping,
+          discount: summary.discount,
+          total: summary.total
+        }
       };
 
-      // استخدام mutateAsync بدلاً من mutate للحصول على promise
-      createOrder(orderData, {
+      // استخدام checkout hook الجديد
+      checkout(checkoutData, {
         onSuccess: (order) => {
           // مسح السلة
           clearCart();
@@ -462,10 +475,10 @@ const Checkout = () => {
                     </Button>
                     <Button 
                       onClick={handleCompleteOrder}
-                      disabled={isProcessing || isCreating}
+                      disabled={isProcessing || isCheckingOut}
                       className="flex-1 bg-green-600 hover:bg-green-700"
                     >
-                      {isProcessing || isCreating ? 'جاري إنشاء الطلب...' : 'تأكيد الطلب'}
+                      {isProcessing || isCheckingOut ? 'جاري إنشاء الطلب...' : 'تأكيد الطلب'}
                     </Button>
                   </div>
                 </CardContent>

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار إرسال رسالة بسيط</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, textarea, button {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 اختبار إرسال رسالة بسيط</h1>
+        
+        <div class="form-group">
+            <label for="conversationId">معرف المحادثة:</label>
+            <input type="text" id="conversationId" value="3caeb8ae-3210-4157-b529-16189b14c235">
+        </div>
+        
+        <div class="form-group">
+            <label for="companyId">معرف الشركة:</label>
+            <input type="text" id="companyId" value="c677b32f-fe1c-4c64-8362-a1c03406608d">
+        </div>
+        
+        <div class="form-group">
+            <label for="messageText">نص الرسالة:</label>
+            <textarea id="messageText" rows="3">اختبار تصفير العدد - رسالة جديدة 🔥</textarea>
+        </div>
+        
+        <button onclick="sendMessage()">📤 إرسال الرسالة</button>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        async function sendMessage() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<div class="info">جاري إرسال الرسالة...</div>';
+            
+            const conversationId = document.getElementById('conversationId').value;
+            const companyId = document.getElementById('companyId').value;
+            const messageText = document.getElementById('messageText').value;
+            
+            console.log('🚀 بدء إرسال الرسالة...');
+            console.log('📝 البيانات:', { conversationId, companyId, messageText });
+            
+            const messageData = {
+                message_text: messageText,
+                company_id: companyId,
+                message_type: 'text',
+                is_from_page: true
+            };
+            
+            console.log('📦 البيانات المرسلة:', messageData);
+            
+            try {
+                const url = `http://localhost:3002/api/conversations/${conversationId}/messages`;
+                console.log('🌐 الرابط:', url);
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(messageData)
+                });
+                
+                console.log('📡 الاستجابة:', response);
+                console.log('📊 حالة الاستجابة:', response.status);
+                
+                const data = await response.json();
+                console.log('📄 بيانات الاستجابة:', data);
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `<div class="success">✅ تم إرسال الرسالة بنجاح!
+الاستجابة: ${JSON.stringify(data, null, 2)}</div>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ فشل إرسال الرسالة!
+كود الخطأ: ${response.status}
+الاستجابة: ${JSON.stringify(data, null, 2)}</div>`;
+                }
+            } catch (error) {
+                console.error('❌ خطأ:', error);
+                resultDiv.innerHTML = `<div class="error">❌ خطأ في إرسال الرسالة!
+الخطأ: ${error.message}</div>`;
+            }
+        }
+        
+        // اختبار الاتصال عند تحميل الصفحة
+        window.onload = async function() {
+            console.log('🔍 اختبار الاتصال بالخادم...');
+            try {
+                const response = await fetch('http://localhost:3002/api/health');
+                const data = await response.json();
+                console.log('✅ الخادم متاح:', data);
+            } catch (error) {
+                console.error('❌ الخادم غير متاح:', error);
+            }
+        };
+    </script>
+</body>
+</html>

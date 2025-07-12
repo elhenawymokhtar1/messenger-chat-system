@@ -34,20 +34,21 @@ interface ShippingMethod {
   id?: string;
   name: string;
   description: string;
-  type: 'standard' | 'express' | 'overnight' | 'international';
-  base_cost: number;
+  type: 'standard' | 'express' | 'same_day' | 'economy' | 'pickup';
+  cost: number;
   cost_per_kg?: number;
   free_shipping_threshold?: number;
-  delivery_time_min: number;
-  delivery_time_max: number;
-  delivery_time_unit: 'hours' | 'days' | 'weeks';
+  estimated_days_min: number;
+  estimated_days_max: number;
+  delivery_time_unit?: 'hours' | 'days' | 'weeks';
   is_active: boolean;
-  available_regions: string[];
+  available_cities: string[];
   max_weight?: number;
   max_dimensions?: string;
-  tracking_available: boolean;
-  insurance_available: boolean;
+  tracking_available?: boolean;
+  insurance_available?: boolean;
   store_id?: string;
+  company_id?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -56,15 +57,15 @@ interface ShippingMethod {
 interface ShippingFormData {
   name: string;
   description: string;
-  type: 'standard' | 'express' | 'overnight' | 'international';
-  base_cost: string;
+  type: 'standard' | 'express' | 'same_day' | 'economy' | 'pickup';
+  cost: string;
   cost_per_kg: string;
   free_shipping_threshold: string;
-  delivery_time_min: string;
-  delivery_time_max: string;
+  estimated_days_min: string;
+  estimated_days_max: string;
   delivery_time_unit: 'hours' | 'days' | 'weeks';
   is_active: boolean;
-  available_regions: string;
+  available_cities: string;
   max_weight: string;
   max_dimensions: string;
   tracking_available: boolean;
@@ -98,14 +99,14 @@ const NewShipping: React.FC = () => {
     name: '',
     description: '',
     type: 'standard',
-    base_cost: '',
+    cost: '',
     cost_per_kg: '',
     free_shipping_threshold: '',
-    delivery_time_min: '',
-    delivery_time_max: '',
+    estimated_days_min: '',
+    estimated_days_max: '',
     delivery_time_unit: 'days',
     is_active: true,
-    available_regions: '',
+    available_cities: '',
     max_weight: '',
     max_dimensions: '',
     tracking_available: false,
@@ -118,14 +119,14 @@ const NewShipping: React.FC = () => {
       name: '',
       description: '',
       type: 'standard',
-      base_cost: '',
+      cost: '',
       cost_per_kg: '',
       free_shipping_threshold: '',
-      delivery_time_min: '',
-      delivery_time_max: '',
+      estimated_days_min: '',
+      estimated_days_max: '',
       delivery_time_unit: 'days',
       is_active: true,
-      available_regions: '',
+      available_cities: '',
       max_weight: '',
       max_dimensions: '',
       tracking_available: false,
@@ -185,14 +186,14 @@ const NewShipping: React.FC = () => {
         name: formData.name.trim(),
         description: formData.description.trim(),
         type: formData.type,
-        base_cost: parseFloat(formData.base_cost) || 0,
+        cost: parseFloat(formData.cost) || 0,
         cost_per_kg: formData.cost_per_kg ? parseFloat(formData.cost_per_kg) : null,
         free_shipping_threshold: formData.free_shipping_threshold ? parseFloat(formData.free_shipping_threshold) : null,
-        delivery_time_min: parseInt(formData.delivery_time_min) || 1,
-        delivery_time_max: parseInt(formData.delivery_time_max) || 1,
+        estimated_days_min: parseInt(formData.estimated_days_min) || 1,
+        estimated_days_max: parseInt(formData.estimated_days_max) || 1,
         delivery_time_unit: formData.delivery_time_unit,
         is_active: formData.is_active,
-        available_regions: formData.available_regions.split(',').map(r => r.trim()).filter(Boolean),
+        available_cities: formData.available_cities.split(',').map(r => r.trim()).filter(Boolean),
         max_weight: formData.max_weight ? parseFloat(formData.max_weight) : null,
         max_dimensions: formData.max_dimensions.trim() || null,
         tracking_available: formData.tracking_available,
@@ -251,14 +252,14 @@ const NewShipping: React.FC = () => {
         name: formData.name.trim(),
         description: formData.description.trim(),
         type: formData.type,
-        base_cost: parseFloat(formData.base_cost) || 0,
+        cost: parseFloat(formData.cost) || 0,
         cost_per_kg: formData.cost_per_kg ? parseFloat(formData.cost_per_kg) : null,
         free_shipping_threshold: formData.free_shipping_threshold ? parseFloat(formData.free_shipping_threshold) : null,
-        delivery_time_min: parseInt(formData.delivery_time_min) || 1,
-        delivery_time_max: parseInt(formData.delivery_time_max) || 1,
+        estimated_days_min: parseInt(formData.estimated_days_min) || 1,
+        estimated_days_max: parseInt(formData.estimated_days_max) || 1,
         delivery_time_unit: formData.delivery_time_unit,
         is_active: formData.is_active,
-        available_regions: formData.available_regions.split(',').map(r => r.trim()).filter(Boolean),
+        available_cities: formData.available_cities.split(',').map(r => r.trim()).filter(Boolean),
         max_weight: formData.max_weight ? parseFloat(formData.max_weight) : null,
         max_dimensions: formData.max_dimensions.trim() || null,
         tracking_available: formData.tracking_available,
@@ -356,18 +357,18 @@ const NewShipping: React.FC = () => {
       name: method.name,
       description: method.description,
       type: method.type,
-      base_cost: method.base_cost.toString(),
+      cost: method.cost.toString(),
       cost_per_kg: method.cost_per_kg?.toString() || '',
       free_shipping_threshold: method.free_shipping_threshold?.toString() || '',
-      delivery_time_min: method.delivery_time_min.toString(),
-      delivery_time_max: method.delivery_time_max.toString(),
-      delivery_time_unit: method.delivery_time_unit,
+      estimated_days_min: method.estimated_days_min.toString(),
+      estimated_days_max: method.estimated_days_max.toString(),
+      delivery_time_unit: method.delivery_time_unit || 'days',
       is_active: method.is_active,
-      available_regions: method.available_regions.join(', '),
+      available_cities: method.available_cities.join(', '),
       max_weight: method.max_weight?.toString() || '',
       max_dimensions: method.max_dimensions || '',
-      tracking_available: method.tracking_available,
-      insurance_available: method.insurance_available
+      tracking_available: method.tracking_available || false,
+      insurance_available: method.insurance_available || false
     });
     setShowAddForm(true);
   };
@@ -391,10 +392,10 @@ const NewShipping: React.FC = () => {
       return;
     }
 
-    if (!formData.base_cost || parseFloat(formData.base_cost) < 0) {
+    if (!formData.cost || parseFloat(formData.cost) < 0) {
       toast({
         title: "خطأ",
-        description: "التكلفة الأساسية مطلوبة ويجب أن تكون صفر أو أكثر",
+        description: "التكلفة مطلوبة ويجب أن تكون صفر أو أكثر",
         variant: "destructive"
       });
       return;
@@ -640,11 +641,11 @@ const NewShipping: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium mb-2">التكلفة الأساسية (ر.س) *</label>
+                <label className="block text-sm font-medium mb-2">التكلفة (ر.س) *</label>
                 <Input
                   type="number"
-                  value={formData.base_cost}
-                  onChange={(e) => handleInputChange('base_cost', e.target.value)}
+                  value={formData.cost}
+                  onChange={(e) => handleInputChange('cost', e.target.value)}
                   placeholder="25.00"
                   min="0"
                   step="0.01"
@@ -681,8 +682,8 @@ const NewShipping: React.FC = () => {
                 <label className="block text-sm font-medium mb-2">وقت التسليم الأدنى *</label>
                 <Input
                   type="number"
-                  value={formData.delivery_time_min}
-                  onChange={(e) => handleInputChange('delivery_time_min', e.target.value)}
+                  value={formData.estimated_days_min}
+                  onChange={(e) => handleInputChange('estimated_days_min', e.target.value)}
                   placeholder="1"
                   min="1"
                 />
@@ -692,8 +693,8 @@ const NewShipping: React.FC = () => {
                 <label className="block text-sm font-medium mb-2">وقت التسليم الأقصى *</label>
                 <Input
                   type="number"
-                  value={formData.delivery_time_max}
-                  onChange={(e) => handleInputChange('delivery_time_max', e.target.value)}
+                  value={formData.estimated_days_max}
+                  onChange={(e) => handleInputChange('estimated_days_max', e.target.value)}
                   placeholder="3"
                   min="1"
                 />
@@ -738,10 +739,10 @@ const NewShipping: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">المناطق المتاحة (مفصولة بفواصل)</label>
+              <label className="block text-sm font-medium mb-2">المدن المتاحة (مفصولة بفواصل)</label>
               <Input
-                value={formData.available_regions}
-                onChange={(e) => handleInputChange('available_regions', e.target.value)}
+                value={formData.available_cities}
+                onChange={(e) => handleInputChange('available_cities', e.target.value)}
                 placeholder="الرياض, جدة, الدمام, مكة"
               />
             </div>
@@ -843,8 +844,8 @@ const NewShipping: React.FC = () => {
 
                 <div className="space-y-3 mb-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-500">التكلفة الأساسية:</span>
-                    <span className="font-bold text-green-600">{method.base_cost} ر.س</span>
+                    <span className="text-sm text-gray-500">التكلفة:</span>
+                    <span className="font-bold text-green-600">{method.cost} ر.س</span>
                   </div>
 
                   {method.cost_per_kg && (
@@ -866,10 +867,10 @@ const NewShipping: React.FC = () => {
                     <div className="flex items-center gap-1">
                       <Clock className="w-4 h-4 text-gray-400" />
                       <span className="text-sm font-medium">
-                        {method.delivery_time_min === method.delivery_time_max
-                          ? `${method.delivery_time_min}`
-                          : `${method.delivery_time_min}-${method.delivery_time_max}`
-                        } {method.delivery_time_unit === 'hours' ? 'ساعة' : method.delivery_time_unit === 'days' ? 'يوم' : 'أسبوع'}
+                        {method.estimated_days_min === method.estimated_days_max
+                          ? `${method.estimated_days_min}`
+                          : `${method.estimated_days_min}-${method.estimated_days_max}`
+                        } {(method.delivery_time_unit || 'days') === 'hours' ? 'ساعة' : (method.delivery_time_unit || 'days') === 'days' ? 'يوم' : 'أسبوع'}
                       </span>
                     </div>
                   </div>
@@ -881,12 +882,12 @@ const NewShipping: React.FC = () => {
                     </div>
                   )}
 
-                  {method.available_regions.length > 0 && (
+                  {method.available_cities && method.available_cities.length > 0 && (
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-500">المناطق:</span>
+                      <span className="text-sm text-gray-500">المدن:</span>
                       <div className="flex items-center gap-1">
                         <MapPin className="w-4 h-4 text-gray-400" />
-                        <span className="text-sm font-medium">{method.available_regions.length} منطقة</span>
+                        <span className="text-sm font-medium">{method.available_cities.length} مدينة</span>
                       </div>
                     </div>
                   )}

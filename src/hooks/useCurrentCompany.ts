@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/hooks/useSimpleProperAuth';
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 
 export interface CurrentCompany {
   id: string;
@@ -16,24 +15,80 @@ export interface CurrentCompany {
   last_login_at?: string;
 }
 
+// مفتاح ثابت للشركة الحالية
+const CURRENT_COMPANY_KEY = 'current-company';
+
+// دالة لحفظ الشركة في sessionStorage
+const saveCompanyToStorage = (company: CurrentCompany | null) => {
+  if (company) {
+    sessionStorage.setItem(CURRENT_COMPANY_KEY, JSON.stringify(company));
+  } else {
+    sessionStorage.removeItem(CURRENT_COMPANY_KEY);
+  }
+};
+
+// دالة لجلب الشركة من sessionStorage
+const getCompanyFromStorage = (): CurrentCompany | null => {
+  try {
+    const stored = sessionStorage.getItem(CURRENT_COMPANY_KEY);
+    return stored ? JSON.parse(stored) : null;
+  } catch {
+    return null;
+  }
+};
+
 export const useCurrentCompany = () => {
-  const { user, loading } = useAuth();
+  const queryClient = useQueryClient();
 
-  // تحويل user من نظام المصادقة إلى CurrentCompany
-  const company: CurrentCompany | null = user ? {
-    id: user.id,
-    name: user.name,
-    email: user.email,
-    status: user.status,
-    created_at: user.created_at
-  } : null;
+  // جلب بيانات الشركة الحالية
+  const { data: company, isLoading: loading } = useQuery({
+    queryKey: ['current-company'],
+    queryFn: getCompanyFromStorage,
+    staleTime: Infinity, // البيانات لا تنتهي صلاحيتها
+    gcTime: Infinity, // لا تحذف من الذاكرة
+  });
 
-  const updateCompany = async (updatedCompany: CurrentCompany) => {
-    console.log('⚠️ updateCompany غير مدعوم في النظام الجديد');
+  // تحديث بيانات الشركة
+  const updateCompanyMutation = useMutation({
+    mutationFn: async (newCompany: CurrentCompany) => {
+      saveCompanyToStorage(newCompany);
+      return newCompany;
+    },
+    onSuccess: (newCompany) => {
+      queryClient.setQueryData(['current-company'], newCompany);
+    },
+  });
+
+  // مسح بيانات الشركة
+  const clearCompanyMutation = useMutation({
+    mutationFn: async () => {
+      saveCompanyToStorage(null);
+      return null;
+    },
+    onSuccess: () => {
+      queryClient.setQueryData(['current-company'], null);
+    },
+  });
+
+  // تعيين شركة جديدة
+  const setCompany = (newCompany: CurrentCompany | null) => {
+    if (newCompany) {
+      updateCompanyMutation.mutate(newCompany);
+    } else {
+      clearCompanyMutation.mutate();
+    }
+  };
+
+  const updateCompany = (updatedCompany: CurrentCompany) => {
+    updateCompanyMutation.mutate(updatedCompany);
   };
 
   const clearCompany = () => {
-    console.log('⚠️ clearCompany غير مدعوم في النظام الجديد');
+    clearCompanyMutation.mutate();
+  };
+
+  const reloadCompany = () => {
+    queryClient.invalidateQueries({ queryKey: ['current-company'] });
   };
 
   return {
@@ -41,6 +96,8 @@ export const useCurrentCompany = () => {
     loading,
     updateCompany,
     clearCompany,
+    reloadCompany,
+    setCompany,
     isNewCompany: company ? isCompanyNew(company.created_at) : false
   };
 };

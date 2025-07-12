@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { messagesApi } from "@/lib/mysql-api";
 import { FacebookApiService } from "@/services/facebookApi";
 import { frontendLogger } from "@/utils/frontendLogger";
+import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 
 export interface Message {
   id: string;
@@ -22,6 +23,7 @@ export interface Message {
 
 export const useMessages = (conversationId: string | null) => {
   const queryClient = useQueryClient();
+  const { company } = useCurrentCompany();
 
   const { data: messages = [], isLoading, error } = useQuery({
     queryKey: ['messages', conversationId],
@@ -210,6 +212,15 @@ export const useMessages = (conversationId: string | null) => {
         hasImage: !!imageUrl
       });
 
+      // الحصول على company_id
+      const companyId = company?.id || 'c677b32f-fe1c-4c64-8362-a1c03406608d';
+
+      frontendLogger.info(`Sending message with company_id`, {
+        requestId,
+        companyId,
+        hasCompany: !!company
+      }, 'MESSAGE_SEND');
+
       const response = await fetch(`http://localhost:3002/api/conversations/${conversationId}/messages`, {
         method: 'POST',
         headers: {
@@ -218,7 +229,8 @@ export const useMessages = (conversationId: string | null) => {
         body: JSON.stringify({
           content: finalContent,
           sender_type: senderType,
-          image_url: imageUrl
+          image_url: imageUrl,
+          company_id: companyId
         })
       });
 

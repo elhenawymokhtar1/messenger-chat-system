@@ -47,63 +47,26 @@ export const useAuthPersistence = () => {
   });
 
   /**
-   * 💾 حفظ بيانات المصادقة
+   * 💾 حفظ بيانات المصادقة (تم إيقافه - استخدم React Query)
    */
   const saveAuthData = useCallback((user: AuthUser) => {
-    try {
-      localStorage.setItem(STORAGE_KEYS.COMPANY, JSON.stringify(user));
-      localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, `auth_${user.id}_${Date.now()}`);
-      localStorage.setItem(STORAGE_KEYS.LAST_CHECK, Date.now().toString());
-      
-      console.log('✅ [AUTH] تم حفظ بيانات المصادقة:', user.name);
-    } catch (error) {
-      console.error('❌ [AUTH] خطأ في حفظ بيانات المصادقة:', error);
-    }
+    console.log('⚠️ [AUTH] saveAuthData مُعطل - استخدم React Query بدلاً من ذلك');
   }, []);
 
   /**
-   * 🗑️ مسح بيانات المصادقة
+   * 🗑️ مسح بيانات المصادقة (تم إيقافه - استخدم React Query)
    */
   const clearAuthData = useCallback(() => {
-    try {
-      localStorage.removeItem(STORAGE_KEYS.COMPANY);
-      localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
-      localStorage.removeItem(STORAGE_KEYS.LAST_CHECK);
-      
-      console.log('🧹 [AUTH] تم مسح بيانات المصادقة');
-    } catch (error) {
-      console.error('❌ [AUTH] خطأ في مسح بيانات المصادقة:', error);
-    }
+    console.log('⚠️ [AUTH] clearAuthData مُعطل - استخدم React Query بدلاً من ذلك');
   }, []);
 
   /**
-   * 📋 جلب بيانات المصادقة من التخزين المحلي
+   * 📋 جلب بيانات المصادقة (تم إيقافه - استخدم React Query)
    */
   const getStoredAuthData = useCallback((): AuthUser | null => {
-    try {
-      const companyData = localStorage.getItem(STORAGE_KEYS.COMPANY);
-      const authToken = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
-      
-      if (!companyData || !authToken) {
-        return null;
-      }
-      
-      const user = JSON.parse(companyData);
-      
-      // التحقق من صحة البيانات الأساسية
-      if (!user.id || !user.email || !user.name) {
-        console.warn('⚠️ [AUTH] بيانات المصادقة غير مكتملة');
-        clearAuthData();
-        return null;
-      }
-      
-      return user;
-    } catch (error) {
-      console.error('❌ [AUTH] خطأ في قراءة بيانات المصادقة:', error);
-      clearAuthData();
-      return null;
-    }
-  }, [clearAuthData]);
+    console.log('⚠️ [AUTH] getStoredAuthData مُعطل - استخدم React Query بدلاً من ذلك');
+    return null;
+  }, []);
 
   /**
    * 🔍 التحقق من صحة بيانات المصادقة مع الخادم

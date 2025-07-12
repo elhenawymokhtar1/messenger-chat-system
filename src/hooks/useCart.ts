@@ -335,9 +335,9 @@ export const useCart = (sessionId?: string) => {
       }
 
       if (item.product.stock_quantity < item.quantity) {
-        invalidItems.push({ 
-          ...item, 
-          reason: `الكمية المتاحة: ${item.product.stock_quantity}`
+        invalidItems.push({
+          ...item,
+          reason: "الكمية المتاحة: " + item.product.stock_quantity
         });
         continue;
       }

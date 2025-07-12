@@ -27,7 +27,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const checkAuthStatus = async () => {
     try {
       console.log('🔍 [AUTH] بدء التحقق من حالة المصادقة...');
-      const companyData = localStorage.getItem('company');
+      // تم إيقاف localStorage - استخدم React Query
+      const companyData = null;
       if (companyData) {
         try {
           const company = JSON.parse(companyData);
@@ -51,7 +52,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
           }
         } catch (parseError) {
           console.error('❌ [AUTH] خطأ في تحليل بيانات الشركة:', parseError);
-          localStorage.removeItem('company');
+          // localStorage.removeItem('company'); // تم إيقافه
         }
       } else {
         console.log('ℹ️ [AUTH] لا توجد بيانات محفوظة - إنشاء بيانات افتراضية');
@@ -65,7 +66,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
           created_at: new Date().toISOString()
         };
 
-        localStorage.setItem('company', JSON.stringify(defaultCompany));
+        // localStorage.setItem('company', JSON.stringify(defaultCompany)); // تم إيقافه
         console.log('✅ [AUTH] تم إنشاء بيانات شركة افتراضية');
 
         setAuthState({

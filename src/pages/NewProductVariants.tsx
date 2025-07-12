@@ -6,14 +6,14 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { 
-  Package, 
-  Plus, 
-  Search, 
-  Filter, 
-  Edit, 
-  Trash2, 
-  Save, 
+import {
+  Package,
+  Plus,
+  Search,
+  Filter,
+  Edit,
+  Trash2,
+  Save,
   X,
   Loader2,
   AlertCircle,
@@ -25,7 +25,10 @@ import {
   RefreshCw,
   Eye,
   Settings,
-  Layers
+  Layers,
+  HardDrive,
+  Smartphone,
+  Database
 } from 'lucide-react';
 
 // نوع البيانات لمتغير المنتج
@@ -527,11 +530,14 @@ const NewProductVariants: React.FC = () => {
 
   // دالة الحصول على أيقونة نوع الخاصية
   const getAttributeIcon = (type: string) => {
-    switch (type) {
+    switch (type.toLowerCase()) {
       case 'color': return <Palette className="w-4 h-4 text-purple-600" />;
       case 'size': return <Ruler className="w-4 h-4 text-blue-600" />;
       case 'material': return <Layers className="w-4 h-4 text-green-600" />;
       case 'style': return <Settings className="w-4 h-4 text-orange-600" />;
+      case 'storage': return <HardDrive className="w-4 h-4 text-indigo-600" />;
+      case 'model': return <Smartphone className="w-4 h-4 text-slate-600" />;
+      case 'capacity': return <Database className="w-4 h-4 text-cyan-600" />;
       default: return <Tag className="w-4 h-4 text-gray-600" />;
     }
   };
@@ -931,11 +937,11 @@ const NewProductVariants: React.FC = () => {
                   {/* الخصائص */}
                   <div>
                     <div className="flex flex-wrap gap-1">
-                      {variant.attributes.map((attr, index) => (
+                      {Object.entries(variant.attributes || {}).map(([key, value], index) => (
                         <Badge key={index} variant="outline" className="text-xs">
                           <span className="flex items-center gap-1">
-                            {getAttributeIcon(attr.type)}
-                            {attr.name}: {attr.value}
+                            {getAttributeIcon(key)}
+                            {key}: {value}
                           </span>
                         </Badge>
                       ))}

@@ -34,12 +34,13 @@ interface CartItem {
   product_name: string;
   product_image?: string;
   product_sku: string;
-  price: number;
+  unit_price: number;
+  sale_price?: number;
   quantity: number;
-  total: number;
-  stock_quantity: number;
-  session_id: string;
-  created_at?: string;
+  total_price: number;
+  stock_available: number;
+  session_id?: string;
+  added_at?: string;
   updated_at?: string;
 }
 
@@ -127,8 +128,8 @@ const NewCart: React.FC = () => {
       const result = await response.json();
       
       if (result.success) {
-        setCartItems(result.data || []);
-        console.log('✅ تم جلب عناصر السلة بنجاح:', result.data?.length || 0);
+        setCartItems(result.data?.items || []);
+        console.log('✅ تم جلب عناصر السلة بنجاح:', result.data?.items?.length || 0);
       } else {
         throw new Error(result.message || 'فشل في جلب عناصر السلة');
       }
@@ -170,8 +171,8 @@ const NewCart: React.FC = () => {
       const result = await response.json();
       
       if (result.success) {
-        setCartItems(prev => prev.map(item => 
-          item.id === itemId ? { ...item, quantity: newQuantity, total: item.price * newQuantity } : item
+        setCartItems(prev => prev.map(item =>
+          item.id === itemId ? { ...item, quantity: newQuantity, total_price: (item.sale_price || item.unit_price) * newQuantity } : item
         ));
         toast({
           title: "تم التحديث",
@@ -304,10 +305,10 @@ const NewCart: React.FC = () => {
 
   // دالة حساب ملخص السلة
   const calculateSummary = (): CartSummary => {
-    const subtotal = cartItems.reduce((sum, item) => sum + item.total, 0);
+    const subtotal = cartItems.reduce((sum, item) => sum + item.total_price, 0);
     const shipping = subtotal > 200 ? 0 : 25; // شحن مجاني للطلبات أكثر من 200 ر.س
     const tax = subtotal * 0.15; // ضريبة القيمة المضافة 15%
-    
+
     let discount = 0;
     if (appliedCoupon) {
       if (appliedCoupon.discount_type === 'percentage') {
@@ -316,9 +317,9 @@ const NewCart: React.FC = () => {
         discount = appliedCoupon.discount_value;
       }
     }
-    
+
     const total = subtotal + shipping + tax - discount;
-    
+
     return {
       subtotal,
       shipping,
@@ -542,9 +543,18 @@ const NewCart: React.FC = () => {
                     <div className="flex-1">
                       <h3 className="font-semibold text-gray-900">{item.product_name}</h3>
                       <p className="text-sm text-gray-500">SKU: {item.product_sku}</p>
-                      <p className="text-lg font-bold text-green-600">{item.price} ر.س</p>
+                      <div className="flex items-center gap-2">
+                        {item.sale_price ? (
+                          <>
+                            <p className="text-lg font-bold text-green-600">{item.sale_price} ر.س</p>
+                            <p className="text-sm text-gray-500 line-through">{item.unit_price} ر.س</p>
+                          </>
+                        ) : (
+                          <p className="text-lg font-bold text-green-600">{item.unit_price} ر.س</p>
+                        )}
+                      </div>
                       <p className="text-sm text-gray-500">
-                        متوفر: {item.stock_quantity} قطعة
+                        متوفر: {item.stock_available} قطعة
                       </p>
                     </div>
 
@@ -571,7 +581,7 @@ const NewCart: React.FC = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => updateQuantity(item.id!, item.quantity + 1)}
-                        disabled={item.quantity >= item.stock_quantity || isUpdating === item.id}
+                        disabled={item.quantity >= item.stock_available || isUpdating === item.id}
                       >
                         <Plus className="w-4 h-4" />
                       </Button>
@@ -579,7 +589,7 @@ const NewCart: React.FC = () => {
 
                     {/* المجموع وحذف */}
                     <div className="text-left">
-                      <p className="font-bold text-lg text-gray-900">{item.total} ر.س</p>
+                      <p className="font-bold text-lg text-gray-900">{item.total_price} ر.س</p>
                       <Button
                         variant="ghost"
                         size="sm"

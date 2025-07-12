@@ -186,11 +186,11 @@ export class CompanyServiceMySQL {
       console.log('📥 [FRONTEND] استجابة تسجيل الدخول:', response);
 
       // تحويل الاستجابة للتنسيق المتوقع
-      if (response.success && response.data?.company) {
+      if (response.success && response.company) {
         return {
           success: true,
           message: response.message || 'تم تسجيل الدخول بنجاح',
-          company: response.data.company
+          company: response.company
         };
       } else {
         return {

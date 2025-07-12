@@ -249,18 +249,18 @@ const AnalyticsPage: React.FC = () => {
   }
 
   // تحضير بيانات الرسوم البيانية
-  const pageChartData = Object.entries(data.pages).map(([pageId, pageData]) => ({
-    name: pageData.page_name,
-    contacted: pageData.customers_contacted,
-    replied: pageData.customers_replied,
-    response_rate: parseFloat(pageData.response_rate)
-  }));
+  const pageChartData = data.popular_pages ? data.popular_pages.map(pageData => ({
+    name: pageData.page,
+    views: pageData.views,
+    unique_views: pageData.unique_views,
+    avg_time: pageData.avg_time
+  })) : [];
 
-  const hourlyChartData = data.hourly_distribution.map(item => ({
+  const hourlyChartData = data.hourly_traffic ? data.hourly_traffic.map(item => ({
     hour: `${item.hour}:00`,
-    incoming: item.incoming_count,
-    outgoing: item.outgoing_count
-  }));
+    visitors: item.visitors,
+    page_views: item.page_views
+  })) : [];
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
@@ -269,9 +269,9 @@ const AnalyticsPage: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">📊 تحليل أداء المحادثات</h1>
+          <h1 className="text-3xl font-bold">📊 تحليل أداء الموقع</h1>
           <p className="text-gray-600">
-            الفترة: {data.period.start_date} إلى {data.period.end_date}
+            الفترة: {data.filters?.start_date} إلى {data.filters?.end_date}
           </p>
         </div>
         <div className="flex space-x-2">
@@ -341,9 +341,9 @@ const AnalyticsPage: React.FC = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">جميع الصفحات</SelectItem>
-                  {Object.entries(data.pages).map(([pageId, pageData]) => (
-                    <SelectItem key={pageId} value={pageId}>
-                      {pageData.page_name}
+                  {data.popular_pages && data.popular_pages.map((pageData, index) => (
+                    <SelectItem key={index} value={pageData.page}>
+                      {pageData.page}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -392,39 +392,43 @@ const AnalyticsPage: React.FC = () => {
       {/* الإحصائيات الرئيسية */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          title="العملاء المراسلون"
-          value={data.summary.total_customers_contacted}
+          title="إجمالي الزوار"
+          value={data.overview?.total_visitors || 0}
           icon={<Users className="h-4 w-4 text-blue-600" />}
-          change={data.comparison ? `${data.comparison.changes.customers_contacted_change}%` : undefined}
-          changeType={data.comparison ? 
-            (parseFloat(data.comparison.changes.customers_contacted_change) > 0 ? 'positive' : 
-             parseFloat(data.comparison.changes.customers_contacted_change) < 0 ? 'negative' : 'neutral') : undefined}
+          change={data.comparison ? `${data.comparison.growth?.visitors}%` : undefined}
+          changeType={data.comparison ?
+            (parseFloat(data.comparison.growth?.visitors || '0') > 0 ? 'positive' :
+             parseFloat(data.comparison.growth?.visitors || '0') < 0 ? 'negative' : 'neutral') : undefined}
         />
-        
+
         <StatCard
-          title="العملاء الذين ردوا"
-          value={data.summary.total_customers_replied}
+          title="مشاهدات الصفحات"
+          value={data.overview?.page_views || 0}
           icon={<Reply className="h-4 w-4 text-green-600" />}
-          change={data.comparison ? `${data.comparison.changes.customers_replied_change}%` : undefined}
-          changeType={data.comparison ? 
-            (parseFloat(data.comparison.changes.customers_replied_change) > 0 ? 'positive' : 
-             parseFloat(data.comparison.changes.customers_replied_change) < 0 ? 'negative' : 'neutral') : undefined}
+          change={data.comparison ? `${data.comparison.growth?.page_views}%` : undefined}
+          changeType={data.comparison ?
+            (parseFloat(data.comparison.growth?.page_views || '0') > 0 ? 'positive' :
+             parseFloat(data.comparison.growth?.page_views || '0') < 0 ? 'negative' : 'neutral') : undefined}
         />
-        
+
         <StatCard
-          title="معدل الرد"
-          value={`${data.summary.response_rate}%`}
+          title="معدل التحويل"
+          value={`${data.overview?.conversion_rate || 0}%`}
           icon={<TrendingUp className="h-4 w-4 text-purple-600" />}
-          change={data.comparison ? `${data.comparison.changes.response_rate_change}%` : undefined}
-          changeType={data.comparison ? 
-            (parseFloat(data.comparison.changes.response_rate_change) > 0 ? 'positive' : 
-             parseFloat(data.comparison.changes.response_rate_change) < 0 ? 'negative' : 'neutral') : undefined}
+          change={data.comparison ? `${data.comparison.growth?.conversion_rate}%` : undefined}
+          changeType={data.comparison ?
+            (parseFloat(data.comparison.growth?.conversion_rate || '0') > 0 ? 'positive' :
+             parseFloat(data.comparison.growth?.conversion_rate || '0') < 0 ? 'negative' : 'neutral') : undefined}
         />
-        
+
         <StatCard
-          title="إجمالي الرسائل"
-          value={data.summary.total_incoming_messages + data.summary.total_outgoing_messages}
+          title="إجمالي الإيرادات"
+          value={`${data.overview?.total_revenue || 0} ر.س`}
           icon={<MessageSquare className="h-4 w-4 text-orange-600" />}
+          change={data.comparison ? `${data.comparison.growth?.revenue}%` : undefined}
+          changeType={data.comparison ?
+            (parseFloat(data.comparison.growth?.revenue || '0') > 0 ? 'positive' :
+             parseFloat(data.comparison.growth?.revenue || '0') < 0 ? 'negative' : 'neutral') : undefined}
         />
       </div>
 
@@ -475,10 +479,10 @@ const AnalyticsPage: React.FC = () => {
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={({ name, response_rate }) => `${name}: ${response_rate}%`}
+                      label={({ name, views }) => `${name}: ${views}`}
                       outerRadius={80}
                       fill="#8884d8"
-                      dataKey="response_rate"
+                      dataKey="views"
                     >
                       {pageChartData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -504,34 +508,26 @@ const AnalyticsPage: React.FC = () => {
                   <thead>
                     <tr className="bg-gray-50">
                       <th className="border border-gray-300 p-3 text-right">الصفحة</th>
-                      <th className="border border-gray-300 p-3 text-center">عملاء مراسلون</th>
-                      <th className="border border-gray-300 p-3 text-center">عملاء ردوا</th>
-                      <th className="border border-gray-300 p-3 text-center">رسائل صادرة</th>
-                      <th className="border border-gray-300 p-3 text-center">رسائل واردة</th>
-                      <th className="border border-gray-300 p-3 text-center">معدل الرد</th>
+                      <th className="border border-gray-300 p-3 text-center">إجمالي المشاهدات</th>
+                      <th className="border border-gray-300 p-3 text-center">مشاهدات فريدة</th>
+                      <th className="border border-gray-300 p-3 text-center">متوسط الوقت (ثانية)</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {Object.entries(data.pages).map(([pageId, pageData]) => (
-                      <tr key={pageId} className="hover:bg-gray-50">
+                    {data.popular_pages && data.popular_pages.map((pageData, index) => (
+                      <tr key={index} className="hover:bg-gray-50">
                         <td className="border border-gray-300 p-3 font-medium">
-                          {pageData.page_name}
+                          {pageData.page}
                         </td>
                         <td className="border border-gray-300 p-3 text-center">
-                          {pageData.customers_contacted}
+                          {pageData.views}
                         </td>
                         <td className="border border-gray-300 p-3 text-center">
-                          {pageData.customers_replied}
+                          {pageData.unique_views}
                         </td>
                         <td className="border border-gray-300 p-3 text-center">
-                          {pageData.total_outgoing}
-                        </td>
-                        <td className="border border-gray-300 p-3 text-center">
-                          {pageData.total_incoming}
-                        </td>
-                        <td className="border border-gray-300 p-3 text-center">
-                          <Badge variant={parseFloat(pageData.response_rate) > 50 ? "default" : "secondary"}>
-                            {pageData.response_rate}%
+                          <Badge variant={pageData.avg_time > 120 ? "default" : "secondary"}>
+                            {pageData.avg_time}
                           </Badge>
                         </td>
                       </tr>
@@ -547,29 +543,27 @@ const AnalyticsPage: React.FC = () => {
         <TabsContent value="customers">
           <Card>
             <CardHeader>
-              <CardTitle>أفضل العملاء تفاعلاً</CardTitle>
-              <CardDescription>العملاء الأكثر نشاطاً في المحادثات</CardDescription>
+              <CardTitle>مصادر الزيارات</CardTitle>
+              <CardDescription>أهم مصادر الزيارات للموقع</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {data.top_customers.map((customer, index) => (
-                  <div key={customer.user_id} className="flex items-center justify-between p-4 border rounded-lg">
+                {data.traffic_sources && data.traffic_sources.map((source, index) => (
+                  <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
                     <div className="flex items-center space-x-4">
                       <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                         <span className="text-sm font-bold text-blue-600">#{index + 1}</span>
                       </div>
                       <div>
-                        <h3 className="font-medium">{customer.user_name || 'عميل غير معروف'}</h3>
+                        <h3 className="font-medium">{source.source}</h3>
                         <p className="text-sm text-gray-600">
-                          آخر رسالة: {new Date(customer.last_message_at).toLocaleDateString('ar-EG')}
+                          {source.percentage}% من إجمالي الزيارات
                         </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-lg font-bold">{customer.total_messages}</div>
-                      <div className="text-sm text-gray-600">
-                        {customer.customer_messages} واردة • {customer.company_messages} صادرة
-                      </div>
+                      <div className="text-lg font-bold">{source.visitors}</div>
+                      <div className="text-sm text-gray-600">زائر</div>
                     </div>
                   </div>
                 ))}
@@ -582,8 +576,8 @@ const AnalyticsPage: React.FC = () => {
         <TabsContent value="timeline">
           <Card>
             <CardHeader>
-              <CardTitle>التوزيع الزمني للرسائل</CardTitle>
-              <CardDescription>نشاط الرسائل حسب ساعات اليوم</CardDescription>
+              <CardTitle>نشاط الزوار حسب الساعة</CardTitle>
+              <CardDescription>نشاط الزوار ومشاهدات الصفحات حسب ساعات اليوم</CardDescription>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={400}>
@@ -593,8 +587,8 @@ const AnalyticsPage: React.FC = () => {
                   <YAxis />
                   <Tooltip />
                   <Legend />
-                  <Line type="monotone" dataKey="incoming" stroke="#8884d8" name="رسائل واردة" />
-                  <Line type="monotone" dataKey="outgoing" stroke="#82ca9d" name="رسائل صادرة" />
+                  <Line type="monotone" dataKey="visitors" stroke="#8884d8" name="الزوار" />
+                  <Line type="monotone" dataKey="page_views" stroke="#82ca9d" name="مشاهدات الصفحات" />
                 </LineChart>
               </ResponsiveContainer>
             </CardContent>
@@ -608,28 +602,34 @@ const AnalyticsPage: React.FC = () => {
           <CardHeader>
             <CardTitle>مقارنة مع الفترة السابقة</CardTitle>
             <CardDescription>
-              الفترة السابقة: {data.comparison.period.start_date} إلى {data.comparison.period.end_date}
+              مقارنة الأداء مع الفترة السابقة
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="text-center p-4 border rounded-lg">
                 <div className="text-2xl font-bold text-blue-600">
-                  {data.comparison.changes.customers_contacted_change}%
+                  {data.comparison.growth?.visitors || 0}%
                 </div>
-                <div className="text-sm text-gray-600">تغيير في العملاء المراسلين</div>
+                <div className="text-sm text-gray-600">تغيير في الزوار</div>
               </div>
               <div className="text-center p-4 border rounded-lg">
                 <div className="text-2xl font-bold text-green-600">
-                  {data.comparison.changes.customers_replied_change}%
+                  {data.comparison.growth?.page_views || 0}%
                 </div>
-                <div className="text-sm text-gray-600">تغيير في العملاء الذين ردوا</div>
+                <div className="text-sm text-gray-600">تغيير في مشاهدات الصفحات</div>
               </div>
               <div className="text-center p-4 border rounded-lg">
                 <div className="text-2xl font-bold text-purple-600">
-                  {data.comparison.changes.response_rate_change}%
+                  {data.comparison.growth?.conversion_rate || 0}%
                 </div>
-                <div className="text-sm text-gray-600">تغيير في معدل الرد</div>
+                <div className="text-sm text-gray-600">تغيير في معدل التحويل</div>
+              </div>
+              <div className="text-center p-4 border rounded-lg">
+                <div className="text-2xl font-bold text-orange-600">
+                  {data.comparison.growth?.revenue || 0}%
+                </div>
+                <div className="text-sm text-gray-600">تغيير في الإيرادات</div>
               </div>
             </div>
           </CardContent>

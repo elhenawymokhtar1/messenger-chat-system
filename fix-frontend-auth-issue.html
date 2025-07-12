@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إصلاح مشكلة المصادقة - Facebook Settings</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+            direction: rtl;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        .warning { background-color: #fff3cd; border-color: #ffeaa7; }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background-color: #0056b3; }
+        button.success { background-color: #28a745; }
+        button.danger { background-color: #dc3545; }
+        pre {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 إصلاح مشكلة المصادقة - Facebook Settings</h1>
+        
+        <div class="section info">
+            <h2>📋 المشكلة</h2>
+            <p>صفحة Facebook Settings لا تعرض الصفحات المرتبطة بالشركة التجريبية رغم أن API يعيدها بشكل صحيح.</p>
+            <p><strong>السبب المحتمل:</strong> مشكلة في المصادقة أو بيانات المستخدم في localStorage</p>
+        </div>
+
+        <div class="section">
+            <h2>🔍 فحص الحالة الحالية</h2>
+            <button onclick="checkCurrentState()">فحص الحالة</button>
+            <button onclick="checkLocalStorage()">فحص localStorage</button>
+            <button onclick="testAPI()">اختبار API</button>
+            <div id="currentState"></div>
+        </div>
+
+        <div class="section">
+            <h2>🔧 إصلاح المشكلة</h2>
+            <button onclick="loginTestCompany()" class="success">تسجيل دخول الشركة التجريبية</button>
+            <button onclick="clearStorage()" class="danger">مسح localStorage</button>
+            <button onclick="fixAuthData()">إصلاح بيانات المصادقة</button>
+            <div id="fixResults"></div>
+        </div>
+
+        <div class="section">
+            <h2>🧪 اختبار النتيجة</h2>
+            <button onclick="testFacebookSettings()">اختبار Facebook Settings</button>
+            <button onclick="openFacebookSettings()">فتح صفحة Facebook Settings</button>
+            <div id="testResults"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:3002';
+        const TEST_COMPANY = {
+            id: 'company-2',
+            name: 'شركة تجريبية',
+            email: 'test@company.com',
+            phone: '+201111111111',
+            status: 'active'
+        };
+
+        function showStatus(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            const statusDiv = document.createElement('div');
+            statusDiv.className = `status ${type}`;
+            statusDiv.innerHTML = message;
+            element.appendChild(statusDiv);
+        }
+
+        function clearResults(elementId) {
+            document.getElementById(elementId).innerHTML = '';
+        }
+
+        async function checkCurrentState() {
+            clearResults('currentState');
+            
+            // فحص localStorage
+            const companyData = localStorage.getItem('company');
+            const userToken = localStorage.getItem('userToken');
+            
+            showStatus('currentState', '<h3>📊 حالة localStorage:</h3>', 'info');
+            
+            if (companyData) {
+                try {
+                    const company = JSON.parse(companyData);
+                    showStatus('currentState', `<strong>✅ بيانات الشركة موجودة:</strong><pre>${JSON.stringify(company, null, 2)}</pre>`, 'success');
+                } catch (error) {
+                    showStatus('currentState', `<strong>❌ خطأ في تحليل بيانات الشركة:</strong> ${error.message}`, 'error');
+                }
+            } else {
+                showStatus('currentState', '<strong>❌ لا توجد بيانات شركة في localStorage</strong>', 'error');
+            }
+            
+            if (userToken) {
+                showStatus('currentState', `<strong>🔑 User Token موجود:</strong> ${userToken.substring(0, 20)}...`, 'info');
+            } else {
+                showStatus('currentState', '<strong>⚠️ لا يوجد User Token</strong>', 'warning');
+            }
+        }
+
+        async function checkLocalStorage() {
+            clearResults('currentState');
+            
+            showStatus('currentState', '<h3>🗄️ محتويات localStorage:</h3>', 'info');
+            
+            const allKeys = Object.keys(localStorage);
+            if (allKeys.length === 0) {
+                showStatus('currentState', '<strong>📭 localStorage فارغ</strong>', 'warning');
+            } else {
+                allKeys.forEach(key => {
+                    const value = localStorage.getItem(key);
+                    try {
+                        const parsed = JSON.parse(value);
+                        showStatus('currentState', `<strong>${key}:</strong><pre>${JSON.stringify(parsed, null, 2)}</pre>`, 'info');
+                    } catch {
+                        showStatus('currentState', `<strong>${key}:</strong> ${value}`, 'info');
+                    }
+                });
+            }
+        }
+
+        async function testAPI() {
+            clearResults('currentState');
+            
+            showStatus('currentState', '<h3>🔍 اختبار API:</h3>', 'info');
+            
+            try {
+                // اختبار صحة السرفر
+                const healthResponse = await fetch(`${API_BASE_URL}/api/health`);
+                const healthData = await healthResponse.json();
+                
+                if (healthResponse.ok) {
+                    showStatus('currentState', '✅ السرفر يعمل بشكل طبيعي', 'success');
+                } else {
+                    showStatus('currentState', '❌ السرفر لا يعمل', 'error');
+                    return;
+                }
+                
+                // اختبار Facebook Settings API
+                const fbResponse = await fetch(`${API_BASE_URL}/api/facebook/settings?company_id=${TEST_COMPANY.id}`);
+                const fbData = await fbResponse.json();
+                
+                if (fbResponse.ok) {
+                    showStatus('currentState', `✅ Facebook API يعمل - تم العثور على ${fbData.length} صفحة`, 'success');
+                    showStatus('currentState', `<strong>📄 الصفحات:</strong><pre>${JSON.stringify(fbData, null, 2)}</pre>`, 'info');
+                } else {
+                    showStatus('currentState', `❌ خطأ في Facebook API: ${fbData.error}`, 'error');
+                }
+                
+            } catch (error) {
+                showStatus('currentState', `❌ خطأ في الاتصال: ${error.message}`, 'error');
+            }
+        }
+
+        async function loginTestCompany() {
+            clearResults('fixResults');
+            
+            showStatus('fixResults', '<h3>🔐 تسجيل دخول الشركة التجريبية:</h3>', 'info');
+            
+            try {
+                // إنشاء بيانات تسجيل الدخول
+                const loginData = {
+                    ...TEST_COMPANY,
+                    loginTime: new Date().toISOString(),
+                    lastActivity: new Date().toISOString()
+                };
+                
+                // حفظ في localStorage
+                localStorage.setItem('company', JSON.stringify(loginData));
+                
+                showStatus('fixResults', '✅ تم تسجيل دخول الشركة التجريبية بنجاح', 'success');
+                showStatus('fixResults', `<strong>📊 البيانات المحفوظة:</strong><pre>${JSON.stringify(loginData, null, 2)}</pre>`, 'info');
+                
+                // اختبار فوري
+                setTimeout(() => {
+                    testFacebookSettings();
+                }, 1000);
+                
+            } catch (error) {
+                showStatus('fixResults', `❌ خطأ في تسجيل الدخول: ${error.message}`, 'error');
+            }
+        }
+
+        async function clearStorage() {
+            clearResults('fixResults');
+            
+            localStorage.clear();
+            showStatus('fixResults', '🗑️ تم مسح جميع بيانات localStorage', 'warning');
+        }
+
+        async function fixAuthData() {
+            clearResults('fixResults');
+            
+            showStatus('fixResults', '<h3>🔧 إصلاح بيانات المصادقة:</h3>', 'info');
+            
+            // فحص البيانات الحالية
+            const currentData = localStorage.getItem('company');
+            
+            if (currentData) {
+                try {
+                    const company = JSON.parse(currentData);
+                    
+                    // التأكد من وجود جميع الحقول المطلوبة
+                    const requiredFields = ['id', 'name', 'email'];
+                    const missingFields = requiredFields.filter(field => !company[field]);
+                    
+                    if (missingFields.length > 0) {
+                        showStatus('fixResults', `❌ حقول مفقودة: ${missingFields.join(', ')}`, 'error');
+                        
+                        // إضافة الحقول المفقودة
+                        const fixedData = {
+                            ...company,
+                            ...TEST_COMPANY,
+                            lastActivity: new Date().toISOString()
+                        };
+                        
+                        localStorage.setItem('company', JSON.stringify(fixedData));
+                        showStatus('fixResults', '✅ تم إصلاح البيانات المفقودة', 'success');
+                    } else {
+                        showStatus('fixResults', '✅ جميع الحقول المطلوبة موجودة', 'success');
+                    }
+                    
+                } catch (error) {
+                    showStatus('fixResults', `❌ خطأ في تحليل البيانات: ${error.message}`, 'error');
+                    loginTestCompany();
+                }
+            } else {
+                showStatus('fixResults', '⚠️ لا توجد بيانات - سيتم إنشاء بيانات جديدة', 'warning');
+                loginTestCompany();
+            }
+        }
+
+        async function testFacebookSettings() {
+            clearResults('testResults');
+            
+            showStatus('testResults', '<h3>🧪 اختبار Facebook Settings:</h3>', 'info');
+            
+            // فحص بيانات المصادقة
+            const companyData = localStorage.getItem('company');
+            
+            if (!companyData) {
+                showStatus('testResults', '❌ لا توجد بيانات مصادقة', 'error');
+                return;
+            }
+            
+            try {
+                const company = JSON.parse(companyData);
+                showStatus('testResults', `👤 الشركة الحالية: ${company.name} (${company.id})`, 'info');
+                
+                // محاكاة نفس الطلب الذي ترسله الواجهة الأمامية
+                const response = await fetch(`${API_BASE_URL}/api/facebook/settings?company_id=${company.id}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                console.log('📄 Facebook Settings Response:', data);
+
+                // نفس المنطق المستخدم في الواجهة الأمامية
+                if (Array.isArray(data)) {
+                    showStatus('testResults', `✅ تم تحميل ${data.length} صفحة (Array مباشر)`, 'success');
+                    if (data.length > 0) {
+                        showStatus('testResults', `<strong>📄 الصفحات:</strong><pre>${JSON.stringify(data, null, 2)}</pre>`, 'info');
+                    }
+                } else if (data.success) {
+                    showStatus('testResults', `✅ تم تحميل ${data.data?.length || 0} صفحة (Object مع success)`, 'success');
+                } else {
+                    showStatus('testResults', `❌ خطأ في تحميل الصفحات: ${data.error}`, 'error');
+                }
+                
+            } catch (error) {
+                showStatus('testResults', `❌ خطأ في الاختبار: ${error.message}`, 'error');
+            }
+        }
+
+        function openFacebookSettings() {
+            window.open('http://localhost:8080/facebook-settings', '_blank');
+        }
+
+        // تشغيل فحص أولي عند تحميل الصفحة
+        window.onload = function() {
+            checkCurrentState();
+        };
+    </script>
+</body>
+</html>

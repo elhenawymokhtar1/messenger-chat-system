@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/hooks/useSimpleProperAuth';
+import { useCurrentCompany } from '@/hooks/useCurrentCompany';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -22,7 +22,10 @@ import {
 } from 'lucide-react';
 
 const AuthTestPage = () => {
-  const { user, loading, logout, isAuthenticated } = useAuth();
+  const { company, loading, clearCompany } = useCurrentCompany();
+  const user = company;
+  const isAuthenticated = !!company;
+  const logout = clearCompany;
   const [localStorageData, setLocalStorageData] = useState<any>({});
   const [apiData, setApiData] = useState<any>(null);
   const [apiLoading, setApiLoading] = useState(false);

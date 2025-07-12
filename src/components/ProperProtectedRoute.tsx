@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useSimpleProperAuth';
+import { useCurrentCompany } from '@/hooks/useCurrentCompany';
 import { Card, CardContent } from '@/components/ui/card';
 
 interface ProperProtectedRouteProps {
@@ -13,7 +13,7 @@ interface ProperProtectedRouteProps {
 }
 
 const ProperProtectedRoute: React.FC<ProperProtectedRouteProps> = ({ children }) => {
-  const { user, loading, isAuthenticated } = useAuth();
+  const { company, loading } = useCurrentCompany();
 
   // عرض شاشة التحميل
   if (loading) {
@@ -34,13 +34,13 @@ const ProperProtectedRoute: React.FC<ProperProtectedRouteProps> = ({ children })
     );
   }
 
-  // إعادة توجيه لتسجيل الدخول إذا لم يكن مصادق عليه
-  if (!isAuthenticated) {
-    console.log('🔄 [AUTH] إعادة توجيه لصفحة تسجيل الدخول');
+  // إعادة توجيه لتسجيل الدخول إذا لم توجد شركة
+  if (!company) {
+    console.log('🔄 [ProperProtectedRoute] إعادة توجيه لصفحة تسجيل الدخول - لا توجد شركة');
     return <Navigate to="/company-login" replace />;
   }
 
-  console.log('✅ [AUTH] السماح بالوصول للمحتوى المحمي');
+  console.log('✅ [ProperProtectedRoute] السماح بالوصول للمحتوى المحمي للشركة:', company.name);
   return <>{children}</>;
 };
 

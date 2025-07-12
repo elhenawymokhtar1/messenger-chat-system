@@ -11,10 +11,9 @@ import {
 } from '@whiskeysockets/baileys';
 import { Boom } from '@hapi/boom';
 
-// إعداد Supabase
-// TODO: Replace with MySQL API
-// إعداد قاعدة البيانات المحلية بدلاً من Supabase
-import { SimpleGeminiService } from './simpleGeminiService';
+// إعداد MySQL
+import { WhatsAppService } from './database';
+// import { SimpleGeminiService } from './simpleGeminiService'; // Temporarily disabled
 
 export class BaileysWhatsAppService {
   private static socket: any = null;
@@ -458,12 +457,15 @@ export class BaileysWhatsAppService {
 
       const conversationId = `whatsapp_${phoneNumber}`;
 
-      const success = await SimpleGeminiService.processMessage(
-        messageText,
-        conversationId,
-        phoneNumber,
-        'whatsapp'
-      );
+      // TODO: Re-enable after fixing SimpleGeminiService
+      console.log('⚠️ [BAILEYS] SimpleGeminiService temporarily disabled');
+      const success = false;
+      // const success = await SimpleGeminiService.processMessage(
+      //   messageText,
+      //   conversationId,
+      //   phoneNumber,
+      //   'whatsapp'
+      // );
 
       if (success) {
         // جلب آخر رد من البوت
@@ -541,12 +543,20 @@ export class BaileysWhatsAppService {
    */
   private static async saveMessage(messageData: any): Promise<void> {
     try {
-      const { error } = await supabase
-        // TODO: Replace with MySQL API
-        // TODO: Replace with MySQL API;
+      const success = await WhatsAppService.saveMessage({
+        message_id: messageData.message_id,
+        phone_number: messageData.phone_number,
+        contact_name: messageData.contact_name || null,
+        message_text: messageData.message_text,
+        message_type: messageData.message_type,
+        file_url: messageData.file_url || null,
+        file_name: messageData.file_name || null
+      });
 
-      if (error) {
-        console.error('❌ [BAILEYS] خطأ في حفظ الرسالة:', error);
+      if (success) {
+        console.log('✅ [BAILEYS] تم حفظ الرسالة بنجاح');
+      } else {
+        console.error('❌ [BAILEYS] فشل في حفظ الرسالة');
       }
     } catch (error) {
       console.error('❌ [BAILEYS] خطأ في حفظ الرسالة:', error);
@@ -722,5 +732,63 @@ export class BaileysWhatsAppService {
       hasKeepAlive: !!this.keepAliveInterval,
       hasReconnectTimer: !!this.reconnectInterval
     };
+  }
+
+  /**
+   * إعادة تعيين كاملة للخدمة
+   */
+  static async fullReset(): Promise<void> {
+    try {
+      console.log('🔄 [BAILEYS] بدء إعادة تعيين كاملة...');
+
+      // إيقاف كل شيء
+      await this.disconnect();
+
+      // انتظار
+      await new Promise(resolve => setTimeout(resolve, 3000));
+
+      // إصلاح المشاكل
+      await this.fixConnectionIssues();
+
+      // انتظار إضافي
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      console.log('✅ [BAILEYS] تم إعادة التعيين الكاملة');
+    } catch (error) {
+      console.error('❌ [BAILEYS] خطأ في إعادة التعيين:', error);
+    }
+  }
+
+  /**
+   * تحسين إدارة التضارب
+   */
+  static async handleConflict(): Promise<void> {
+    try {
+      console.log('⚠️ [BAILEYS] معالجة تضارب الجلسة...');
+
+      // إيقاف فوري
+      if (this.socket) {
+        try {
+          this.socket.end();
+          this.socket.ws?.terminate?.(); // إنهاء WebSocket بقوة
+        } catch (e) {
+          console.log('🔧 [BAILEYS] تم إغلاق الاتصال بقوة');
+        }
+        this.socket = null;
+      }
+
+      // إعادة تعيين الحالة
+      this.isConnected = false;
+      this.connectionState = 'close';
+      this.qrCode = null;
+      this.reconnectAttempts = 0;
+
+      // انتظار أطول قبل إعادة المحاولة
+      await new Promise(resolve => setTimeout(resolve, 10000));
+
+      console.log('✅ [BAILEYS] تم معالجة التضارب');
+    } catch (error) {
+      console.error('❌ [BAILEYS] خطأ في معالجة التضارب:', error);
+    }
   }
 }

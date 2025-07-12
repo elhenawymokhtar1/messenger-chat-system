@@ -93,17 +93,17 @@ const TestDiagnosis: React.FC = () => {
   };
 
   const testLocalStorage = () => {
-    addLog('🗄️ Testing localStorage...');
-    
-    const currentCompany = localStorage.getItem('currentCompany');
-    addLog(`📱 localStorage currentCompany: ${currentCompany || 'NULL'}`);
-    
+    addLog('🗄️ Testing sessionStorage (localStorage disabled)...');
+
+    const currentCompany = sessionStorage.getItem('current-company');
+    addLog(`📱 sessionStorage current-company: ${currentCompany || 'NULL'}`);
+
     if (currentCompany) {
       try {
         const parsed = JSON.parse(currentCompany);
         addLog(`📋 Parsed company: ${JSON.stringify(parsed, null, 2)}`);
       } catch (e) {
-        addLog(`❌ Error parsing localStorage: ${e}`);
+        addLog(`❌ Error parsing sessionStorage: ${e}`);
       }
     }
   };

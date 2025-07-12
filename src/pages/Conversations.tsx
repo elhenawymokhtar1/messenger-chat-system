@@ -25,10 +25,7 @@ const RealConversations = () => {
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
   const [newMessage, setNewMessage] = useState("");
   const [showRecentOnly, setShowRecentOnly] = useState(true);
-  const [activeTab, setActiveTab] = useState<string>(() => {
-    // استرجاع التبويب المحفوظ من localStorage أو استخدام 'needs-reply' كافتراضي
-    return localStorage.getItem('conversations-active-tab') || 'needs-reply';
-  });
+  const [activeTab, setActiveTab] = useState<string>('needs-reply');
 
   // متغيرات دعم الصور
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -41,25 +38,22 @@ const RealConversations = () => {
 
   // دالة التمرير للأسفل
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'end',
+        inline: 'nearest'
+      });
+    }, 100);
   };
 
   const { company, loading: companyLoading } = useCurrentCompany();
 
-  // تسجيل دخول تلقائي إذا لم يكن هناك شركة
+  // إعادة توجيه إلى صفحة تسجيل الدخول إذا لم يكن هناك شركة
   useEffect(() => {
     if (!companyLoading && !company) {
-      console.log('🔄 [CONVERSATIONS] لا توجد شركة، تسجيل دخول تلقائي...');
-
-      // تسجيل دخول تجريبي
-      const testToken = 'test-token-c677b32f-fe1c-4c64-8362-a1c03406608d';
-      const companyId = 'c677b32f-fe1c-4c64-8362-a1c03406608d';
-
-      localStorage.setItem('auth_token', testToken);
-      localStorage.setItem('company_id', companyId);
-
-      // إعادة تحميل الصفحة لتطبيق التغييرات
-      window.location.reload();
+      console.log('🔄 [CONVERSATIONS] لا توجد شركة، إعادة توجيه لتسجيل الدخول...');
+      window.location.href = '/company-login';
     }
   }, [company, companyLoading]);
 
@@ -74,6 +68,12 @@ const RealConversations = () => {
   } = useRealConversations(company?.id);
 
   // تشخيص البيانات
+  console.log('🔍 [DEBUG] Company data:', {
+    company,
+    companyId: company?.id,
+    companyIdType: typeof company?.id,
+    companyIdLength: company?.id?.length
+  });
   console.log('🔍 [DEBUG] Conversations data:', {
     conversations,
     conversationsLength: conversations?.length,
@@ -91,10 +91,19 @@ const RealConversations = () => {
 
   // التمرير التلقائي عند تغيير الرسائل
   useEffect(() => {
-    if (messages && messages.length > 0) {
+    if (messages && messages.length > 0 && !messagesLoading) {
       scrollToBottom();
     }
-  }, [messages]);
+  }, [messages, messagesLoading]);
+
+  // التمرير للأسفل عند تغيير المحادثة المحددة
+  useEffect(() => {
+    if (selectedConversation && messages && messages.length > 0) {
+      setTimeout(() => {
+        scrollToBottom();
+      }, 200);
+    }
+  }, [selectedConversation]);
 
   // تشخيص الرسائل
   console.log('🔍 [DEBUG] Messages data:', {
@@ -107,28 +116,22 @@ const RealConversations = () => {
 
   // دالة لتحديد إذا كانت المحادثة تحتاج رد
   const needsReply = (conv: any) => {
-    // المحادثة تحتاج رد إذا:
-    // 1. لديها رسائل غير مقروءة (رسائل من العميل)
-    // 2. أو لديها رسائل حديثة وآخر رسالة في وقت قريب (خلال آخر ساعة مثلاً)
-    const hasUnreadMessages = conv.unread_count > 0 || conv.unread_messages > 0;
-    const hasRecentActivity = conv.recent_messages_count > 0;
+    // المحادثة تحتاج رد فقط إذا آخر رسالة كانت من العميل (ليس من الصفحة)
+    // نتحقق من last_message_is_from_page
 
-    // إذا كان لديها رسائل غير مقروءة، فهي تحتاج رد بالتأكيد
-    if (hasUnreadMessages) return true;
-
-    // إذا لم تكن لديها رسائل غير مقروءة ولكن لديها نشاط حديث
-    // نتحقق من وقت آخر رسالة
-    if (hasRecentActivity && conv.last_message_at) {
-      const lastMessageTime = new Date(conv.last_message_at);
-      const now = new Date();
-      const hoursDiff = (now.getTime() - lastMessageTime.getTime()) / (1000 * 60 * 60);
-
-      // إذا كانت آخر رسالة خلال آخر 6 ساعات ولديها نشاط حديث
-      // ولكن لا توجد رسائل غير مقروءة، فربما تحتاج متابعة
-      return hoursDiff <= 6;
+    // إذا كانت آخر رسالة من الصفحة (is_from_page = 1)، فلا تحتاج رد
+    if (conv.last_message_is_from_page === 1 || conv.last_message_is_from_page === '1') {
+      return false;
     }
 
-    return false;
+    // إذا كانت آخر رسالة من العميل (is_from_page = 0)، فتحتاج رد
+    if (conv.last_message_is_from_page === 0 || conv.last_message_is_from_page === '0') {
+      return true;
+    }
+
+    // إذا لم تكن هناك معلومات واضحة، نعتمد على عدد الرسائل غير المقروءة
+    const hasUnreadMessages = conv.unread_count > 0 || conv.unread_messages > 0;
+    return hasUnreadMessages;
   };
 
   // دالة لتحديد إذا كانت المحادثة من الرسائل الجماعية
@@ -190,10 +193,9 @@ const RealConversations = () => {
   const bulkMessagesCount = conversations.filter(isBulkMessage).length;
   const allConversationsCount = conversations.length;
 
-  // دالة لتغيير التبويب وحفظه
+  // دالة لتغيير التبويب
   const handleTabChange = (newTab: string) => {
     setActiveTab(newTab);
-    localStorage.setItem('conversations-active-tab', newTab);
   };
 
   // دوال معالجة الصور
@@ -325,12 +327,17 @@ const RealConversations = () => {
       setNewMessage("");
       handleRemoveImage();
       setIsUploadingImage(false);
+
+      // التمرير للأسفل فوراً
+      scrollToBottom();
+
       // تحديث قائمة المحادثات لإظهار آخر رسالة
       refetchConversations();
 
       // تحديث إضافي بعد ثانية واحدة للتأكد
       setTimeout(() => {
         refetchConversations();
+        scrollToBottom(); // تمرير إضافي للتأكد
       }, 1000);
     } catch (error) {
       console.error('خطأ في إرسال الرسالة:', error);
@@ -388,17 +395,41 @@ const RealConversations = () => {
   }
 
   return (
-    <div className="h-full bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100" dir="rtl">
-      <div className="container mx-auto px-6 py-8 h-full flex flex-col overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100" dir="rtl">
+      <div className="container mx-auto px-6 py-8 flex flex-col">
         <div className="mb-8 flex-shrink-0">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                محادثات فيسبوك
+              <h1 className="text-3xl font-bold text-blue-800 mb-2 flex items-center gap-3">
+                <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center shadow-lg">
+                  <span className="text-white text-2xl">💬</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-blue-800">محادثات فيسبوك</span>
+                  <span className="text-sm text-blue-600 font-normal">Facebook Messenger</span>
+                </div>
               </h1>
               <p className="text-gray-600">
                 إدارة المحادثات والرد على رسائل الفيسبوك - {company.name}
               </p>
+
+              {/* تحذير توضيحي */}
+              <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-xl shadow-sm">
+                <div className="flex items-center gap-3 text-blue-800 mb-2">
+                  <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                    <span className="text-white text-sm">f</span>
+                  </div>
+                  <span className="font-bold text-lg">نظام Facebook Messenger</span>
+                </div>
+                <div className="bg-white/50 p-3 rounded-lg border border-blue-200">
+                  <p className="text-blue-800 text-sm font-medium">
+                    📘 <strong>هذه صفحة Facebook فقط</strong> - تعرض رسائل Facebook من جداول (conversations & messages)
+                  </p>
+                  <p className="text-blue-700 text-xs mt-1">
+                    🔄 منفصل تماماً عن صفحة WhatsApp التي تستخدم جدول (whatsapp_messages)
+                  </p>
+                </div>
+              </div>
               <div className="flex items-center gap-2 mt-2">
                 <div className={`w-2 h-2 rounded-full ${sseConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
                 <span className="text-sm text-gray-500">
@@ -420,10 +451,10 @@ const RealConversations = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* قائمة المحادثات */}
           <div className="lg:col-span-1">
-            <Card className="h-full flex flex-col">
+            <Card className="h-[600px] flex flex-col">
               <CardHeader className="flex-shrink-0">
                 <CardTitle className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -581,7 +612,14 @@ const RealConversations = () => {
                   </TabsContent>
                 </Tabs>
               </CardHeader>
-              <CardContent className="flex-1 overflow-y-auto p-0">
+              <CardContent
+                className="h-[500px] overflow-y-scroll p-0 custom-scrollbar"
+                style={{
+                  overflowY: 'scroll',
+                  height: '500px',
+                  maxHeight: '500px'
+                }}
+              >
                 {conversationsLoading ? (
                   <div className="flex items-center justify-center h-32">
                     <Loader2 className="h-6 w-6 animate-spin" />
@@ -638,6 +676,8 @@ const RealConversations = () => {
                         className={`p-3 rounded-xl cursor-pointer transition-all duration-200 hover:shadow-sm ${
                           selectedConversation === conversation.id
                             ? 'bg-blue-100 border border-blue-200'
+                            : conversation.unread_count > 0
+                            ? 'bg-blue-50 hover:bg-blue-100 border border-blue-100'
                             : 'bg-white hover:bg-gray-50'
                         }`}
                       >
@@ -660,7 +700,11 @@ const RealConversations = () => {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between mb-1">
                               <div className="flex items-center gap-2">
-                                <h3 className="font-semibold text-gray-900 truncate">
+                                <h3 className={`truncate ${
+                                  conversation.unread_count > 0
+                                    ? 'font-bold text-gray-900'
+                                    : 'font-semibold text-gray-900'
+                                }`}>
                                   {conversation.customer_name || conversation.user_name || `مستخدم ${conversation.customer_facebook_id?.slice(-4)}`}
                                 </h3>
                                 {/* مؤشرات نوع المحادثة */}
@@ -679,16 +723,34 @@ const RealConversations = () => {
                               </div>
                               <div className="flex items-center gap-2">
                                 <span className="text-xs text-gray-500">
-                                  {conversation.last_message_at ? formatTime(conversation.last_message_at) : ''}
+                                  {(conversation.last_message_time || conversation.last_message_at) ?
+                                    formatRelativeTime(conversation.last_message_time || conversation.last_message_at) : ''}
                                 </span>
+                                {/* عداد الرسائل غير المقروءة */}
+                                {conversation.unread_count > 0 && (
+                                  <div className="bg-red-500 text-white text-xs rounded-full min-w-[20px] h-5 flex items-center justify-center px-1">
+                                    {conversation.unread_count > 99 ? '99+' : conversation.unread_count}
+                                  </div>
+                                )}
                               </div>
                             </div>
 
                             <div className="flex items-center justify-between">
-                              <p className="text-sm text-gray-600 truncate flex-1">
-                                {conversation.last_message && conversation.last_message.trim() !== ''
-                                  ? conversation.last_message
-                                  : (conversation.last_message_type === 'image' ? '📷 صورة' : 'لا توجد رسائل')}
+                              <p className={`text-sm truncate flex-1 ${
+                                conversation.unread_count > 0
+                                  ? 'text-gray-900 font-semibold'
+                                  : 'text-gray-600'
+                              }`}>
+                                {(() => {
+                                  // إذا لم توجد رسالة
+                                  if (!conversation.last_message || conversation.last_message.trim() === '' || conversation.last_message === 'لا توجد رسائل') {
+                                    return conversation.last_message_type === 'image' ? '📷 صورة' : 'لا توجد رسائل';
+                                  }
+
+                                  // إضافة بادئة حسب المرسل
+                                  const prefix = conversation.last_message_is_from_page ? 'أنت: ' : '';
+                                  return prefix + conversation.last_message;
+                                })()}
                               </p>
 
                               <div className="flex items-center gap-2">
@@ -738,7 +800,7 @@ const RealConversations = () => {
           {/* نافذة الدردشة - تصميم Messenger */}
           <div className="lg:col-span-2">
             {selectedConversation && selectedConvData ? (
-              <div className="h-full flex flex-col bg-white rounded-lg shadow-sm border">
+              <div className="h-[600px] flex flex-col bg-white rounded-lg shadow-sm border">
                 {/* Header المحادثة */}
                 <div className="flex-shrink-0 px-4 py-3 border-b bg-white rounded-t-lg">
                   <div className="flex items-center gap-3">
@@ -795,7 +857,15 @@ const RealConversations = () => {
                 )}
 
                 {/* منطقة الرسائل - تصميم Messenger */}
-                <div className="flex-1 overflow-y-auto p-4 bg-gradient-to-b from-gray-50 to-white scroll-smooth" style={{scrollBehavior: 'smooth'}}>
+                <div
+                  className="h-[400px] overflow-y-scroll p-4 bg-gradient-to-b from-gray-50 to-white custom-scrollbar"
+                  style={{
+                    scrollBehavior: 'smooth',
+                    overflowY: 'scroll',
+                    height: '400px',
+                    maxHeight: '400px'
+                  }}
+                >
                   {messagesLoading ? (
                     <div className="flex justify-center py-8">
                       <div className="flex items-center gap-2 text-gray-500">
@@ -814,8 +884,9 @@ const RealConversations = () => {
                   ) : (
                     <div className="space-y-3">
                       {messages.map((message, index) => {
-                        const isOutgoing = message.direction === 'outgoing';
-                        const showAvatar = !isOutgoing && (index === 0 || messages[index - 1]?.direction !== 'outgoing');
+                        const isOutgoing = message.sender_type === 'admin';
+
+                        const showAvatar = !isOutgoing && (index === 0 || messages[index - 1]?.sender_type !== 'admin');
 
                         return (
                           <div

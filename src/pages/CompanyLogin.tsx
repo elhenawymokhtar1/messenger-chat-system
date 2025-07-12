@@ -8,7 +8,7 @@ import { Building, Mail, Eye, EyeOff, LogIn, Info } from 'lucide-react';
 import { CompanyServiceMySQL } from '@/lib/mysql-company-api';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
+import { useCurrentCompany } from '@/hooks/useCurrentCompany';
 /**
  * 🔐 صفحة تسجيل دخول الشركات
  * تاريخ الإنشاء: 22 يونيو 2025
@@ -25,7 +25,7 @@ const CompanyLogin: React.FC = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
-  const { login } = useAuth();
+  const { setCompany } = useCurrentCompany();
   useEffect(() => {
     // التحقق من وجود رسالة redirect
     if (location.state?.message) {
@@ -64,8 +64,10 @@ const CompanyLogin: React.FC = () => {
         formData.password
       );
       if (result.success && result.company) {
-        // حفظ بيانات الشركة باستخدام useAuth
-        login(result.company);
+        // حفظ بيانات الشركة باستخدام Zustand
+        console.log('💾 [LOGIN] حفظ بيانات الشركة:', result.company);
+        console.log('🆔 [LOGIN] معرف الشركة:', result.company.id);
+        setCompany(result.company);
         toast({
           title: "مرحباً بك! 👋",
           description: `أهلاً بك ${result.company.name}`
@@ -223,22 +225,118 @@ const CompanyLogin: React.FC = () => {
           </form>
           {/* بيانات تجريبية */}
           <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <h3 className="font-semibold text-blue-800 mb-2">🧪 بيانات اختبار:</h3>
-            <div className="text-sm text-blue-700 space-y-1">
-              <p>📧 الإيميل: test@company.com</p>
-              <p>🔑 كلمة المرور: 123456</p>
-              <button
-                type="button"
-                onClick={() => {
-                  setFormData({
-                    email: 'test@company.com',
-                    password: '123456'
-                  });
-                }}
-                className="mt-2 px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700"
-              >
-                ملء البيانات تلقائياً
-              </button>
+            <h3 className="font-semibold text-blue-800 mb-2">🧪 شركات للاختبار:</h3>
+            <div className="text-sm text-blue-700 space-y-3">
+
+              {/* شركة تجريبية - تحتوي على بيانات */}
+              <div className="p-2 bg-white rounded border">
+                <p className="font-semibold">🏢 شركة تجريبية (تحتوي على محادثات)</p>
+                <p>📧 test@company.com</p>
+                <p>🔑 123456</p>
+                <div className="flex gap-2 mt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFormData({
+                        email: 'test@company.com',
+                        password: '123456'
+                      });
+                    }}
+                    className="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
+                  >
+                    دخول عادي
+                  </button>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        console.log('🔧 [FIX] إصلاح البيانات: نقل البيانات للشركة الصحيحة...');
+
+                        // 1. جلب بيانات الشركة التجريبية الحقيقية
+                        const companyResponse = await fetch('http://localhost:3002/api/companies/test@company.com');
+
+                        if (!companyResponse.ok) {
+                          throw new Error(`فشل في جلب بيانات الشركة: ${companyResponse.status}`);
+                        }
+
+                        const companyResult = await companyResponse.json();
+                        if (!companyResult.success || !companyResult.data) {
+                          throw new Error('لم يتم العثور على الشركة التجريبية');
+                        }
+
+                        const realCompany = companyResult.data;
+                        console.log('🏢 [FIX] الشركة الحقيقية:', realCompany);
+
+                        // 2. نقل البيانات من الـ ID الثابت للـ ID الحقيقي
+                        const fixResponse = await fetch('http://localhost:3002/api/debug/fix-data-isolation', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            fromCompanyId: 'c677b32f-fe1c-4c64-8362-a1c03406608d', // الـ ID الثابت
+                            toCompanyId: realCompany.id // الـ ID الحقيقي
+                          })
+                        });
+
+                        const fixResult = await fixResponse.json();
+                        console.log('🔄 [FIX] نتيجة نقل البيانات:', fixResult);
+
+                        // 3. حفظ بيانات الشركة الصحيحة
+                        setCompany(realCompany);
+                        console.log('✅ [FIX] تم حفظ بيانات الشركة الصحيحة:', realCompany.id);
+
+                        alert(`✅ تم إصلاح البيانات بنجاح!\n\nالشركة: ${realCompany.name}\nالمعرف الجديد: ${realCompany.id}\nالمحادثات المنقولة: ${fixResult.data?.conversationsUpdated || 0}\nالرسائل المنقولة: ${fixResult.data?.messagesUpdated || 0}`);
+
+                        window.location.href = '/facebook-conversations';
+
+                      } catch (error) {
+                        console.error('❌ خطأ في إصلاح البيانات:', error);
+                        alert('❌ حدث خطأ في إصلاح البيانات: ' + error.message);
+                      }
+                    }}
+                    className="px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700"
+                  >
+                    إصلاح البيانات
+                  </button>
+                </div>
+              </div>
+
+              {/* شركة الفا - فارغة */}
+              <div className="p-2 bg-white rounded border">
+                <p className="font-semibold">🏢 شركة الفا (فارغة)</p>
+                <p>📧 fake@example.com</p>
+                <p>🔑 123456</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFormData({
+                      email: 'fake@example.com',
+                      password: '123456'
+                    });
+                  }}
+                  className="mt-1 px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700"
+                >
+                  دخول (شركة فارغة)
+                </button>
+              </div>
+
+              {/* الفنار - فارغة */}
+              <div className="p-2 bg-white rounded border">
+                <p className="font-semibold">🏢 الفنار (فارغة)</p>
+                <p>📧 asa2@qw.com</p>
+                <p>🔑 123456</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFormData({
+                      email: 'asa2@qw.com',
+                      password: '123456'
+                    });
+                  }}
+                  className="mt-1 px-2 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700"
+                >
+                  دخول (شركة فارغة)
+                </button>
+              </div>
             </div>
           </div>
 

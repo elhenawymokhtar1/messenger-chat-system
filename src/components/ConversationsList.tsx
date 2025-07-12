@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Search, User, Clock, MessageSquare, Loader2, Trash2, CheckCircle, AlertCircle, Archive, UserCheck } from "lucide-react";
 import { useState } from "react";
-import { useConversations } from "@/hooks/useConversations";
+import { useRealConversations } from "@/hooks/useRealConversations";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { conversationsApi } from "@/lib/mysql-api";
 import { toast } from "sonner";
@@ -23,8 +23,31 @@ const ConversationsList = ({ selectedConversation, onSelectConversation }: Conve
   const [deletingConversation, setDeletingConversation] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<'all' | 'unread'>('all');
   const [updatingNames, setUpdatingNames] = useState(false);
-  const { conversations, isLoading, error, refetch } = useConversations();
   const { company, isNewCompany } = useCurrentCompany();
+
+  // مؤقتاً: استخدام companyId ثابت للاختبار
+  const testCompanyId = 'c677b32f-fe1c-4c64-8362-a1c03406608d';
+  const { conversations, isLoading, error, refetch } = useRealConversations(testCompanyId);
+
+  console.log('🔧 [DEBUG] ConversationsList - company:', company);
+  console.log('🔧 [DEBUG] ConversationsList - conversations:', conversations);
+  console.log('🔧 [DEBUG] ConversationsList - conversations type:', typeof conversations);
+  console.log('🔧 [DEBUG] ConversationsList - conversations array?:', Array.isArray(conversations));
+  console.log('🔧 [DEBUG] ConversationsList - conversations length:', conversations?.length);
+  console.log('🔧 [DEBUG] ConversationsList - isLoading:', isLoading);
+  console.log('🔧 [DEBUG] ConversationsList - error:', error);
+
+  // تفاصيل أكثر عن المحادثات
+  if (conversations && conversations.length > 0) {
+    console.log('🔧 [DEBUG] First conversation sample:', conversations[0]);
+    console.log('🔧 [DEBUG] Conversations structure:', conversations.map(c => ({
+      id: c.id,
+      customer_name: c.customer_name,
+      last_message: c.last_message,
+      unread_count: c.unread_count,
+      hasRequiredFields: !!(c.id && c.customer_name !== undefined && c.last_message !== undefined)
+    })));
+  }
 
   // حذف المحادثة باستخدام MySQL API
   const deleteConversation = async (conversationId: string) => {
@@ -102,21 +125,33 @@ const ConversationsList = ({ selectedConversation, onSelectConversation }: Conve
     }
   };
 
-  // تبسيط منطق الفلترة
+  // تبسيط منطق الفلترة - مؤقتاً بدون فلترة للتشخيص
   const filteredConversations = conversations.filter(conv => {
-    if (!conv) return false;
+    if (!conv) {
+      console.log('❌ Conversation is null/undefined');
+      return false;
+    }
 
-    // فلترة البحث
-    const searchMatch = !searchTerm ||
-      (conv.customer_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (conv.last_message || '').toLowerCase().includes(searchTerm.toLowerCase());
+    if (!conv.id) {
+      console.log('❌ Conversation missing ID:', conv);
+      return false;
+    }
 
-    // فلترة الحالة
-    const statusMatch = statusFilter === 'all' ||
-      (statusFilter === 'unread' && conv.unread_count > 0);
+    console.log('✅ Valid conversation:', {
+      id: conv.id,
+      customer_name: conv.customer_name,
+      last_message: conv.last_message,
+      unread_count: conv.unread_count
+    });
 
-    return searchMatch && statusMatch;
+    return true; // مؤقتاً: قبول جميع المحادثات الصالحة
   });
+
+  console.log('📊 FILTER RESULTS:');
+  console.log('Total conversations:', conversations.length);
+  console.log('Filtered conversations:', filteredConversations.length);
+  console.log('Search term:', searchTerm);
+  console.log('Status filter:', statusFilter);
 
   // استخدام دالة التوقيت المحسنة
   const formatTimestamp = (timestamp: string) => {
@@ -211,6 +246,13 @@ const ConversationsList = ({ selectedConversation, onSelectConversation }: Conve
           <div className="flex items-center justify-center p-8 text-gray-500">
             <div className="text-center max-w-sm">
               <MessageSquare className="w-16 h-16 mx-auto mb-4 opacity-30" />
+              {/* Debug info */}
+              <div className="text-xs text-red-500 mb-4 p-2 bg-red-50 rounded">
+                <div>Total: {conversations.length}</div>
+                <div>Filtered: {filteredConversations.length}</div>
+                <div>Loading: {isLoading ? 'Yes' : 'No'}</div>
+                <div>Error: {error ? 'Yes' : 'No'}</div>
+              </div>
 
               {/* رسالة مختلفة للشركات الجديدة */}
               {isNewCompany ? (
@@ -252,12 +294,20 @@ const ConversationsList = ({ selectedConversation, onSelectConversation }: Conve
           </div>
         ) : (
           <div className="space-y-1 pb-4">
+            {/* Debug: عرض معلومات المحادثات */}
+            {console.log('🎨 [RENDER] About to render conversations:', filteredConversations.length)}
             {/* عرض المحادثات الحقيقية */}
-            {filteredConversations.map((conversation) => (
+            {filteredConversations.map((conversation) => {
+              console.log('🎨 [RENDER] Rendering conversation:', conversation.id);
+              return (
               <div
                 key={conversation.id}
                 className={`p-4 border-b hover:bg-gray-50 transition-colors ${
-                  selectedConversation === conversation.id ? 'bg-blue-50 border-blue-200' : ''
+                  selectedConversation === conversation.id
+                    ? 'bg-blue-50 border-blue-200'
+                    : conversation.unread_count > 0
+                    ? 'bg-blue-25 hover:bg-blue-50 border-blue-100'
+                    : ''
                 }`}
               >
                 <div className="flex items-start justify-between mb-2">
@@ -274,7 +324,11 @@ const ConversationsList = ({ selectedConversation, onSelectConversation }: Conve
                       )}
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-medium text-gray-900">
+                      <h4 className={`text-gray-900 ${
+                        conversation.unread_count > 0
+                          ? 'font-bold'
+                          : 'font-medium'
+                      }`}>
                         {getDisplayName(
                           conversation.customer_name,
                           conversation.customer_facebook_id,
@@ -284,7 +338,7 @@ const ConversationsList = ({ selectedConversation, onSelectConversation }: Conve
                       </h4>
                       <div className="flex items-center space-x-1 space-x-reverse text-xs text-gray-500">
                         <Clock className="w-3 h-3" />
-                        <span>{formatTimestamp(conversation.last_message_at)}</span>
+                        <span>{formatTimestamp(conversation.last_message_time || conversation.last_message_at)}</span>
                       </div>
                       <div className="text-xs mt-1 flex items-center gap-2 flex-wrap">
                         <span className="bg-blue-100 px-2 py-1 rounded-full text-blue-600">
@@ -349,12 +403,26 @@ const ConversationsList = ({ selectedConversation, onSelectConversation }: Conve
                   className="cursor-pointer"
                   onClick={() => onSelectConversation(conversation.id)}
                 >
-                  <p className="text-sm text-gray-600 truncate">
-                    {conversation.last_message || "لا توجد رسائل"}
+                  <p className={`text-sm truncate ${
+                    conversation.unread_count > 0
+                      ? 'text-gray-900 font-semibold'
+                      : 'text-gray-600'
+                  }`}>
+                    {(() => {
+                      // إذا لم توجد رسالة
+                      if (!conversation.last_message || conversation.last_message.trim() === '' || conversation.last_message === 'لا توجد رسائل') {
+                        return 'لا توجد رسائل';
+                      }
+
+                      // إضافة بادئة حسب المرسل
+                      const prefix = conversation.last_message_is_from_page ? 'أنت: ' : '';
+                      return prefix + conversation.last_message;
+                    })()}
                   </p>
                 </div>
               </div>
-            ))}
+            );
+            })}
           </div>
         )}
       </CardContent>

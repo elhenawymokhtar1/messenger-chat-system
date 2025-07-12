@@ -185,10 +185,10 @@ const SubscriptionNotifications: React.FC<NotificationProps> = ({
   const dismissNotification = (id: string) => {
     setNotifications(prev => prev.filter(n => n.id !== id));
     
-    // حفظ الإشعارات المرفوضة في localStorage
-    const dismissed = JSON.parse(localStorage.getItem('dismissedNotifications') || '[]');
+    // حفظ الإشعارات المرفوضة في sessionStorage
+    const dismissed = JSON.parse(sessionStorage.getItem('dismissedNotifications') || '[]');
     dismissed.push(id);
-    localStorage.setItem('dismissedNotifications', JSON.stringify(dismissed));
+    sessionStorage.setItem('dismissedNotifications', JSON.stringify(dismissed));
   };
 
   const getDaysUntilRenewal = (renewalDate: string) => {

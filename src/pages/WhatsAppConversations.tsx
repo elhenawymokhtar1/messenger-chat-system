@@ -1,5 +1,4 @@
-import React, { useEffect } from 'react';
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import WhatsAppConversationsList from "@/components/WhatsAppConversationsList";
 import WhatsAppChatWindow from "@/components/WhatsAppChatWindow";
 
@@ -37,15 +36,36 @@ const WhatsAppConversations = () => {
         <div className="mb-8 flex-shrink-0">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2 flex items-center gap-3">
-                <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
-                  <span className="text-white text-xl">📱</span>
+              <h1 className="text-3xl font-bold text-green-800 mb-2 flex items-center gap-3">
+                <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center shadow-lg">
+                  <span className="text-white text-2xl">💬</span>
                 </div>
-                محادثات الواتساب
+                <div className="flex flex-col">
+                  <span className="text-green-800">محادثات الواتساب</span>
+                  <span className="text-sm text-green-600 font-normal">WhatsApp Business</span>
+                </div>
               </h1>
               <p className="text-gray-600">
                 إدارة المحادثات والرد على رسائل الواتساب
               </p>
+
+              {/* تحذير توضيحي */}
+              <div className="mt-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-xl shadow-sm">
+                <div className="flex items-center gap-3 text-green-800 mb-2">
+                  <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                    <span className="text-white text-sm">✓</span>
+                  </div>
+                  <span className="font-bold text-lg">نظام WhatsApp Business منفصل</span>
+                </div>
+                <div className="bg-white/50 p-3 rounded-lg border border-green-200">
+                  <p className="text-green-800 text-sm font-medium">
+                    📱 <strong>هذه صفحة WhatsApp فقط</strong> - تعرض رسائل WhatsApp من جدول منفصل (whatsapp_messages)
+                  </p>
+                  <p className="text-green-700 text-xs mt-1">
+                    🔄 مختلف تماماً عن صفحة Facebook Messenger التي تستخدم جداول (conversations & messages)
+                  </p>
+                </div>
+              </div>
             </div>
             
             {/* مؤشر حالة الاتصال */}

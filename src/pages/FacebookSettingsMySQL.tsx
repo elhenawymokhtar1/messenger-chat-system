@@ -10,21 +10,23 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { 
-  Facebook, 
-  Key, 
-  Loader2, 
-  CheckCircle, 
-  AlertCircle, 
-  Trash2, 
+import {
+  Facebook,
+  Key,
+  Loader2,
+  CheckCircle,
+  AlertCircle,
+  Trash2,
   Plus,
   ExternalLink,
   Settings,
   MessageCircle,
-  Users
+  Users,
+  RefreshCw
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 // إعدادات API
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002';
@@ -58,6 +60,7 @@ interface FacebookPageFromAPI {
 const FacebookSettingsMySQL: React.FC = () => {
   const { toast } = useToast();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
 
   // تسجيل دخول تلقائي للتأكد من عمل الصفحة
   useEffect(() => {
@@ -65,70 +68,223 @@ const FacebookSettingsMySQL: React.FC = () => {
     if (!token) {
       console.log('🔄 [FACEBOOK-SETTINGS] تسجيل دخول تلقائي...');
 
-      const testToken = 'test-token-company-2';
-      const companyId = 'company-2';
+      const testToken = 'test-token-c677b32f-fe1c-4c64-8362-a1c03406608d';
+      const companyId = 'c677b32f-fe1c-4c64-8362-a1c03406608d';
 
       localStorage.setItem('auth_token', testToken);
       localStorage.setItem('company_id', companyId);
     }
   }, []);
 
-  // States
+  // States (مبسطة - بدون Local Storage)
   const [accessToken, setAccessToken] = useState('');
-  const [isTestingConnection, setIsTestingConnection] = useState(false);
-  const [isConnectingPage, setIsConnectingPage] = useState(false);
   const [availablePages, setAvailablePages] = useState<FacebookPageFromAPI[]>([]);
-  const [connectedPages, setConnectedPages] = useState<FacebookPage[]>([]);
-  const [isLoadingPages, setIsLoadingPages] = useState(false);
-  const [isLoadingConnectedPages, setIsLoadingConnectedPages] = useState(false);
   const [showAddPageForm, setShowAddPageForm] = useState(false);
 
-  // تحميل الصفحات المربوطة
-  const loadConnectedPages = async () => {
-    if (!user?.id) {
-      // console.log('❌ لا يوجد معرف شركة');
-      setConnectedPages([]);
-      return;
-    }
-    
-    setIsLoadingConnectedPages(true);
-    try {
-      // console.log('🔍 تحميل الصفحات للشركة:', user.id, user.name);
-      
+  // ===================================
+  // 🔄 React Query - جلب الصفحات المربوطة
+  // ===================================
+  const {
+    data: connectedPages = [],
+    isLoading: isLoadingConnectedPages,
+    error: pagesError,
+    refetch: refetchPages
+  } = useQuery({
+    queryKey: ['facebook-pages', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+
+      console.log('🔍 جلب صفحات Facebook للشركة:', user.id);
+
       const response = await fetch(`${API_BASE_URL}/api/facebook/settings?company_id=${user.id}`);
 
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        throw new Error(`فشل في جلب الصفحات: ${response.status}`);
       }
 
       const data = await response.json();
-      console.log('📄 Facebook Settings Response:', data);
+      console.log('✅ تم جلب', data.length, 'صفحة Facebook');
 
-      // API يعيد البيانات مباشرة كـ array
-      if (Array.isArray(data)) {
-        setConnectedPages(data);
-        console.log(`✅ تم تحميل ${data.length} صفحة`);
-      } else if (data.success) {
-        setConnectedPages(data.data || []);
-        console.log(`✅ تم تحميل ${data.data?.length || 0} صفحة`);
-      } else {
-        console.error('❌ خطأ في تحميل الصفحات:', data.error);
-        setConnectedPages([]);
+      return data as FacebookPage[];
+    },
+    enabled: !!user?.id,
+    staleTime: 30000, // البيانات صالحة لمدة 30 ثانية
+    refetchOnWindowFocus: true,
+    refetchInterval: 60000, // تحديث كل دقيقة
+  });
+
+
+
+  // ===================================
+  // 🔄 React Query Mutations
+  // ===================================
+
+  // اختبار Access Token
+  const testTokenMutation = useMutation({
+    mutationFn: async (token: string) => {
+      console.log('🔍 اختبار Access Token...');
+
+      const response = await fetch(`https://graph.facebook.com/v21.0/me?access_token=${token}`);
+
+      if (!response.ok) {
+        throw new Error('فشل في الاتصال بـ Facebook');
       }
-    } catch (error) {
-      console.error('❌ خطأ في تحميل الصفحات:', error);
-      setConnectedPages([]);
+
+      const userData = await response.json();
+
+      if (userData.error) {
+        throw new Error(userData.error.message || 'رمز الوصول غير صحيح');
+      }
+
+      console.log('✅ تم التحقق من صحة Token:', userData);
+
+      // التحقق من نوع الـ Token
+      let pages = [];
+
+      // إذا كان Page Token، استخدم البيانات المباشرة
+      if (userData.id && userData.name) {
+        // هذا Page Token - إنشاء صفحة واحدة من البيانات المتاحة
+        pages = [{
+          id: userData.id,
+          name: userData.name,
+          access_token: token,
+          category: userData.category || 'صفحة',
+          tasks: ['MANAGE', 'CREATE_CONTENT', 'MESSAGING']
+        }];
+        console.log('📄 تم اكتشاف Page Token للصفحة:', userData.name);
+      } else {
+        // محاولة جلب الصفحات كـ User Token
+        try {
+          const pagesResponse = await fetch(`https://graph.facebook.com/v21.0/me/accounts?access_token=${token}`);
+          const pagesData = await pagesResponse.json();
+
+          if (pagesData.error) {
+            console.log('⚠️ لا يمكن جلب الصفحات - قد يكون Page Token');
+            pages = [];
+          } else {
+            pages = pagesData.data || [];
+            console.log('📄 تم جلب الصفحات كـ User Token:', pages.length);
+          }
+        } catch (error) {
+          console.log('⚠️ خطأ في جلب الصفحات:', error);
+          pages = [];
+        }
+      }
+
+      return {
+        user: userData,
+        pages: pages
+      };
+    },
+    onSuccess: (data) => {
+      console.log('✅ تم اختبار Token بنجاح');
+      setAvailablePages(data.pages);
+      setShowAddPageForm(true);
+
+      const tokenType = data.pages.length === 1 && data.pages[0].id === data.user.id ? 'Page Token' : 'User Token';
+
+      toast({
+        title: "نجح الاتصال",
+        description: `تم التحقق من ${tokenType} - ${data.pages.length} صفحة متاحة`,
+      });
+    },
+    onError: (error: any) => {
+      console.error('❌ خطأ في اختبار Token:', error);
+      toast({
+        title: "خطأ في الاتصال",
+        description: error.message || 'فشل في اختبار رمز الوصول',
+        variant: "destructive"
+      });
+    },
+  });
+
+  // إضافة صفحة جديدة
+  const addPageMutation = useMutation({
+    mutationFn: async (pageData: {
+      company_id: string;
+      page_id: string;
+      page_name: string;
+      access_token: string;
+    }) => {
+      console.log('📤 إضافة صفحة Facebook جديدة:', pageData.page_name);
+
+      const response = await fetch(`${API_BASE_URL}/api/facebook/settings`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(pageData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'فشل في إضافة الصفحة');
+      }
+
+      return response.json();
+    },
+    onSuccess: () => {
+      // إعادة جلب البيانات من قاعدة البيانات
+      queryClient.invalidateQueries({ queryKey: ['facebook-pages', user?.id] });
+
+      setShowAddPageForm(false);
+      setAccessToken('');
+      setAvailablePages([]);
+
+      toast({
+        title: "تم بنجاح",
+        description: "تم إضافة الصفحة بنجاح",
+      });
+    },
+    onError: (error: any) => {
+      console.error('❌ خطأ في إضافة الصفحة:', error);
       toast({
         title: "خطأ",
-        description: "فشل في تحميل الصفحات المربوطة",
-        variant: "destructive"});
-    } finally {
-      setIsLoadingConnectedPages(false);
-    }
-  };
+        description: error.message || 'فشل في إضافة الصفحة',
+        variant: "destructive"
+      });
+    },
+  });
 
-  // اختبار الاتصال وجلب الصفحات
-  const testConnection = async () => {
+  // حذف صفحة
+  const deletePageMutation = useMutation({
+    mutationFn: async (pageId: string) => {
+      console.log('🗑️ حذف صفحة Facebook:', pageId);
+
+      const response = await fetch(`${API_BASE_URL}/api/facebook/settings/${pageId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('فشل في حذف الصفحة');
+      }
+
+      return response.json();
+    },
+    onSuccess: () => {
+      // إعادة جلب البيانات من قاعدة البيانات
+      queryClient.invalidateQueries({ queryKey: ['facebook-pages', user?.id] });
+
+      toast({
+        title: "تم الحذف",
+        description: "تم حذف الصفحة بنجاح",
+      });
+    },
+    onError: (error: any) => {
+      console.error('❌ خطأ في حذف الصفحة:', error);
+      toast({
+        title: "خطأ",
+        description: error.message || 'فشل في حذف الصفحة',
+        variant: "destructive"
+      });
+    },
+  });
+
+  // ===================================
+  // 🎯 Helper Functions
+  // ===================================
+
+  const testConnection = () => {
     if (!accessToken.trim()) {
       toast({
         title: "خطأ",
@@ -137,132 +293,11 @@ const FacebookSettingsMySQL: React.FC = () => {
       return;
     }
 
-    setIsTestingConnection(true);
-    setAvailablePages([]);
-    
-    try {
-      // console.log('🔍 اختبار الاتصال مع فيسبوك...');
-      
-      // اختبار صحة الرمز
-      console.log('🔍 اختبار رمز الوصول...');
-      const userResponse = await fetch(`https://graph.facebook.com/v21.0/me?access_token=${accessToken}`);
-
-      if (!userResponse.ok) {
-        throw new Error(`HTTP ${userResponse.status}: فشل في الاتصال بـ Facebook`);
-      }
-
-      const userData = await userResponse.json();
-
-      if (userData.error) {
-        console.error('❌ Facebook User API Error:', userData.error);
-        throw new Error(userData.error.message || 'رمز الوصول غير صحيح');
-      }
-
-      console.log('✅ رمز الوصول صحيح للمستخدم:', userData.name || userData.id);
-      
-      // جلب الصفحات
-      console.log('🔍 جلب صفحات Facebook...');
-      const pagesResponse = await fetch(`https://graph.facebook.com/v21.0/me/accounts?access_token=${accessToken}`);
-
-      let pagesData;
-
-      if (!pagesResponse.ok) {
-        const errorText = await pagesResponse.text();
-        console.error('❌ Facebook Pages API Error:', {
-          status: pagesResponse.status,
-          statusText: pagesResponse.statusText,
-          response: errorText
-        });
-
-        // محاولة تحليل الخطأ كـ JSON
-        try {
-          pagesData = JSON.parse(errorText);
-        } catch {
-          throw new Error(`HTTP ${pagesResponse.status}: فشل في جلب الصفحات - ${pagesResponse.statusText}`);
-        }
-      } else {
-        pagesData = await pagesResponse.json();
-      }
-
-      if (pagesData.error) {
-        console.error('❌ Facebook Pages API Error:', pagesData.error);
-        console.log('🔍 تحليل نوع الخطأ:', {
-          code: pagesData.error.code,
-          message: pagesData.error.message,
-          includesAccounts: pagesData.error.message?.includes('accounts'),
-          includesPage: pagesData.error.message?.includes('Page')
-        });
-
-        // معالجة أخطاء محددة
-        if (pagesData.error.code === 190) {
-          throw new Error('رمز الوصول منتهي الصلاحية أو غير صحيح. يرجى الحصول على رمز جديد.');
-        } else if (pagesData.error.code === 200) {
-          throw new Error('رمز الوصول لا يملك الصلاحيات المطلوبة لجلب الصفحات.');
-        } else if (pagesData.error.code === 100 && (
-          pagesData.error.message.includes('accounts') ||
-          pagesData.error.message.includes('nonexisting field')
-        )) {
-          // هذا Page Token وليس User Token - نحاول الحصول على معلومات الصفحة مباشرة
-          console.log('🔄 رمز الوصول من نوع Page Token، محاولة الحصول على معلومات الصفحة مباشرة...');
-
-          const pageInfo = {
-            id: userData.id,
-            name: userData.name,
-            access_token: accessToken
-          };
-
-          setAvailablePages([pageInfo]);
-
-          toast({
-            title: "نجح الاتصال! ✅",
-            description: `تم العثور على صفحة: ${pageInfo.name} (Page Token)`,
-            variant: "default"
-          });
-
-          console.log(`✅ تم جلب معلومات الصفحة: ${pageInfo.name}`);
-          return; // الخروج من الدالة
-        } else {
-          throw new Error(pagesData.error.message || 'فشل في جلب الصفحات');
-        }
-      }
-
-      // التحقق من وجود البيانات
-      const pages = pagesData.data || [];
-      console.log('📄 Facebook Pages Response:', {
-        total: pages.length,
-        pages: pages.map(p => ({ id: p.id, name: p.name }))
-      });
-
-      setAvailablePages(pages);
-
-      if (pages.length === 0) {
-        toast({
-          title: "نجح الاتصال! ✅",
-          description: "لم يتم العثور على صفحات Facebook. تأكد من أن لديك صفحات أو أن رمز الوصول يملك الصلاحيات المطلوبة.",
-          variant: "default"
-        });
-      } else {
-        toast({
-          title: "نجح الاتصال! 🎉",
-          description: `تم العثور على ${pages.length} صفحة`
-        });
-      }
-
-      console.log(`✅ تم جلب ${pages.length} صفحة`);
-      
-    } catch (error) {
-      console.error('❌ خطأ في الاتصال:', error);
-      toast({
-        title: "فشل الاتصال",
-        description: error.message || "تحقق من رمز الوصول",
-        variant: "destructive"});
-    } finally {
-      setIsTestingConnection(false);
-    }
+    testTokenMutation.mutate(accessToken);
   };
 
-  // ربط صفحة
-  const connectPage = async (page: FacebookPageFromAPI) => {
+
+  const connectPage = (page: FacebookPageFromAPI) => {
     if (!user?.id) {
       toast({
         title: "خطأ",
@@ -271,93 +306,53 @@ const FacebookSettingsMySQL: React.FC = () => {
       return;
     }
 
-    setIsConnectingPage(true);
-    
-    try {
-      // console.log('🔗 ربط الصفحة:', page.name);
-      
-      const response = await fetch(`${API_BASE_URL}/api/facebook/settings`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'},
-        body: JSON.stringify({
-          company_id: user.id,
-          page_id: page.id,
-          page_name: page.name,
-          access_token: page.access_token})});
-      
-      const data = await response.json();
-      
-      if (data.success) {
-        toast({
-          title: "تم ربط الصفحة! 🎉",
-          description: `تم ربط صفحة ${page.name} بنجاح`});
-        
-        // إعادة تحميل الصفحات المربوطة
-        await loadConnectedPages();
-        
-        // إزالة الصفحة من القائمة المتاحة
-        setAvailablePages(prev => prev.filter(p => p.id !== page.id));
-        
-        // console.log('✅ تم ربط الصفحة بنجاح');
-      } else {
-        throw new Error(data.error || 'فشل في ربط الصفحة');
-      }
-      
-    } catch (error) {
-      console.error('❌ خطأ في ربط الصفحة:', error);
-      toast({
-        title: "فشل ربط الصفحة",
-        description: error.message || "حدث خطأ غير متوقع",
-        variant: "destructive"});
-    } finally {
-      setIsConnectingPage(false);
-    }
+    addPageMutation.mutate({
+      company_id: user.id,
+      page_id: page.id,
+      page_name: page.name,
+      access_token: page.access_token
+    });
   };
 
-  // إلغاء ربط صفحة
-  const disconnectPage = async (pageId: string, pageName: string) => {
-    try {
-      // console.log('🔌 إلغاء ربط الصفحة:', pageName);
-      
-      const response = await fetch(`${API_BASE_URL}/api/facebook/settings/${pageId}`, {
-        method: 'DELETE'});
-      
-      if (response.ok) {
-        toast({
-          title: "تم إلغاء الربط",
-          description: `تم إلغاء ربط صفحة ${pageName}`});
-        
-        // إعادة تحميل الصفحات المربوطة
-        await loadConnectedPages();
-        
-        // console.log('✅ تم إلغاء ربط الصفحة');
-      } else {
-        throw new Error('فشل في إلغاء ربط الصفحة');
-      }
-      
-    } catch (error) {
-      console.error('❌ خطأ في إلغاء ربط الصفحة:', error);
-      toast({
-        title: "فشل إلغاء الربط",
-        description: error.message || "حدث خطأ غير متوقع",
-        variant: "destructive"});
-    }
+  const disconnectPage = (pageId: string, pageName: string) => {
+    deletePageMutation.mutate(pageId);
   };
-
-  // تحميل الصفحات المربوطة عند تحميل المكون
-  useEffect(() => {
-    loadConnectedPages();
-  }, [user?.id]);
 
   return (
     <div className="container mx-auto p-6 space-y-6" dir="rtl">
-      <div className="flex items-center space-x-3 rtl:space-x-reverse" role="main">
-        <Facebook className="h-8 w-8 text-blue-600" />
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">إعدادات فيسبوك</h1>
-          <p className="text-gray-600">ربط وإدارة صفحات فيسبوك</p>
+      <div className="flex items-center justify-between" role="main">
+        <div className="flex items-center space-x-3 rtl:space-x-reverse">
+          <Facebook className="h-8 w-8 text-blue-600" />
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">إعدادات فيسبوك</h1>
+            <p className="text-gray-600">ربط وإدارة صفحات فيسبوك</p>
+          </div>
         </div>
+
+        {/* عرض الأخطاء */}
+        {pagesError && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+            <p className="text-red-800 text-sm">
+              ❌ خطأ في جلب الصفحات: {pagesError.message}
+            </p>
+          </div>
+        )}
+
+        {/* زر إعادة التحميل */}
+        <Button
+          onClick={() => refetchPages()}
+          variant="outline"
+          size="sm"
+          className="text-blue-600 border-blue-200 hover:bg-blue-50"
+          disabled={isLoadingConnectedPages}
+        >
+          {isLoadingConnectedPages ? (
+            <Loader2 className="h-4 w-4 animate-spin ml-2" />
+          ) : (
+            <RefreshCw className="h-4 w-4 ml-2" />
+          )}
+          إعادة تحميل
+        </Button>
       </div>
 
       {/* الصفحات المربوطة */}
@@ -413,8 +408,13 @@ const FacebookSettingsMySQL: React.FC = () => {
                       variant="outline"
                       size="sm"
                       onClick={() => disconnectPage(page.page_id, page.page_name)}
+                      disabled={deletePageMutation.isPending}
                     >
-                      <Trash2 className="h-4 w-4" />
+                      {deletePageMutation.isPending ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-4 w-4" />
+                      )}
                     </Button>
                   </div>
                 </div>
@@ -472,11 +472,11 @@ const FacebookSettingsMySQL: React.FC = () => {
                 onChange={(e) => setAccessToken(e.target.value)}
                 className="flex-1"
               />
-              <Button 
+              <Button
                 onClick={testConnection}
-                disabled={isTestingConnection || !accessToken.trim()}
+                disabled={testTokenMutation.isPending || !accessToken.trim()}
               >
-                {isTestingConnection ? (
+                {testTokenMutation.isPending ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <Key className="h-4 w-4" />
@@ -518,10 +518,10 @@ const FacebookSettingsMySQL: React.FC = () => {
                     
                     <Button
                       onClick={() => connectPage(page)}
-                      disabled={isConnectingPage}
+                      disabled={addPageMutation.isPending}
                       size="sm"
                     >
-                      {isConnectingPage ? (
+                      {addPageMutation.isPending ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
                         <Plus className="h-4 w-4" />
