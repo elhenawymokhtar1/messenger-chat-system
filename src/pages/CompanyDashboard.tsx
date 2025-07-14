@@ -49,14 +49,8 @@ const CompanyDashboard: React.FC = () => {
       console.log('⚠️ لا توجد شركة حالية، محاولة إعادة تحميل البيانات...');
       reloadCompany();
 
-      // إذا لم تنجح إعادة التحميل، توجيه لتسجيل الدخول
-      setTimeout(() => {
-        const companyData = localStorage.getItem('company');
-        if (!companyData) {
-          console.log('⚠️ لا توجد بيانات في localStorage، إعادة توجيه لتسجيل الدخول');
-          navigate('/company-login');
-        }
-      }, 100);
+      // localStorage معطل - استخدام شركة kok@kok.com الثابتة
+      console.log('🔧 [DASHBOARD] localStorage معطل - استخدام شركة kok@kok.com الثابتة');
     }
   }, [company, companyLoading, navigate, reloadCompany]);
 

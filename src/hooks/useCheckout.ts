@@ -5,7 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002';
 
 // Company ID ثابت للاختبار
-const COMPANY_ID = 'c677b32f-fe1c-4c64-8362-a1c03406608d';
+const COMPANY_ID = '2d9b8887-0cca-430b-b61b-ca16cccfec63';
 
 // أنواع البيانات
 export interface CheckoutData {
@@ -43,7 +43,7 @@ export interface CheckoutData {
 
 export interface Order {
   id: string;
-  order_number: string;
+  order_id: string;
   company_id: string;
   session_id?: string;
   customer_name: string;
@@ -112,7 +112,7 @@ export const useCheckout = () => {
     onSuccess: (order) => {
       toast({
         title: "تم إتمام الطلب",
-        description: `رقم الطلب: ${order.order_number}`,
+        description: `رقم الطلب: ${order.order_id}`,
       });
     },
     onError: (error) => {

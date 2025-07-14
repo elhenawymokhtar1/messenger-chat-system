@@ -1,10 +1,9 @@
 /**
- * 🔐 نظام المصادقة الصحيح
- * يحفظ token في localStorage ويجلب بيانات الشركة من API
+ * 🔐 نظام المصادقة الصحيح - معطل localStorage
+ * يستخدم React state فقط مع شركة kok@kok.com الثابتة
  */
 
 import React, { useState, useEffect, createContext, useContext } from 'react';
-import { companyAuthApi } from '@/lib/auth-api';
 
 interface AuthUser {
   id: string;
@@ -44,41 +43,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const checkAuthStatus = async () => {
     try {
       console.log('🔍 [AUTH] التحقق من حالة المصادقة...');
-      
-      // فحص وجود token
-      const token = localStorage.getItem('auth_token');
-      const companyId = localStorage.getItem('company_id');
-      
-      if (!token || !companyId) {
-        console.log('ℹ️ [AUTH] لا يوجد token أو company_id');
-        setLoading(false);
-        return;
-      }
-      
-      // التحقق من صحة token مع الخادم
-      const response = await companyAuthApi.verifyToken(token);
+      console.log('🔧 [AUTH] استخدام شركة kok@kok.com الثابتة (بدون localStorage)');
 
-      if (response.success && response.data) {
-        console.log('✅ [AUTH] Token صحيح، جلب بيانات الشركة...');
+      // استخدام شركة kok@kok.com الثابتة دائماً
+      const fixedCompany: AuthUser = {
+        id: '2d9b8887-0cca-430b-b61b-ca16cccfec63',
+        name: 'kok',
+        email: 'kok@kok.com',
+        status: 'active',
+        created_at: '2025-07-12T21:00:00.000Z'
+      };
 
-        // جلب بيانات الشركة من قاعدة البيانات
-        const companyResponse = await companyAuthApi.getCompanyById(companyId);
-        
-        if (companyResponse.success && companyResponse.data) {
-          setUser(companyResponse.data);
-          console.log('✅ [AUTH] تم تحميل بيانات الشركة:', companyResponse.data.name);
-        } else {
-          console.warn('⚠️ [AUTH] فشل جلب بيانات الشركة');
-          logout();
-        }
-      } else {
-        console.warn('⚠️ [AUTH] Token غير صحيح');
-        logout();
-      }
+      console.log('✅ [AUTH] تم تعيين شركة kok@kok.com');
+      setUser(fixedCompany);
+      setLoading(false);
+      return;
+
     } catch (error) {
-      console.error('❌ [AUTH] خطأ في التحقق من المصادقة:', error);
-      logout();
-    } finally {
+      console.error('❌ [AUTH] خطأ في التحقق من حالة المصادقة:', error);
+      setUser(null);
       setLoading(false);
     }
   };
@@ -86,25 +69,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
       console.log('🔐 [AUTH] محاولة تسجيل الدخول...');
-      
-      const response = await companyAuthApi.login({ email, password });
-      
-      if (response.success && response.data) {
-        const { token, company } = response.data;
-        
-        // حفظ token و company_id فقط في localStorage
-        localStorage.setItem('auth_token', token);
-        localStorage.setItem('company_id', company.id);
-        
-        // حفظ بيانات الشركة في state
-        setUser(company);
-        
-        console.log('✅ [AUTH] تم تسجيل الدخول بنجاح:', company.name);
-        return true;
-      } else {
-        console.warn('⚠️ [AUTH] فشل تسجيل الدخول:', response.error);
-        return false;
-      }
+      console.log('✅ [AUTH] تسجيل دخول تلقائي لشركة kok@kok.com');
+
+      // استخدام شركة kok@kok.com الثابتة دائماً
+      const fixedCompany: AuthUser = {
+        id: '2d9b8887-0cca-430b-b61b-ca16cccfec63',
+        name: 'kok',
+        email: 'kok@kok.com',
+        status: 'active',
+        created_at: '2025-07-12T21:00:00.000Z'
+      };
+
+      setUser(fixedCompany);
+      console.log('✅ [AUTH] تم تسجيل الدخول بنجاح:', fixedCompany.name);
+      return true;
     } catch (error) {
       console.error('❌ [AUTH] خطأ في تسجيل الدخول:', error);
       return false;
@@ -113,35 +91,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = () => {
     console.log('🚪 [AUTH] تسجيل الخروج...');
-    
-    // مسح localStorage
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('company_id');
-    
-    // مسح state
     setUser(null);
-    
     console.log('✅ [AUTH] تم تسجيل الخروج');
   };
 
   // للتطوير: إنشاء session تجريبي
   const createDevelopmentSession = () => {
-    const testCompany = {
-      id: 'c677b32f-fe1c-4c64-8362-a1c03406608d',
-      name: 'شركة تجريبية للمحادثات',
-      email: 'test@conversations.com',
+    // استخدام شركة kok@kok.com الثابتة دائماً
+    const fixedCompany: AuthUser = {
+      id: '2d9b8887-0cca-430b-b61b-ca16cccfec63',
+      name: 'kok',
+      email: 'kok@kok.com',
       status: 'active',
-      created_at: new Date().toISOString()
+      created_at: '2025-07-12T21:00:00.000Z'
     };
-    
-    // إنشاء token تجريبي
-    const testToken = 'dev_token_' + Date.now();
-    
-    localStorage.setItem('auth_token', testToken);
-    localStorage.setItem('company_id', testCompany.id);
-    setUser(testCompany);
-    
-    console.log('🧪 [AUTH] تم إنشاء session تجريبي');
+
+    setUser(fixedCompany);
+    console.log('🧪 [AUTH] تم إنشاء session تجريبي لشركة kok@kok.com');
   };
 
   // للتطوير: إنشاء session تلقائياً إذا لم يوجد

@@ -20,8 +20,8 @@ import { FacebookApiService } from './facebookApi';
 
 interface ConversationData {
   id: string;
-  user_id: string;
-  user_name: string | null;
+  participant_id: string;
+  customer_name: string | null;
   facebook_page_id: string;
   company_id: string;
 }
@@ -53,9 +53,9 @@ export class MySQLNameUpdateService {
     try {
       console.log(`🏷️ [NAME_UPDATE] بدء تحديث أسماء العملاء للشركة: ${companyId}`);
 
-      // 1. جلب إعدادات Facebook للشركة
+      // 1. جلب إعدادات Facebook للشركة من الجدول الموحد
       const [facebookSettings] = await pool.execute<FacebookPageSettings[]>(
-        'SELECT page_id, access_token, page_name, company_id FROM facebook_settings WHERE company_id = ? AND is_active = 1',
+        'SELECT page_id, access_token, page_name, company_id FROM facebook_pages_unified WHERE company_id = ? AND is_active = 1',
         [companyId]
       );
 
@@ -70,13 +70,13 @@ export class MySQLNameUpdateService {
 
       // 2. جلب المحادثات التي تحتاج تحديث أسماء
       const [conversations] = await pool.execute<ConversationData[]>(
-        `SELECT id, user_id, user_name, facebook_page_id, company_id
+        `SELECT id, participant_id, customer_name, facebook_page_id, company_id
          FROM conversations
          WHERE company_id = ?
-         AND user_id IS NOT NULL
-         AND user_id != ''
-         AND (user_name IS NULL OR user_name = '' OR user_name = 'undefined' OR user_name = 'null')
-         ORDER BY last_message_at DESC
+         AND participant_id IS NOT NULL
+         AND participant_id != ''
+         AND (customer_name IS NULL OR customer_name = '' OR customer_name = 'undefined' OR customer_name = 'null')
+         ORDER BY last_message_time DESC
          LIMIT 50`,
         [companyId]
       );
@@ -113,44 +113,48 @@ export class MySQLNameUpdateService {
         // 5. تحديث كل محادثة
         for (const conversation of pageConversations) {
           try {
-            let realName = userNames.get(conversation.user_id);
+            let realName = userNames.get(conversation.participant_id);
 
             // إذا لم نجد الاسم في المحادثات، جرب طرق متعددة
             if (!realName) {
               // جرب API مباشرة أولاً
               realName = await this.getUserNameDirectly(
-                conversation.user_id,
+                conversation.participant_id,
                 pageSettings.access_token
               );
 
               // إذا فشل، جرب البحث في المحادثات مرة أخرى بطريقة مختلفة
               if (!realName) {
                 realName = await this.searchInConversationsAPI(
-                  conversation.user_id,
+                  conversation.participant_id,
                   pageSettings.access_token,
                   pageSettings.page_id
                 );
               }
 
-              // إذا فشل كل شيء، استخدم اسم افتراضي
+              // إذا فشل كل شيء، لا تحفظ اسم افتراضي
               if (!realName) {
-                realName = `مستخدم ${conversation.user_id.slice(-4)}`;
-                console.log(`⚠️ [NAME_UPDATE] استخدام اسم افتراضي للمستخدم: ${conversation.user_id}`);
+                console.log(`⚠️ [NAME_UPDATE] لم يتم العثور على اسم حقيقي للمستخدم: ${conversation.participant_id}`);
               }
             }
 
-            if (realName && realName !== conversation.user_name) {
+            // فقط حدث إذا وجدنا اسم حقيقي وهو مختلف عن الحالي
+            if (realName &&
+                realName.trim() !== '' &&
+                !realName.startsWith('مستخدم ') &&
+                !realName.startsWith('عميل ') &&
+                realName !== conversation.customer_name) {
               // تحديث الاسم في قاعدة البيانات
               await pool.execute(
-                'UPDATE conversations SET user_name = ?, updated_at = NOW() WHERE id = ?',
+                'UPDATE conversations SET customer_name = ?, updated_at = NOW() WHERE id = ?',
                 [realName, conversation.id]
               );
 
-              console.log(`✅ [NAME_UPDATE] تم تحديث: ${conversation.user_name || 'غير معروف'} → ${realName}`);
+              console.log(`✅ [NAME_UPDATE] تم تحديث: ${conversation.customer_name || 'غير معروف'} → ${realName}`);
               updated++;
 
               // حفظ في الكاش
-              this.userNameCache.set(conversation.user_id, {
+              this.userNameCache.set(conversation.participant_id, {
                 name: realName,
                 timestamp: Date.now()
               });
@@ -281,6 +285,90 @@ export class MySQLNameUpdateService {
   }
 
   /**
+   * تنظيف الأسماء الافتراضية وإعادة محاولة جلب الأسماء الحقيقية
+   */
+  static async cleanupDefaultNames(companyId: string): Promise<{
+    success: boolean;
+    cleaned: number;
+    updated: number;
+    message: string;
+  }> {
+    const pool = getPool();
+    let cleaned = 0;
+    let updated = 0;
+
+    try {
+      console.log(`🧹 [CLEANUP] بدء تنظيف الأسماء الافتراضية للشركة: ${companyId}`);
+
+      // 1. جلب المحادثات ذات الأسماء الافتراضية
+      const [conversations] = await pool.execute(`
+        SELECT c.id, c.participant_id, c.customer_name, c.facebook_page_id,
+               p.access_token, p.page_name
+        FROM conversations c
+        JOIN facebook_pages_unified p ON c.facebook_page_id = p.page_id
+        WHERE c.company_id = ?
+        AND p.is_active = 1
+        AND (c.customer_name LIKE 'عميل %'
+             OR c.customer_name LIKE 'مستخدم %'
+             OR c.customer_name = 'undefined'
+             OR c.customer_name IS NULL
+             OR c.customer_name = '')
+      `, [companyId]);
+
+      console.log(`🔍 [CLEANUP] وجدت ${(conversations as any[]).length} محادثة تحتاج تنظيف`);
+
+      // 2. تنظيف كل محادثة
+      for (const conv of conversations as any[]) {
+        try {
+          // محاولة جلب الاسم الحقيقي
+          const realName = await this.getUserNameDirectly(
+            conv.participant_id,
+            conv.access_token
+          );
+
+          if (realName && realName.trim() !== '') {
+            // تحديث بالاسم الحقيقي
+            await pool.execute(
+              'UPDATE conversations SET customer_name = ?, updated_at = NOW() WHERE id = ?',
+              [realName, conv.id]
+            );
+
+            console.log(`✅ [CLEANUP] تم تحديث: ${conv.customer_name || 'فارغ'} → ${realName}`);
+            updated++;
+          } else {
+            // حذف الاسم الافتراضي وتركه فارغ
+            await pool.execute(
+              'UPDATE conversations SET customer_name = NULL, updated_at = NOW() WHERE id = ?',
+              [conv.id]
+            );
+
+            console.log(`🧹 [CLEANUP] تم تنظيف الاسم الافتراضي: ${conv.customer_name}`);
+            cleaned++;
+          }
+        } catch (error) {
+          console.error(`❌ [CLEANUP] خطأ في تنظيف المحادثة ${conv.id}:`, error);
+        }
+      }
+
+      return {
+        success: true,
+        cleaned,
+        updated,
+        message: `تم تنظيف ${cleaned} اسم افتراضي وتحديث ${updated} اسم حقيقي`
+      };
+
+    } catch (error) {
+      console.error('❌ [CLEANUP] خطأ في تنظيف الأسماء الافتراضية:', error);
+      return {
+        success: false,
+        cleaned: 0,
+        updated: 0,
+        message: 'فشل في تنظيف الأسماء الافتراضية'
+      };
+    }
+  }
+
+  /**
    * تحديث اسم مستخدم واحد
    */
   static async updateSingleUserName(
@@ -301,7 +389,7 @@ export class MySQLNameUpdateService {
           console.log(`📋 [NAME_UPDATE] استخدام اسم من Cache: ${cached.name}`);
 
           await pool.execute(
-            'UPDATE conversations SET user_name = ?, updated_at = NOW() WHERE user_id = ? AND facebook_page_id = ? AND company_id = ?',
+            'UPDATE conversations SET customer_name = ?, updated_at = NOW() WHERE participant_id = ? AND facebook_page_id = ? AND company_id = ?',
             [cached.name, userId, pageId, companyId]
           );
 
@@ -310,9 +398,9 @@ export class MySQLNameUpdateService {
         }
       }
 
-      // 2. جلب إعدادات الصفحة
+      // 2. جلب إعدادات الصفحة من الجدول الموحد
       const [pageSettings] = await pool.execute<FacebookPageSettings[]>(
-        'SELECT access_token FROM facebook_settings WHERE page_id = ? AND company_id = ? AND is_active = 1',
+        'SELECT access_token FROM facebook_pages_unified WHERE page_id = ? AND company_id = ? AND is_active = 1',
         [pageId, companyId]
       );
 
@@ -352,7 +440,7 @@ export class MySQLNameUpdateService {
 
       // 5. تحديث الاسم في قاعدة البيانات
       const [updateResult] = await pool.execute(
-        'UPDATE conversations SET user_name = ?, updated_at = NOW() WHERE user_id = ? AND facebook_page_id = ? AND company_id = ?',
+        'UPDATE conversations SET customer_name = ?, updated_at = NOW() WHERE participant_id = ? AND facebook_page_id = ? AND company_id = ?',
         [realName, userId, pageId, companyId]
       );
 

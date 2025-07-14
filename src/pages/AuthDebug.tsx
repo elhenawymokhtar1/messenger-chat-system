@@ -1,6 +1,6 @@
 /**
- * 🔧 صفحة تشخيص المصادقة
- * للتحقق من حالة localStorage وبيانات المصادقة
+ * 🔧 صفحة تشخيص المصادقة - localStorage معطل
+ * للتحقق من حالة React state وبيانات المصادقة
  */
 
 import React, { useState, useEffect } from 'react';
@@ -14,19 +14,19 @@ const AuthDebug: React.FC = () => {
   const { isAuthenticated, user, login, logout } = useAuth();
 
   const refreshData = () => {
-    const companyData = localStorage.getItem('company');
-    setRawData(companyData || 'لا توجد بيانات');
-    
-    if (companyData) {
-      try {
-        const parsed = JSON.parse(companyData);
-        setLocalStorageData(parsed);
-      } catch (error) {
-        setLocalStorageData({ error: 'خطأ في تحليل البيانات' });
-      }
-    } else {
-      setLocalStorageData(null);
-    }
+    // localStorage معطل - استخدام React state فقط
+    console.log('🔧 [AUTH-DEBUG] localStorage معطل - استخدام React state فقط');
+    setRawData('localStorage معطل - يستخدم React state');
+
+    // عرض بيانات الشركة الثابتة
+    const fixedCompanyData = {
+      id: '2d9b8887-0cca-430b-b61b-ca16cccfec63',
+      name: 'kok',
+      email: 'kok@kok.com',
+      status: 'localStorage معطل'
+    };
+
+    setLocalStorageData(fixedCompanyData);
   };
 
   const testLogin = () => {
@@ -42,7 +42,7 @@ const AuthDebug: React.FC = () => {
   };
 
   const clearStorage = () => {
-    localStorage.removeItem('company');
+    console.log('🔧 [AUTH-DEBUG] localStorage معطل - لا حاجة لمسح البيانات');
     logout();
     setTimeout(refreshData, 100);
   };
@@ -104,7 +104,7 @@ const AuthDebug: React.FC = () => {
 
           <Card>
             <CardHeader>
-              <CardTitle>💾 localStorage</CardTitle>
+              <CardTitle>💾 React State (localStorage معطل)</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -132,8 +132,8 @@ const AuthDebug: React.FC = () => {
           <CardContent>
             <div className="space-y-2">
               <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
-                <span>localStorage متاح:</span>
-                <span className="text-green-600">✅ نعم</span>
+                <span>localStorage معطل:</span>
+                <span className="text-orange-600">🔧 معطل - يستخدم React state</span>
               </div>
               <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
                 <span>JSON.parse يعمل:</span>

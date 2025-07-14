@@ -46,7 +46,7 @@ const ProductVariants: React.FC = () => {
       setIsLoading(true);
 
       // الحصول على الشركة الحالية
-      const companyData = localStorage.getItem('company');
+      const companyData = null /* localStorage معطل */;
       if (!companyData) {
         console.warn('لا توجد شركة محددة');
         setProducts([]);

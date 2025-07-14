@@ -26,7 +26,7 @@ const ConversationsList = ({ selectedConversation, onSelectConversation }: Conve
   const { company, isNewCompany } = useCurrentCompany();
 
   // مؤقتاً: استخدام companyId ثابت للاختبار
-  const testCompanyId = 'c677b32f-fe1c-4c64-8362-a1c03406608d';
+  const testCompanyId = '2d9b8887-0cca-430b-b61b-ca16cccfec63';
   const { conversations, isLoading, error, refetch } = useRealConversations(testCompanyId);
 
   console.log('🔧 [DEBUG] ConversationsList - company:', company);
@@ -331,7 +331,7 @@ const ConversationsList = ({ selectedConversation, onSelectConversation }: Conve
                       }`}>
                         {getDisplayName(
                           conversation.customer_name,
-                          conversation.customer_facebook_id,
+                          conversation.participant_id,
                           conversation.id,
                           conversation.page_name
                         )}

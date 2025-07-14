@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار إعدادات Gemini AI</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+        }
+        
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #38a169;
+            transform: translateY(-2px);
+        }
+        
+        .btn-warning {
+            background: #ed8936;
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            background: #dd6b20;
+            transform: translateY(-2px);
+        }
+        
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        
+        .status.success {
+            background: #c6f6d5;
+            color: #22543d;
+            border: 1px solid #9ae6b4;
+        }
+        
+        .status.error {
+            background: #fed7d7;
+            color: #742a2a;
+            border: 1px solid #fc8181;
+        }
+        
+        .status.info {
+            background: #bee3f8;
+            color: #2a4365;
+            border: 1px solid #90cdf4;
+        }
+        
+        .current-settings {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .settings-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 5px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .settings-row:last-child {
+            border-bottom: none;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 اختبار إعدادات Gemini AI</h1>
+        
+        <div id="status"></div>
+        
+        <div class="current-settings" id="currentSettings">
+            <h3>الإعدادات الحالية:</h3>
+            <div id="settingsDisplay">جاري التحميل...</div>
+        </div>
+        
+        <form id="settingsForm">
+            <div class="form-group">
+                <label for="apiKey">مفتاح API:</label>
+                <input type="text" id="apiKey" value="AIzaSyBuyJo61LpnmBl3KedaU_79PNzQZfhu3Pw" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="model">النموذج:</label>
+                <select id="model">
+                    <option value="gemini-1.5-flash">gemini-1.5-flash</option>
+                    <option value="gemini-1.5-pro">gemini-1.5-pro</option>
+                    <option value="gemini-2.0-flash-exp">gemini-2.0-flash-exp</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="systemPrompt">الرسالة النظامية:</label>
+                <textarea id="systemPrompt" placeholder="أنت مساعد ذكي لمتجر سوان شوب..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="temperature">درجة الحرارة (0.0 - 1.0):</label>
+                <input type="number" id="temperature" min="0" max="1" step="0.1" value="0.7">
+            </div>
+            
+            <div class="form-group">
+                <label for="maxTokens">الحد الأقصى للرموز:</label>
+                <input type="number" id="maxTokens" min="100" max="4000" value="1500">
+            </div>
+            
+            <div class="form-group">
+                <label for="isActive">مفعل:</label>
+                <select id="isActive">
+                    <option value="true">نعم</option>
+                    <option value="false">لا</option>
+                </select>
+            </div>
+            
+            <div class="button-group">
+                <button type="button" class="btn-primary" onclick="loadSettings()">تحميل الإعدادات</button>
+                <button type="button" class="btn-success" onclick="saveSettings()">حفظ الإعدادات</button>
+                <button type="button" class="btn-warning" onclick="testConnection()">اختبار الاتصال</button>
+            </div>
+        </form>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <div>جاري المعالجة...</div>
+        </div>
+    </div>
+
+    <script>
+        const COMPANY_ID = '2d9b8887-0cca-430b-b61b-ca16cccfec63';
+        const API_BASE = 'http://localhost:3002';
+        
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+            setTimeout(() => {
+                statusDiv.innerHTML = '';
+            }, 5000);
+        }
+        
+        function showLoading(show = true) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+        
+        async function loadSettings() {
+            showLoading(true);
+            try {
+                const response = await fetch(`${API_BASE}/api/gemini/settings?company_id=${COMPANY_ID}`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // تحديث النموذج
+                    document.getElementById('apiKey').value = data.hasApiKey ? 'AIzaSyBuyJo61LpnmBl3KedaU_79PNzQZfhu3Pw' : '';
+                    document.getElementById('model').value = data.model_name || 'gemini-1.5-flash';
+                    document.getElementById('systemPrompt').value = data.system_prompt || '';
+                    document.getElementById('temperature').value = data.temperature || 0.7;
+                    document.getElementById('maxTokens').value = data.max_tokens || 1500;
+                    document.getElementById('isActive').value = data.is_active ? 'true' : 'false';
+                    
+                    // تحديث العرض
+                    updateSettingsDisplay(data);
+                    showStatus('تم تحميل الإعدادات بنجاح!', 'success');
+                } else {
+                    showStatus(`خطأ في تحميل الإعدادات: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showStatus(`خطأ في الاتصال: ${error.message}`, 'error');
+            }
+            showLoading(false);
+        }
+        
+        function updateSettingsDisplay(data) {
+            const display = document.getElementById('settingsDisplay');
+            display.innerHTML = `
+                <div class="settings-row">
+                    <span><strong>النموذج:</strong></span>
+                    <span>${data.model_name || 'غير محدد'}</span>
+                </div>
+                <div class="settings-row">
+                    <span><strong>درجة الحرارة:</strong></span>
+                    <span>${data.temperature || 'غير محدد'}</span>
+                </div>
+                <div class="settings-row">
+                    <span><strong>الحد الأقصى للرموز:</strong></span>
+                    <span>${data.max_tokens || 'غير محدد'}</span>
+                </div>
+                <div class="settings-row">
+                    <span><strong>الحالة:</strong></span>
+                    <span>${data.is_active ? '✅ مفعل' : '❌ غير مفعل'}</span>
+                </div>
+                <div class="settings-row">
+                    <span><strong>API Key:</strong></span>
+                    <span>${data.hasApiKey ? '✅ موجود' : '❌ غير موجود'}</span>
+                </div>
+                <div class="settings-row">
+                    <span><strong>آخر تحديث:</strong></span>
+                    <span>${data.updated_at || 'غير محدد'}</span>
+                </div>
+            `;
+        }
+        
+        async function saveSettings() {
+            showLoading(true);
+            
+            const settings = {
+                company_id: COMPANY_ID,
+                api_key: document.getElementById('apiKey').value,
+                model_name: document.getElementById('model').value,
+                system_prompt: document.getElementById('systemPrompt').value,
+                temperature: parseFloat(document.getElementById('temperature').value),
+                max_tokens: parseInt(document.getElementById('maxTokens').value),
+                is_active: document.getElementById('isActive').value === 'true'
+            };
+            
+            try {
+                // استخدام test-db endpoint للحفظ المباشر
+                const query = `UPDATE ai_settings SET 
+                    api_key = '${settings.api_key}',
+                    model_name = '${settings.model_name}',
+                    system_prompt = '${settings.system_prompt.replace(/'/g, "\\'")}',
+                    temperature = '${settings.temperature}',
+                    max_tokens = ${settings.max_tokens},
+                    is_active = ${settings.is_active ? 1 : 0},
+                    updated_at = NOW()
+                    WHERE company_id = '${COMPANY_ID}' AND provider = 'gemini'`;
+                
+                const response = await fetch(`${API_BASE}/api/test-db`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showStatus('تم حفظ الإعدادات بنجاح!', 'success');
+                    loadSettings(); // إعادة تحميل الإعدادات
+                } else {
+                    showStatus(`خطأ في حفظ الإعدادات: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showStatus(`خطأ في الاتصال: ${error.message}`, 'error');
+            }
+            
+            showLoading(false);
+        }
+        
+        async function testConnection() {
+            showLoading(true);
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/gemini/test`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        company_id: COMPANY_ID,
+                        message: 'مرحبا، هذا اختبار للاتصال مع Gemini AI'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    showStatus(`✅ نجح اختبار الاتصال! النموذج: ${data.model}`, 'success');
+                } else {
+                    showStatus(`❌ فشل اختبار الاتصال: ${data.error || 'خطأ غير معروف'}`, 'error');
+                }
+            } catch (error) {
+                showStatus(`❌ خطأ في اختبار الاتصال: ${error.message}`, 'error');
+            }
+            
+            showLoading(false);
+        }
+        
+        // تحميل الإعدادات عند تحميل الصفحة
+        window.onload = function() {
+            loadSettings();
+        };
+    </script>
+</body>
+</html>

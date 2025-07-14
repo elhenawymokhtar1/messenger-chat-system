@@ -52,14 +52,12 @@ export const useCoupons = () => {
   } = useQuery({
     queryKey: ['coupons'],
     queryFn: async () => {
-      // الحصول على الشركة الحالية
-      const companyData = localStorage.getItem('company');
-      if (!companyData) {
-        console.warn('لا توجد شركة محددة');
-        return [];
-      }
-
-      const company = JSON.parse(companyData);
+      // localStorage معطل - استخدام شركة kok@kok.com الثابتة
+      const company = {
+        id: '2d9b8887-0cca-430b-b61b-ca16cccfec63',
+        name: 'kok',
+        email: 'kok@kok.com'
+      };
       console.log('🔍 جلب الكوبونات للشركة:', company.name);
 
       // جلب متاجر الشركة أولاً
@@ -102,13 +100,12 @@ export const useCoupons = () => {
   // إنشاء كوبون جديد
   const createCouponMutation = useMutation({
     mutationFn: async (couponData: CreateCouponData) => {
-      // الحصول على الشركة الحالية
-      const companyData = localStorage.getItem('company');
-      if (!companyData) {
-        throw new Error('لا توجد شركة محددة');
-      }
-
-      const company = JSON.parse(companyData);
+      // localStorage معطل - استخدام شركة kok@kok.com الثابتة
+      const company = {
+        id: '2d9b8887-0cca-430b-b61b-ca16cccfec63',
+        name: 'kok',
+        email: 'kok@kok.com'
+      };
 
       // الحصول على متاجر الشركة الحالية
       const { data: stores } = await supabase

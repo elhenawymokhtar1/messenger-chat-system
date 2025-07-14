@@ -24,7 +24,7 @@ const SimpleLogin: React.FC = () => {
 
       if (data.success) {
         // حفظ بيانات الشركة
-        localStorage.setItem('company', JSON.stringify(data.data));
+        /* localStorage.setItem معطل */
         setMessage('✅ تم تسجيل الدخول بنجاح!');
         setTimeout(() => {
           navigate('/');

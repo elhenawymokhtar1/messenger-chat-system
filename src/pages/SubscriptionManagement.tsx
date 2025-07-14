@@ -74,7 +74,7 @@ const SubscriptionManagement: React.FC = () => {
 
   useEffect(() => {
     // التحقق من تسجيل دخول الشركة
-    const companyData = localStorage.getItem('company');
+    const companyData = null /* localStorage معطل */;
     if (!companyData) {
       navigate('/company-login');
       return;

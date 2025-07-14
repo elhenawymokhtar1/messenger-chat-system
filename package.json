@@ -32,6 +32,9 @@
     "start:stable": "concurrently \"npm run dev\" \"npm run api:stable\"",
     "test:webhook": "node test-webhook-diagnostics.js",
     "diagnose": "node test-webhook-diagnostics.js",
+    "check:isolation": "node scripts/check-isolation.cjs",
+    "monitor:isolation": "node scripts/monitor-isolation.js",
+    "test:isolation": "npm run check:isolation",
     "vercel-build": "npm run build",
     "test:ci": "jest --ci --coverage --watchAll=false",
     "test:simple": "jest src/__tests__/system.test.tsx"

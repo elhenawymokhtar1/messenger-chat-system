@@ -9,18 +9,9 @@ const Analytics = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // تسجيل دخول تلقائي للتأكد من عمل الصفحة
+  // localStorage معطل - استخدام شركة kok@kok.com الثابتة
   useEffect(() => {
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
-      console.log('🔄 [ANALYTICS] تسجيل دخول تلقائي...');
-
-      const testToken = 'test-token-c677b32f-fe1c-4c64-8362-a1c03406608d';
-      const companyId = 'c677b32f-fe1c-4c64-8362-a1c03406608d';
-
-      localStorage.setItem('auth_token', testToken);
-      localStorage.setItem('company_id', companyId);
-    }
+    console.log('🔄 [ANALYTICS] استخدام شركة kok@kok.com الثابتة (localStorage معطل)');
   }, []);
 
   // بيانات افتراضية في حالة فشل التحميل

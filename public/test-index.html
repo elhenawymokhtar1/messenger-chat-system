@@ -139,7 +139,7 @@
         
         <div style="text-align: center; margin-top: 30px;">
             <a href="javascript:location.reload()" class="btn">🔄 تحديث الصفحة</a>
-            <a href="javascript:localStorage.clear(); alert('تم مسح البيانات!');" class="btn">🧹 مسح البيانات</a>
+            <a href="javascript:alert('localStorage معطل - لا حاجة لمسح البيانات');" class="btn">🧹 localStorage معطل</a>
         </div>
     </div>
 
@@ -151,18 +151,9 @@
         console.log('- /settings - الإعدادات');
         console.log('- /conversations - المحادثات');
         
-        // عرض معلومات الشركة الحالية إذا كانت موجودة
-        const companyData = localStorage.getItem('company');
-        if (companyData) {
-            try {
-                const company = JSON.parse(companyData);
-                console.log('🏢 الشركة الحالية:', company.name, '(' + company.id + ')');
-            } catch (error) {
-                console.log('⚠️ خطأ في قراءة بيانات الشركة');
-            }
-        } else {
-            console.log('⚠️ لا توجد شركة محددة حالياً');
-        }
+        // localStorage معطل - عرض شركة kok@kok.com الثابتة
+        console.log('🏢 الشركة الثابتة: kok (2d9b8887-0cca-430b-b61b-ca16cccfec63)');
+        console.log('🔧 localStorage معطل - يستخدم React state فقط');
     </script>
 </body>
 </html>

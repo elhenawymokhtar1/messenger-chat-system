@@ -82,14 +82,12 @@ describe('ProtectedRoute', () => {
     expect(screen.getByText('محتوى محمي')).toBeInTheDocument();
   });
 
-  test('🔄 يتحقق من localStorage للمصادقة', () => {
+  test('🔄 يتحقق من React state للمصادقة (localStorage معطل)', () => {
     const mockCompanyData = {
-      id: 1,
-      name: 'شركة اختبار',
-      email: 'test@example.com'
+      id: '2d9b8887-0cca-430b-b61b-ca16cccfec63',
+      name: 'kok',
+      email: 'kok@kok.com'
     };
-
-    localStorage.setItem('company', JSON.stringify(mockCompanyData));
 
     const { useAuth } = require('@/hooks/useAuth');
     useAuth.mockReturnValue({
@@ -107,9 +105,7 @@ describe('ProtectedRoute', () => {
     expect(screen.getByText('محتوى محمي')).toBeInTheDocument();
   });
 
-  test('❌ يتعامل مع بيانات localStorage التالفة', () => {
-    localStorage.setItem('company', 'invalid-json');
-
+  test('❌ يتعامل مع عدم وجود بيانات مصادقة', () => {
     const { useAuth } = require('@/hooks/useAuth');
     useAuth.mockReturnValue({
       isAuthenticated: false,
@@ -123,6 +119,6 @@ describe('ProtectedRoute', () => {
       </ProtectedRoute>
     );
 
-    expect(localStorage.removeItem).toHaveBeenCalledWith('company');
+    expect(screen.queryByText('محتوى محمي')).not.toBeInTheDocument();
   });
 });

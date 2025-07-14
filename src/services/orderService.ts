@@ -219,7 +219,7 @@ export class OrderService {
   static async getAllOrders(): Promise<OrderData[]> {
     try {
       // الحصول على بيانات الشركة الحالية
-      const companyData = localStorage.getItem('company');
+      const companyData = null /* localStorage معطل */;
       if (!companyData) {
         console.warn('لا توجد بيانات شركة في localStorage');
         return [];

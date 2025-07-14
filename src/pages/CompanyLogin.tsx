@@ -272,7 +272,7 @@ const CompanyLogin: React.FC = () => {
                           method: 'POST',
                           headers: { 'Content-Type': 'application/json' },
                           body: JSON.stringify({
-                            fromCompanyId: 'c677b32f-fe1c-4c64-8362-a1c03406608d', // الـ ID الثابت
+                            fromCompanyId: '2d9b8887-0cca-430b-b61b-ca16cccfec63', // الـ ID الثابت
                             toCompanyId: realCompany.id // الـ ID الحقيقي
                           })
                         });

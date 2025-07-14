@@ -155,12 +155,8 @@ const SuperAdminCompaniesTable: React.FC<SuperAdminCompaniesTableProps> = ({
         };
 
         // حفظ بيانات الشركة مع معلومات المدير الأساسي
-        localStorage.setItem('company', JSON.stringify(companyData));
-        localStorage.setItem('superAdminSession', JSON.stringify({
-          superAdmin: { id: superAdminId, name: 'مدير النظام الأساسي' },
-          originalLoginType: 'super_admin_as_company',
-          loginAsCompany: true
-        }));
+        /* localStorage.setItem معطل */
+        /* localStorage.setItem معطل */
 
         toast({
           title: "نجح",

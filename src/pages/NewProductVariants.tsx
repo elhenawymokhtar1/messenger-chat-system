@@ -100,7 +100,7 @@ const NewProductVariants: React.FC = () => {
   const [selectedStatus, setSelectedStatus] = useState('all');
 
   // Company ID ثابت للاختبار
-  const COMPANY_ID = 'c677b32f-fe1c-4c64-8362-a1c03406608d';
+  const COMPANY_ID = '2d9b8887-0cca-430b-b61b-ca16cccfec63';
 
   // بيانات النموذج
   const [formData, setFormData] = useState<VariantFormData>({
@@ -139,7 +139,7 @@ const NewProductVariants: React.FC = () => {
     try {
       console.log('🔍 جلب المنتجات للشركة:', COMPANY_ID);
       
-      const response = await fetch(`http://localhost:3002/api/companies/${COMPANY_ID}/products`, {
+      const response = await fetch(`/api/companies/${COMPANY_ID}/products`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -177,7 +177,7 @@ const NewProductVariants: React.FC = () => {
       
       console.log('🔍 جلب متغيرات المنتجات للشركة:', COMPANY_ID);
       
-      const response = await fetch(`http://localhost:3002/api/companies/${COMPANY_ID}/product-variants`, {
+      const response = await fetch(`/api/companies/${COMPANY_ID}/product-variants`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -264,7 +264,7 @@ const NewProductVariants: React.FC = () => {
 
       console.log('🔧 إنشاء متغير منتج جديد:', variantData);
 
-      const response = await fetch(`http://localhost:3002/api/companies/${COMPANY_ID}/product-variants`, {
+      const response = await fetch(`/api/companies/${COMPANY_ID}/product-variants`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -325,7 +325,7 @@ const NewProductVariants: React.FC = () => {
 
       console.log('📝 تحديث متغير المنتج:', updateData);
 
-      const response = await fetch(`http://localhost:3002/api/companies/${COMPANY_ID}/product-variants/${editingVariant.id}`, {
+      const response = await fetch(`/api/companies/${COMPANY_ID}/product-variants/${editingVariant.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -392,7 +392,7 @@ const NewProductVariants: React.FC = () => {
 
       console.log('🗑️ حذف متغير المنتج:', variantId);
 
-      const response = await fetch(`http://localhost:3002/api/companies/${COMPANY_ID}/product-variants/${variantId}`, {
+      const response = await fetch(`/api/companies/${COMPANY_ID}/product-variants/${variantId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

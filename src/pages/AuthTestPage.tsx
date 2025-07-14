@@ -30,19 +30,18 @@ const AuthTestPage = () => {
   const [apiData, setApiData] = useState<any>(null);
   const [apiLoading, setApiLoading] = useState(false);
 
-  // جلب بيانات localStorage
+  // تعطيل localStorage - استخدام React state فقط
   useEffect(() => {
     const updateLocalStorageData = () => {
       setLocalStorageData({
-        auth_token: localStorage.getItem('auth_token'),
-        company_id: localStorage.getItem('company_id'),
-        // إزالة البيانات القديمة الخاطئة إن وجدت
-        old_company_data: localStorage.getItem('company')
+        auth_token: 'معطل - يستخدم React state',
+        company_id: '2d9b8887-0cca-430b-b61b-ca16cccfec63',
+        old_company_data: 'معطل - يستخدم React state'
       });
     };
 
     updateLocalStorageData();
-    
+
     // تحديث البيانات كل ثانية
     const interval = setInterval(updateLocalStorageData, 1000);
     return () => clearInterval(interval);
@@ -66,7 +65,8 @@ const AuthTestPage = () => {
   };
 
   const clearOldData = () => {
-    localStorage.removeItem('company');
+    // localStorage معطل - لا حاجة لمسح البيانات
+    console.log('🔧 localStorage معطل - لا حاجة لمسح البيانات');
     window.location.reload();
   };
 

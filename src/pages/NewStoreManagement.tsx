@@ -48,7 +48,7 @@ const NewStoreManagement: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   // استخدام معرف الشركة من المستخدم المسجل
-  const COMPANY_ID = user?.id || 'c677b32f-fe1c-4c64-8362-a1c03406608d';
+  const COMPANY_ID = user?.id || '2d9b8887-0cca-430b-b61b-ca16cccfec63';
 
   // بيانات النموذج
   const [formData, setFormData] = useState<StoreFormData>({

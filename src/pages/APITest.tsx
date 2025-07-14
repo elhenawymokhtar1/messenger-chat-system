@@ -20,7 +20,7 @@ const APITest: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [rawResponse, setRawResponse] = useState<any>(null);
 
-  const companyId = 'c677b32f-fe1c-4c64-8362-a1c03406608d';
+  const companyId = '2d9b8887-0cca-430b-b61b-ca16cccfec63';
 
   const testDirectAPI = async () => {
     console.log('🧪 [DIRECT] اختبار مباشر للـ API...');

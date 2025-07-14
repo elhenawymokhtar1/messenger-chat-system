@@ -64,15 +64,15 @@ const FacebookSettingsMySQL: React.FC = () => {
 
   // تسجيل دخول تلقائي للتأكد من عمل الصفحة
   useEffect(() => {
-    const token = localStorage.getItem('auth_token');
+    const token = null /* localStorage معطل */;
     if (!token) {
       console.log('🔄 [FACEBOOK-SETTINGS] تسجيل دخول تلقائي...');
 
-      const testToken = 'test-token-c677b32f-fe1c-4c64-8362-a1c03406608d';
-      const companyId = 'c677b32f-fe1c-4c64-8362-a1c03406608d';
+      const testToken = 'test-token-2d9b8887-0cca-430b-b61b-ca16cccfec63';
+      const companyId = '2d9b8887-0cca-430b-b61b-ca16cccfec63';
 
-      localStorage.setItem('auth_token', testToken);
-      localStorage.setItem('company_id', companyId);
+      /* localStorage.setItem معطل */
+      /* localStorage.setItem معطل */
     }
   }, []);
 

@@ -193,45 +193,15 @@ export const useAuthPersistence = () => {
         return;
       }
       
-      // التحقق من آخر مرة تم فيها التحقق
-      const lastCheck = localStorage.getItem(STORAGE_KEYS.LAST_CHECK);
-      const now = Date.now();
-      
-      if (lastCheck && (now - parseInt(lastCheck)) < CHECK_VALIDITY_DURATION) {
-        // البيانات حديثة، لا نحتاج للتحقق من الخادم
-        setAuthState({
-          isAuthenticated: true,
-          user: storedUser,
-          loading: false,
-          error: null
-        });
-        
-        console.log('✅ [AUTH] استخدام البيانات المحفوظة (حديثة)');
-        return;
-      }
-      
-      // التحقق من صحة البيانات مع الخادم
-      const isValid = await validateAuthWithServer(storedUser);
-      
-      if (isValid) {
-        localStorage.setItem(STORAGE_KEYS.LAST_CHECK, now.toString());
-        
-        setAuthState({
-          isAuthenticated: true,
-          user: storedUser,
-          loading: false,
-          error: null
-        });
-      } else {
-        clearAuthData();
-        
-        setAuthState({
-          isAuthenticated: false,
-          user: null,
-          loading: false,
-          error: 'انتهت صلاحية جلسة العمل'
-        });
-      }
+      // تعطيل localStorage - استخدام React state فقط
+      console.log('✅ [AUTH] استخدام البيانات المحفوظة (React state فقط)');
+
+      setAuthState({
+        isAuthenticated: true,
+        user: storedUser,
+        loading: false,
+        error: null
+      });
     } catch (error) {
       console.error('❌ [AUTH] خطأ في إعادة تحميل المصادقة:', error);
       
@@ -265,21 +235,10 @@ export const useAuthPersistence = () => {
     reloadAuth();
   }, [reloadAuth]);
 
-  // الاستماع لتغييرات التخزين المحلي (للتزامن بين التبويبات)
+  // localStorage معطل - لا حاجة للاستماع لتغييرات التخزين
   useEffect(() => {
-    const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === STORAGE_KEYS.COMPANY) {
-        console.log('🔄 [AUTH] تغيير في بيانات المصادقة من تبويب آخر');
-        reloadAuth();
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
-  }, [reloadAuth]);
+    console.log('🔧 [AUTH] localStorage معطل - لا حاجة للتزامن بين التبويبات');
+  }, []);
 
   return {
     ...authState,

@@ -5,7 +5,7 @@ const mysql = require('mysql2/promise');
 const crypto = require('crypto');
 
 const app = express();
-const PORT = 3002;
+const PORT = 3003;
 
 // إعدادات قاعدة البيانات
 const DB_CONFIG = {

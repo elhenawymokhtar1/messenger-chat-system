@@ -54,17 +54,24 @@ export class NameUpdateService {
             continue;
           }
           
-          // جلب جميع المحادثات لتحديث الأسماء
-          const { data: conversations, error: convError } = await supabase
-            // TODO: Replace with MySQL API
-            // TODO: Replace with MySQL API
-            .eq('facebook_page_id', page.page_id)
-            .limit(100); // تحديد العدد لتجنب الحمل الزائد
+          // جلب جميع المحادثات لتحديث الأسماء من MySQL
+          const mysql = require('mysql2/promise');
+          const pool = mysql.createPool({
+            host: '193.203.168.103',
+            user: 'u384034873_conversations',
+            password: 'Mokhtar123456',
+            database: 'u384034873_conversations',
+            charset: 'utf8mb4'
+          });
 
-          if (convError) {
-            console.error(`❌ خطأ في جلب المحادثات للصفحة ${page.page_id}:`, convError);
-            continue;
-          }
+          const [conversations] = await pool.execute(
+            'SELECT id, participant_id, customer_name FROM conversations WHERE facebook_page_id = ? LIMIT 100',
+            [page.page_id]
+          );
+
+          await pool.end();
+
+          const convError = null; // لا توجد أخطاء مع MySQL المباشر
 
           if (!conversations || conversations.length === 0) {
             console.log(`✅ لا توجد محادثات تحتاج تحديث للصفحة ${page.page_name}`);

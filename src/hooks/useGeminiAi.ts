@@ -6,10 +6,13 @@ import { geminiApi } from "@/lib/mysql-api";
 // إزالة الاستيرادات الخاطئة - استخدام SimpleGeminiService فقط
 interface GeminiSettings {
   api_key: string;
-  model: string;
+  model_name: string;
+  system_prompt: string;
+  personality_prompt?: string;
+  products_prompt?: string;
   temperature: number;
   max_tokens: number;
-  is_enabled: boolean;
+  is_active: boolean;
 }
 
 export const useGeminiSettings = () => {
@@ -31,7 +34,13 @@ export const useGeminiSettings = () => {
         throw new Error(result.error);
       }
 
-      return result.data;
+      // تحويل البيانات من test-db response format
+      const rawData = result.data;
+      if (rawData && rawData.results && rawData.results.length > 0) {
+        return rawData.results[0];
+      }
+
+      return null;
     },
     enabled: !!company, // تأكد من وجود معلومات الشركة
   });
@@ -50,11 +59,21 @@ export const useGeminiSettings = () => {
 
       const result = await geminiApi.updateSettings(settingsWithCompany);
 
+      console.log('🔍 [SAVE] Full result:', result);
+
       if (result.error) {
+        console.error('❌ [SAVE] API Error:', result.error);
         throw new Error(result.error);
       }
 
-      return result.data;
+      // تحقق من نجاح العملية
+      if (result.data && result.data.success) {
+        console.log('✅ [SAVE] Settings saved successfully');
+        return result.data;
+      } else {
+        console.error('❌ [SAVE] Failed result:', result);
+        throw new Error(`Failed to save settings: ${JSON.stringify(result)}`);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['gemini-settings', company?.id] });
@@ -76,12 +95,19 @@ export const useGeminiSettings = () => {
   // اختبار الاتصال مع Gemini
   const testConnection = useMutation({
     mutationFn: async (apiKey: string) => {
+      if (!company?.id) {
+        throw new Error('Company ID is required');
+      }
+
       const response = await fetch('http://localhost:3002/api/gemini/test', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ api_key: apiKey })
+        body: JSON.stringify({
+          company_id: company.id,
+          message: 'اختبار الاتصال مع Gemini AI'
+        })
       });
 
       if (!response.ok) {

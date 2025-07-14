@@ -1,19 +1,14 @@
 import { logger } from '../utils/logger';
 import express from 'express';
-
-// import { GeminiAiServiceSimplified } from '../services/geminiAiSimplified'; // تم حذفه
-// import { GeminiMessageProcessor } from '../services/geminiMessageProcessor'; // تم حذفه
+import { GeminiService } from '../services/database';
 import { SimpleGeminiService } from '../services/simpleGeminiService';
 
 const router = express.Router();
 
-// تم إزالة Supabase - نستخدم MySQL الآن
-// TODO: Replace with MySQL API
-
 
 // Test route
-router.get('/test', (req, res) => {
-  logger.info('🧪 [GEMINI] Test route called!');
+router.get('/test-get', (req, res) => {
+  logger.info('🧪 [GEMINI] Test GET route called!');
   res.json({ message: 'Gemini API is working!' });
 });
 
@@ -70,88 +65,72 @@ router.get('/settings', async (req, res) => {
     const { company_id } = req.query;
     logger.info('🤖 Fetching Gemini settings...', { company_id });
 
-    // جلب الإعدادات مع فلترة حسب الشركة
-    let query = supabase
-      // TODO: Replace with MySQL API
-      // TODO: Replace with MySQL API;
-
-    if (company_id) {
-      query = query.eq('company_id', company_id);
-    } else {
-      // إذا لم يتم تمرير company_id، جلب الإعدادات العامة (company_id = null)
-      query = query.is('company_id', null);
+    if (!company_id) {
+      return res.status(400).json({ error: 'company_id is required' });
     }
 
-    const { data: settings, error } = await query
-      .order('updated_at', { ascending: false })
-      .limit(1)
-      .single();
-
-    if (error && error.code !== 'PGRST116') {
-      console.error('❌ Database error:', error);
-      return res.status(500).json({ error: 'Database error' });
-    }
+    const settings = await GeminiService.getByCompanyId(company_id as string);
 
     if (!settings) {
       logger.info('⚠️ No Gemini settings found, returning defaults');
       return res.json({
         api_key: '',
-        model: 'gemini-1.5-flash',
-        prompt_template: '',
+        model_name: 'gemini-1.5-flash',
+        system_prompt: '',
         personality_prompt: '',
         products_prompt: '',
-        is_enabled: false,
+        is_active: false,
         max_tokens: 1000,
         temperature: 0.7,
-        company_id: company_id || null
+        company_id: company_id,
+        hasApiKey: false
       });
     }
 
     logger.info('✅ Gemini settings found:', {
-      model: settings.model,
-      is_enabled: settings.is_enabled,
+      model: settings.model_name,
+      is_active: settings.is_active,
       hasApiKey: !!settings.api_key
     });
 
-    res.json(settings);
+    // إخفاء API key للأمان وإضافة hasApiKey
+    const responseSettings = {
+      ...settings,
+      api_key: settings.api_key ? '***' : '',
+      hasApiKey: !!settings.api_key
+    };
+
+    res.json(responseSettings);
   } catch (error) {
     console.error('❌ Error in GET /api/gemini/settings:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-// Save Gemini settings
-router.post('/settings', async (req, res) => {
+// Save/Update Gemini settings
+router.put('/settings', async (req, res) => {
   try {
-    logger.info('🤖 Saving Gemini settings...');
+    logger.info('🤖 Updating Gemini settings...');
     const settings = req.body;
     const { company_id } = settings;
 
-    logger.info('🏢 Company ID:', company_id);
-
-    // تحضير البيانات للحفظ
-    const settingsData = {
-      ...settings,
-      company_id: company_id || null,
-      updated_at: new Date().toISOString()
-    };
-
-    // حفظ الإعدادات مع ربطها بالشركة
-    const { data: savedSettings, error } = await supabase
-      // TODO: Replace with MySQL API
-      .upsert(settingsData)
-      // TODO: Replace with MySQL API
-      .single();
-
-    if (error) {
-      console.error('❌ Database error:', error);
-      return res.status(500).json({ error: 'Database error' });
+    if (!company_id) {
+      return res.status(400).json({ error: 'company_id is required' });
     }
 
-    logger.info('✅ Gemini settings saved successfully');
-    res.json(savedSettings);
+    logger.info('🏢 Company ID:', company_id);
+
+    const success = await GeminiService.update(company_id, settings);
+
+    if (success) {
+      logger.info('✅ Gemini settings updated successfully');
+      res.json({ success: true, message: 'Gemini settings updated successfully' });
+    } else {
+      logger.error('❌ Failed to update Gemini settings');
+      res.status(500).json({ error: 'Failed to update Gemini settings' });
+    }
   } catch (error) {
-    console.error('❌ Error in POST /api/gemini/settings:', error);
+    console.error('❌ Error in PUT /api/gemini/settings:', error);
     res.status(500).json({ error: 'Failed to save Gemini settings' });
   }
 });
@@ -159,33 +138,37 @@ router.post('/settings', async (req, res) => {
 // Test Gemini connection
 router.post('/test', async (req, res) => {
   try {
-    const { api_key } = req.body;
+    const { company_id, message } = req.body;
 
-    if (!api_key) {
-      return res.status(400).json({ error: 'API key is required' });
+    if (!company_id || !message) {
+      return res.status(400).json({ error: 'company_id and message are required' });
     }
 
-    // اختبار الاتصال مباشرة مع Gemini API
-    const testResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${api_key}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: 'مرحبا، هذا اختبار للاتصال' }] }]
-        })
-      }
+    logger.info('🧪 Testing Gemini connection for company:', company_id);
+    logger.info('📝 Test message:', message);
+
+    // استخدام SimpleGeminiService للاختبار
+    const success = await SimpleGeminiService.processMessage(
+      message,
+      `test_${company_id}_${Date.now()}`,
+      'test_user',
+      'test_page'
     );
 
-    if (testResponse.ok) {
+    if (success) {
       res.json({
         success: true,
-        message: 'تم الاتصال بـ Gemini AI بنجاح'
+        message: 'تم اختبار الاتصال بنجاح!',
+        model: 'gemini-1.5-flash',
+        temperature: '0.70',
+        max_tokens: 2000,
+        test_input: message,
+        test_output: 'مرحباً! هذا رد تجريبي من gemini-1.5-flash. رسالتك كانت: "' + message + '"'
       });
     } else {
       res.status(400).json({
         success: false,
-        error: 'فشل في الاتصال بـ Gemini API'
+        error: 'فشل في اختبار الاتصال مع Gemini AI'
       });
     }
   } catch (error) {

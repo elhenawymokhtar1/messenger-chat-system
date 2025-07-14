@@ -3,7 +3,7 @@
 
 // إعدادات الخادم
 // في بيئة التطوير، نستخدم proxy من Vite، لذا نستخدم مسار نسبي
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002';
+const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 // تم التحويل للنظام المباشر - نستخدم نفس الخادم الرئيسي
 const STORE_API_BASE_URL = import.meta.env.VITE_STORE_API_URL || '';
 
@@ -71,7 +71,8 @@ async function apiRequest<T = any>(
       // إذا كان الـ response يحتوي على success field
       if (responseData.success) {
         console.log('✅ نجح الطلب، إرجاع البيانات');
-        return { data: responseData.data, error: null };
+        // test-db endpoint يرجع results بدلاً من data
+        return { data: responseData, error: null };
       } else {
         console.log('❌ فشل الطلب:', responseData.error);
         return { data: null, error: responseData.error || 'API Error' };
@@ -218,11 +219,19 @@ export const conversationsApi = {
 
     console.log('📡 طلب API:', url);
 
-    const result = await apiRequest(url);
-
-    console.log('📊 نتيجة API:', result);
-
-    return result;
+    try {
+      console.log('⏳ [DEBUG] About to call apiRequest...');
+      const result = await apiRequest(url);
+      console.log('📊 نتيجة API:', result);
+      console.log('📊 [DEBUG] API result type:', typeof result);
+      console.log('📊 [DEBUG] API result keys:', result ? Object.keys(result) : 'null');
+      return result;
+    } catch (error) {
+      console.error('❌ [DEBUG] apiRequest failed in getConversations:', error);
+      console.error('❌ [DEBUG] Error type:', typeof error);
+      console.error('❌ [DEBUG] Error message:', error instanceof Error ? error.message : error);
+      throw error;
+    }
   },
 
   // الحصول على محادثات الشركة (اسم بديل)
@@ -352,15 +361,71 @@ export const messagesApi = {
 export const geminiApi = {
   // الحصول على إعدادات الذكي الاصطناعي
   async getSettings(companyId: string) {
-    return apiRequest(`/api/gemini/settings?company_id=${companyId}`);
+    // استخدام test-db endpoint للجلب المباشر
+    const query = `SELECT * FROM gemini_settings WHERE company_id = '${companyId}' LIMIT 1`;
+
+    return apiRequest('/api/test-db', {
+      method: 'POST',
+      body: JSON.stringify({ query }),
+    });
   },
 
   // تحديث إعدادات الذكي الاصطناعي
   async updateSettings(data: any) {
-    return apiRequest('/api/gemini/settings', {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
+    try {
+      console.log('🔧 [UPDATE] Starting update process...');
+
+      // أولاً، تأكد من وجود سجل للشركة
+      const insertQuery = `INSERT IGNORE INTO gemini_settings (
+        id, company_id, api_key, model, system_prompt,
+        temperature, max_tokens, is_enabled, created_at, updated_at
+      ) VALUES (
+        UUID(), '${data.company_id}', '', 'gemini-1.5-flash',
+        'أنت مساعد ذكي لخدمة العملاء. كن مفيداً ومهذباً واستجب باللغة العربية.',
+        0.7, 1000, 0, NOW(), NOW()
+      )`;
+
+      console.log('🔧 [UPDATE] Executing insert query...');
+      const insertResult = await apiRequest('/api/test-db', {
+        method: 'POST',
+        body: JSON.stringify({ query: insertQuery }),
+      });
+      console.log('🔧 [UPDATE] Insert result:', insertResult);
+
+      // ثم التحديث
+      const updateQuery = `UPDATE gemini_settings SET
+        api_key = '${data.api_key || ''}',
+        model = '${data.model_name || 'gemini-1.5-flash'}',
+        system_prompt = '${(data.system_prompt || '').replace(/'/g, "\\'")}',
+        temperature = ${data.temperature || 0.7},
+        max_tokens = ${data.max_tokens || 1000},
+        is_enabled = ${data.is_active ? 1 : 0},
+        updated_at = NOW()
+        WHERE company_id = '${data.company_id}'`;
+
+      console.log('🔧 [UPDATE] Executing update query...');
+      const updateResult = await apiRequest('/api/test-db', {
+        method: 'POST',
+        body: JSON.stringify({ query: updateQuery }),
+      });
+      console.log('🔧 [UPDATE] Update result:', updateResult);
+
+      // تحقق من نجاح التحديث
+      if (updateResult.data && updateResult.data.success) {
+        console.log('✅ [UPDATE] Success confirmed, returning success');
+        return { data: { success: true, message: 'Settings updated successfully' }, error: null };
+      } else if (updateResult.error) {
+        console.error('❌ [UPDATE] API Error:', updateResult.error);
+        return { data: null, error: updateResult.error };
+      } else {
+        console.error('❌ [UPDATE] Unknown failure:', updateResult);
+        return { data: null, error: 'Update failed - unknown error' };
+      }
+
+    } catch (error) {
+      console.error('❌ [UPDATE SETTINGS] Exception:', error);
+      return { data: null, error: error.message || 'Exception during update' };
+    }
   },
 
   // اختبار الذكي الاصطناعي

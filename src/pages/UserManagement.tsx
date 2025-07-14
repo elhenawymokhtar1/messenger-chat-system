@@ -81,7 +81,7 @@ const UserManagement: React.FC = () => {
     try {
       setLoading(true);
       
-      const company = JSON.parse(localStorage.getItem('company') || '{}');
+      const company = JSON.parse(null /* localStorage معطل */ || '{}');
       if (!company.id) {
         navigate('/company-login');
         return;
@@ -118,7 +118,7 @@ const UserManagement: React.FC = () => {
 
   const handleAddUser = async () => {
     try {
-      const company = JSON.parse(localStorage.getItem('company') || '{}');
+      const company = JSON.parse(null /* localStorage معطل */ || '{}');
       
       const response = await fetch(`http://localhost:3002/api/subscriptions/companies/${company.id}/users`, {
         method: 'POST',
@@ -144,7 +144,7 @@ const UserManagement: React.FC = () => {
 
   const handleUpdateUserRole = async (userId: string, newRole: string) => {
     try {
-      const company = JSON.parse(localStorage.getItem('company') || '{}');
+      const company = JSON.parse(null /* localStorage معطل */ || '{}');
       
       const response = await fetch(`http://localhost:3002/api/subscriptions/users/${userId}/role`, {
         method: 'PUT',

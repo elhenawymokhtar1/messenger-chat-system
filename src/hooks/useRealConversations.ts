@@ -67,15 +67,26 @@ export const useRealConversations = (companyId?: string) => {
         console.log('🎯 [DEBUG] Response keys:', response ? Object.keys(response) : 'null');
 
         // التحقق من بنية الاستجابة
-        if (response && response.data && Array.isArray(response.data)) {
+        // التنسيق الجديد: {data: {success: true, data: [...]}, error: null}
+        if (response && response.data && response.data.success && Array.isArray(response.data.data)) {
+          console.log('✅ تم جلب المحادثات من response.data.data:', response.data.data.length);
+          console.log('✅ First conversation:', response.data.data[0]);
+          return response.data.data;
+        }
+        // التنسيق القديم: {data: [...], error: null}
+        else if (response && response.data && Array.isArray(response.data)) {
           console.log('✅ تم جلب المحادثات من response.data:', response.data.length);
           console.log('✅ First conversation:', response.data[0]);
           return response.data;
-        } else if (response && response.success && response.data) {
-          console.log('✅ تم جلب المحادثات من response.success.data:', response.data.length);
+        }
+        // التنسيق المباشر: {success: true, data: [...]}
+        else if (response && response.success && Array.isArray(response.data)) {
+          console.log('✅ تم جلب المحادثات من response.data (success):', response.data.length);
           console.log('✅ First conversation:', response.data[0]);
           return response.data;
-        } else if (Array.isArray(response)) {
+        }
+        // مصفوفة مباشرة
+        else if (Array.isArray(response)) {
           console.log('✅ تم جلب المحادثات (مصفوفة مباشرة):', response.length);
           console.log('✅ First conversation:', response[0]);
           return response;

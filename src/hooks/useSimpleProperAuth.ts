@@ -49,8 +49,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       console.log('🔍 [AUTH] التحقق من حالة المصادقة...');
 
       // فحص وجود token
-      const token = localStorage.getItem('auth_token');
-      const companyId = localStorage.getItem('company_id');
+      const token = null /* localStorage معطل */;
+      const companyId = null /* localStorage معطل */;
 
       console.log('🔍 [AUTH] فحص البيانات المحفوظة:', {
         hasToken: !!token,
@@ -61,9 +61,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         console.log('ℹ️ [AUTH] لا يوجد token أو company_id - توجيه لتسجيل الدخول');
 
         // مسح أي بيانات قديمة
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('company_id');
-        localStorage.removeItem('company_data');
+        /* localStorage.removeItem معطل */
+        /* localStorage.removeItem معطل */
+        /* localStorage.removeItem معطل */
 
         setUser(null);
         setLoading(false);
@@ -110,7 +110,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // للتطوير: قبول أي بيانات
       if (process.env.NODE_ENV === 'development') {
         const testCompany: AuthUser = {
-          id: 'c677b32f-fe1c-4c64-8362-a1c03406608d',
+          id: '2d9b8887-0cca-430b-b61b-ca16cccfec63',
           name: 'شركة تجريبية للمحادثات',
           email: email,
           status: 'active',
@@ -120,9 +120,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         // إنشاء token تجريبي
         const testToken = 'dev_token_' + Date.now();
 
-        // حفظ token و company_id فقط في localStorage
-        localStorage.setItem('auth_token', testToken);
-        localStorage.setItem('company_id', testCompany.id);
+        // تعطيل localStorage - استخدام React state فقط
 
         // حفظ بيانات الشركة في state
         setUser(testCompany);
@@ -144,10 +142,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     console.log('🚪 [AUTH] تسجيل الخروج...');
 
     // مسح جميع البيانات المحفوظة
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('company_id');
-    localStorage.removeItem('company_data');
-    localStorage.removeItem('auth_version');
+    /* localStorage.removeItem معطل */
+    /* localStorage.removeItem معطل */
+    /* localStorage.removeItem معطل */
+    /* localStorage.removeItem معطل */
 
     // مسح state
     setUser(null);
@@ -157,12 +155,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // للتطوير: إنشاء session تجريبي
   const createDevelopmentSession = async () => {
-    const companyId = 'c677b32f-fe1c-4c64-8362-a1c03406608d';
+    const companyId = '2d9b8887-0cca-430b-b61b-ca16cccfec63';
     const testToken = 'dev_token_' + Date.now();
 
     // حفظ token و company_id
-    localStorage.setItem('auth_token', testToken);
-    localStorage.setItem('company_id', companyId);
+    /* localStorage.setItem معطل */
+    /* localStorage.setItem معطل */
 
     try {
       // جلب بيانات الشركة من API

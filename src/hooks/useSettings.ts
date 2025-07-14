@@ -1,6 +1,6 @@
 /**
- * 🔧 Hook لإدارة إعدادات النظام
- * يدير حفظ وتحميل الإعدادات من localStorage والخادم
+ * 🔧 Hook لإدارة إعدادات النظام - localStorage معطل
+ * يستخدم React state فقط مع الإعدادات الافتراضية
  */
 
 import { useState, useEffect } from 'react';
@@ -62,24 +62,20 @@ export const useSettings = () => {
     loadSettings();
   }, []);
 
-  // تحميل الإعدادات من localStorage
+  // تحميل الإعدادات من الخادم
   const loadSettings = async () => {
     setIsLoading(true);
-    
+
     try {
-      // محاولة تحميل من localStorage أولاً
-      const savedSettings = localStorage.getItem('systemSettings');
-      if (savedSettings) {
-        const parsedSettings = JSON.parse(savedSettings);
-        setSettings({ ...DEFAULT_SETTINGS, ...parsedSettings });
-      }
-      
+      // استخدام الإعدادات الافتراضية
+      setSettings(DEFAULT_SETTINGS);
+
       // TODO: تحميل من الخادم في المستقبل
       // const serverSettings = await fetchSettingsFromServer();
       // if (serverSettings) {
       //   setSettings({ ...DEFAULT_SETTINGS, ...serverSettings });
       // }
-      
+
     } catch (error) {
       console.error('خطأ في تحميل الإعدادات:', error);
       toast.error('فشل في تحميل الإعدادات');
@@ -95,8 +91,8 @@ export const useSettings = () => {
     try {
       const settingsToSave = newSettings ? { ...settings, ...newSettings } : settings;
       
-      // حفظ في sessionStorage بدلاً من localStorage
-      sessionStorage.setItem('systemSettings', JSON.stringify(settingsToSave));
+      // localStorage معطل - استخدام React state فقط
+      console.log('🔧 [SETTINGS] حفظ الإعدادات في React state (localStorage معطل)');
       
       // TODO: إرسال للخادم في المستقبل
       // await saveSettingsToServer(settingsToSave);
@@ -177,7 +173,7 @@ export const useSettings = () => {
   const resetSettings = async () => {
     try {
       setSettings(DEFAULT_SETTINGS);
-      localStorage.removeItem('systemSettings');
+      console.log('🔧 [SETTINGS] إعادة تعيين الإعدادات (localStorage معطل)');
       applySettings(DEFAULT_SETTINGS);
       setHasChanges(false);
       toast.success('تم إعادة تعيين الإعدادات');

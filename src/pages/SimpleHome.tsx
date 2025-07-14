@@ -8,7 +8,7 @@ const SimpleHome: React.FC = () => {
 
   useEffect(() => {
     // التحقق من تسجيل الدخول
-    const companyData = localStorage.getItem('company');
+    const companyData = null /* localStorage معطل */;
     if (companyData) {
       try {
         const company = JSON.parse(companyData);
@@ -28,7 +28,7 @@ const SimpleHome: React.FC = () => {
   }, [navigate]);
 
   const handleLogout = () => {
-    localStorage.removeItem('company');
+    /* localStorage.removeItem معطل */
     navigate('/simple-login');
   };
 

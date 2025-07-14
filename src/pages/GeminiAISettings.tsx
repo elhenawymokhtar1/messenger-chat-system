@@ -48,11 +48,11 @@ export const GeminiAISettings: React.FC = () => {
     if (!company) {
       console.log('🔄 [GEMINI-AI-SETTINGS] لا توجد شركة، تسجيل دخول تلقائي...');
 
-      const testToken = 'test-token-c677b32f-fe1c-4c64-8362-a1c03406608d';
-      const companyId = 'c677b32f-fe1c-4c64-8362-a1c03406608d';
+      const testToken = 'test-token-2d9b8887-0cca-430b-b61b-ca16cccfec63';
+      const companyId = '2d9b8887-0cca-430b-b61b-ca16cccfec63';
 
-      localStorage.setItem('auth_token', testToken);
-      localStorage.setItem('company_id', companyId);
+      /* localStorage.setItem معطل */
+      /* localStorage.setItem معطل */
 
       window.location.reload();
     }

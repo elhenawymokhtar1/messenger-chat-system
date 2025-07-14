@@ -115,7 +115,31 @@ const OrderConfirmation = () => {
     );
   }
 
-  const { order, items } = orderData;
+  const order = orderData?.data || orderData;
+  const items = order?.items || [];
+
+  if (!order) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center" dir="rtl">
+        <Card className="w-full max-w-md">
+          <CardContent className="p-8 text-center">
+            <Package className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              خطأ في تحميل الطلب
+            </h3>
+            <p className="text-gray-600 mb-6">
+              حدث خطأ أثناء تحميل تفاصيل الطلب
+            </p>
+            <Link to="/new-shop">
+              <Button>
+                العودة للمتجر
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50" dir="rtl">
@@ -132,7 +156,7 @@ const OrderConfirmation = () => {
             <div>
               <h1 className="text-2xl font-bold text-gray-900">تأكيد الطلب</h1>
               <p className="text-gray-600">
-                رقم الطلب: {order.order_number}
+                رقم الطلب: {order?.order_number || order?.id || 'غير محدد'}
               </p>
             </div>
           </div>
@@ -174,24 +198,24 @@ const OrderConfirmation = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm text-gray-600">رقم الطلب</p>
-                    <p className="font-semibold">{order.order_number}</p>
+                    <p className="font-semibold">{order?.order_number || order?.id || 'غير محدد'}</p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">تاريخ الطلب</p>
                     <p className="font-semibold">
-                      {new Date(order.created_at).toLocaleDateString('ar-EG')}
+                      {order?.created_at ? new Date(order.created_at).toLocaleDateString('ar-EG') : 'غير محدد'}
                     </p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">حالة الطلب</p>
-                    <Badge className={getStatusColor(order.status)}>
-                      {getStatusText(order.status)}
+                    <Badge className={getStatusColor(order?.status || 'pending')}>
+                      {getStatusText(order?.status || 'pending')}
                     </Badge>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600">حالة الدفع</p>
-                    <Badge className={getStatusColor(order.payment_status)}>
-                      {getPaymentStatusText(order.payment_status)}
+                    <Badge className={getStatusColor(order?.payment_status || 'pending')}>
+                      {getPaymentStatusText(order?.payment_status || 'pending')}
                     </Badge>
                   </div>
                 </div>
@@ -200,11 +224,11 @@ const OrderConfirmation = () => {
                   <p className="text-sm text-gray-600">طريقة الدفع</p>
                   <p className="font-semibold flex items-center gap-2">
                     <CreditCard className="w-4 h-4" />
-                    {getPaymentMethodText(order.payment_method)}
+                    {getPaymentMethodText(order?.payment_method || 'cash_on_delivery')}
                   </p>
                 </div>
 
-                {order.notes && (
+                {order?.notes && (
                   <div>
                     <p className="text-sm text-gray-600">ملاحظات</p>
                     <p className="font-semibold">{order.notes}</p>
@@ -227,7 +251,7 @@ const OrderConfirmation = () => {
                     <Package className="w-4 h-4 text-blue-600" />
                   </div>
                   <div>
-                    <p className="font-semibold">{order.customer_name}</p>
+                    <p className="font-semibold">{order?.customer_name || 'غير محدد'}</p>
                     <p className="text-sm text-gray-600">اسم المستلم</p>
                   </div>
                 </div>
@@ -237,12 +261,12 @@ const OrderConfirmation = () => {
                     <Phone className="w-4 h-4 text-green-600" />
                   </div>
                   <div>
-                    <p className="font-semibold">{order.customer_phone}</p>
+                    <p className="font-semibold">{order?.customer_phone || 'غير محدد'}</p>
                     <p className="text-sm text-gray-600">رقم الهاتف</p>
                   </div>
                 </div>
 
-                {order.customer_email && (
+                {order?.customer_email && (
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
                       <Mail className="w-4 h-4 text-purple-600" />
@@ -259,7 +283,7 @@ const OrderConfirmation = () => {
                     <MapPin className="w-4 h-4 text-orange-600" />
                   </div>
                   <div>
-                    <p className="font-semibold">{order.customer_address}</p>
+                    <p className="font-semibold">{order?.customer_address || 'غير محدد'}</p>
                     <p className="text-sm text-gray-600">عنوان التوصيل</p>
                   </div>
                 </div>
@@ -305,20 +329,20 @@ const OrderConfirmation = () => {
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span>المجموع الفرعي:</span>
-                    <span>{order.subtotal} ج</span>
+                    <span>{order?.subtotal || order?.total_amount || '0'} ج</span>
                   </div>
                   <div className="flex justify-between">
                     <span>الضريبة:</span>
-                    <span>{order.tax_amount} ج</span>
+                    <span>{order?.tax_amount || '0'} ج</span>
                   </div>
                   <div className="flex justify-between">
                     <span>الشحن:</span>
-                    <span>{order.shipping_amount === 0 ? 'مجاني' : `${order.shipping_amount} ج`}</span>
+                    <span>{(order?.shipping_amount || 0) === 0 ? 'مجاني' : `${order?.shipping_amount} ج`}</span>
                   </div>
-                  {order.discount_amount > 0 && (
+                  {(order?.discount_amount || 0) > 0 && (
                     <div className="flex justify-between text-green-600">
                       <span>الخصم:</span>
-                      <span>-{order.discount_amount} ج</span>
+                      <span>-{order?.discount_amount} ج</span>
                     </div>
                   )}
                 </div>
@@ -327,7 +351,7 @@ const OrderConfirmation = () => {
 
                 <div className="flex justify-between text-lg font-bold">
                   <span>الإجمالي:</span>
-                  <span className="text-green-600">{order.total_amount} ج</span>
+                  <span className="text-green-600">{order?.total_amount || '0'} ج</span>
                 </div>
               </CardContent>
             </Card>

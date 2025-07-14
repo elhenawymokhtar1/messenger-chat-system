@@ -89,7 +89,7 @@ interface AnalyticsData {
   };
 }
 
-const COMPANY_ID = 'c677b32f-fe1c-4c64-8362-a1c03406608d';
+const COMPANY_ID = '2d9b8887-0cca-430b-b61b-ca16cccfec63';
 
 const AnalyticsPage: React.FC = () => {
   const [data, setData] = useState<AnalyticsData | null>(null);

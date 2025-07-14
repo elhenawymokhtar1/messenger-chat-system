@@ -36,7 +36,7 @@ app.get('/api/companies/:companyId/products', async (req, res) => {
         stock_quantity: 50,
         category_id: 'cat_1',
         category_name: 'الإلكترونيات',
-        images: ['https://via.placeholder.com/300x300?text=Product+1'],
+        images: ['https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=300&h=300&fit=crop&crop=center'],
         is_active: true,
         created_at: new Date(Date.now() - 172800000).toISOString(),
         updated_at: new Date().toISOString()
@@ -51,7 +51,7 @@ app.get('/api/companies/:companyId/products', async (req, res) => {
         stock_quantity: 25,
         category_id: 'cat_2',
         category_name: 'الملابس',
-        images: ['https://via.placeholder.com/300x300?text=Product+2'],
+        images: ['https://images.unsplash.com/photo-1549298916-b41d501d3772?w=300&h=300&fit=crop&crop=center'],
         is_active: true,
         created_at: new Date(Date.now() - 86400000).toISOString(),
         updated_at: new Date().toISOString()

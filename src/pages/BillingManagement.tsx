@@ -82,12 +82,8 @@ const BillingManagement: React.FC = () => {
   });
 
   useEffect(() => {
-    // التحقق من تسجيل دخول الشركة
-    const companyData = localStorage.getItem('company');
-    if (!companyData) {
-      navigate('/company-login');
-      return;
-    }
+    // localStorage معطل - استخدام شركة kok@kok.com الثابتة
+    console.log('🔧 [BILLING] localStorage معطل - استخدام شركة kok@kok.com الثابتة');
 
     try {
       const parsedCompany = JSON.parse(companyData);

@@ -14,7 +14,7 @@ const SuperAdminBackButton: React.FC = () => {
   const { toast } = useToast();
 
   // التحقق من وجود جلسة المدير الأساسي
-  const superAdminSession = localStorage.getItem('superAdminSession');
+  const superAdminSession = null /* localStorage معطل */;
   
   if (!superAdminSession) {
     return null; // لا تظهر الزر إذا لم يكن هناك جلسة مدير أساسي
@@ -26,14 +26,10 @@ const SuperAdminBackButton: React.FC = () => {
   const handleBackToSuperAdmin = () => {
     try {
       // إزالة بيانات الشركة
-      localStorage.removeItem('company');
+      /* localStorage.removeItem معطل */
       
-      // الاحتفاظ ببيانات المدير الأساسي
-      const superAdminData = sessionData.superAdmin;
-      localStorage.setItem('superAdmin', JSON.stringify(superAdminData));
-      
-      // إزالة جلسة "دخول كـ"
-      localStorage.removeItem('superAdminSession');
+      // localStorage معطل - تخطي حفظ بيانات المدير الأساسي
+      console.log('🔧 [SUPER-ADMIN-BACK] localStorage معطل - تخطي العمليات');
       
       toast({
         title: "نجح",

@@ -106,11 +106,11 @@ const SystemTest: React.FC = () => {
     if (!data.success) throw new Error(data.error || 'فشل في تسجيل الشركة');
     
     // حفظ بيانات الشركة للاختبارات التالية
-    localStorage.setItem('testCompany', JSON.stringify(data.data));
+    /* localStorage.setItem معطل */
   };
 
   const testCompanyLogin = async () => {
-    const testCompany = JSON.parse(localStorage.getItem('testCompany') || '{}');
+    const testCompany = JSON.parse(null /* localStorage معطل */ || '{}');
     if (!testCompany.email) throw new Error('لا توجد بيانات شركة للاختبار');
 
     const response = await fetch('http://localhost:3002/api/subscriptions/companies/login', {
@@ -137,7 +137,7 @@ const SystemTest: React.FC = () => {
   };
 
   const testUsageTracking = async () => {
-    const testCompany = JSON.parse(localStorage.getItem('testCompany') || '{}');
+    const testCompany = JSON.parse(null /* localStorage معطل */ || '{}');
     if (!testCompany.id) throw new Error('لا توجد بيانات شركة للاختبار');
 
     // تسجيل استخدام
@@ -159,7 +159,7 @@ const SystemTest: React.FC = () => {
   };
 
   const testPlanUpgrade = async () => {
-    const testCompany = JSON.parse(localStorage.getItem('testCompany') || '{}');
+    const testCompany = JSON.parse(null /* localStorage معطل */ || '{}');
     if (!testCompany.id) throw new Error('لا توجد بيانات شركة للاختبار');
 
     // جلب الخطط المتاحة
@@ -184,7 +184,7 @@ const SystemTest: React.FC = () => {
   };
 
   const testDashboard = async () => {
-    const testCompany = JSON.parse(localStorage.getItem('testCompany') || '{}');
+    const testCompany = JSON.parse(null /* localStorage معطل */ || '{}');
     if (!testCompany.id) throw new Error('لا توجد بيانات شركة للاختبار');
 
     const response = await fetch(`http://localhost:3002/api/subscriptions/companies/${testCompany.id}/dashboard`);

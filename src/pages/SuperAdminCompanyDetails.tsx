@@ -220,7 +220,7 @@ const SuperAdminCompanyDetails: React.FC = () => {
     try {
       setLoginAsLoading(true);
 
-      const superAdmin = JSON.parse(localStorage.getItem('superAdmin') || '{}');
+      const superAdmin = JSON.parse(null /* localStorage معطل */ || '{}');
 
       // إنشاء بيانات الشركة للتسجيل
       const companyData = {
@@ -232,13 +232,8 @@ const SuperAdminCompanyDetails: React.FC = () => {
         created_at: company.created_at
       };
 
-      // حفظ بيانات الشركة مع معلومات المدير الأساسي
-      localStorage.setItem('company', JSON.stringify(companyData));
-      localStorage.setItem('superAdminSession', JSON.stringify({
-        superAdmin: { id: superAdmin.id, name: 'مدير النظام الأساسي' },
-        originalLoginType: 'super_admin_as_company',
-        loginAsCompany: true
-      }));
+      // localStorage معطل - تخطي حفظ البيانات
+      console.log('🔧 [SUPER-ADMIN] localStorage معطل - تخطي حفظ بيانات الشركة');
 
       alert(`تم تسجيل الدخول كشركة ${company.name} 👑`);
       navigate('/company-dashboard');

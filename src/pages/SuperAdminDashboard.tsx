@@ -40,7 +40,7 @@ const SuperAdminDashboard: React.FC = () => {
 
   useEffect(() => {
     // التحقق من تسجيل دخول المستخدم الأساسي
-    const adminData = localStorage.getItem('superAdmin');
+    const adminData = null /* localStorage معطل */;
     if (!adminData) {
       navigate('/super-admin-login');
       return;
@@ -93,7 +93,7 @@ const SuperAdminDashboard: React.FC = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('superAdmin');
+    /* localStorage.removeItem معطل */
     toast.success('تم تسجيل الخروج بنجاح');
     navigate('/super-admin-login');
   };

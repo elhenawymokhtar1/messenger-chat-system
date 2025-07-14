@@ -14,11 +14,11 @@ const TestDiagnosis: React.FC = () => {
     if (!company) {
       console.log('🔄 [TEST-DIAGNOSIS] لا توجد شركة، تسجيل دخول تلقائي...');
 
-      const testToken = 'test-token-c677b32f-fe1c-4c64-8362-a1c03406608d';
-      const companyId = 'c677b32f-fe1c-4c64-8362-a1c03406608d';
+      const testToken = 'test-token-2d9b8887-0cca-430b-b61b-ca16cccfec63';
+      const companyId = '2d9b8887-0cca-430b-b61b-ca16cccfec63';
 
-      localStorage.setItem('auth_token', testToken);
-      localStorage.setItem('company_id', companyId);
+      /* localStorage.setItem معطل */
+      /* localStorage.setItem معطل */
 
       window.location.reload();
     }
@@ -93,19 +93,9 @@ const TestDiagnosis: React.FC = () => {
   };
 
   const testLocalStorage = () => {
-    addLog('🗄️ Testing sessionStorage (localStorage disabled)...');
-
-    const currentCompany = sessionStorage.getItem('current-company');
-    addLog(`📱 sessionStorage current-company: ${currentCompany || 'NULL'}`);
-
-    if (currentCompany) {
-      try {
-        const parsed = JSON.parse(currentCompany);
-        addLog(`📋 Parsed company: ${JSON.stringify(parsed, null, 2)}`);
-      } catch (e) {
-        addLog(`❌ Error parsing sessionStorage: ${e}`);
-      }
-    }
+    addLog('🗄️ Testing storage (localStorage & sessionStorage disabled)...');
+    addLog('📱 Storage disabled - using React state only');
+    addLog('🏢 Fixed company: kok@kok.com (2d9b8887-0cca-430b-b61b-ca16cccfec63)');
   };
 
   const clearLogs = () => {

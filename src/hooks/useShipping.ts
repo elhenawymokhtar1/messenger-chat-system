@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/hooks/use-toast';
 
@@ -32,7 +31,7 @@ export interface ShippingZone {
 export interface CreateShippingMethodData {
   name: string;
   description?: string;
-  type: string;
+  type: 'flat_rate' | 'weight_based' | 'distance_based' | 'express' | 'same_day';
   base_cost: number;
   cost_per_kg?: number;
   free_shipping_threshold?: number;
@@ -50,22 +49,11 @@ export interface CreateShippingZoneData {
   is_active?: boolean;
 }
 
-export interface ShippingCalculation {
-  method_id: string;
-  method_name: string;
-  base_cost: number;
-  weight_cost: number;
-  zone_cost: number;
-  total_cost: number;
-  estimated_days: string;
-  is_free: boolean;
-}
-
 export const useShipping = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // جلب طرق الشحن المرتبطة بالشركة الحالية فقط
+  // جلب طرق الشحن - بيانات وهمية مؤقتة
   const {
     data: shippingMethods = [],
     isLoading: methodsLoading,
@@ -74,54 +62,42 @@ export const useShipping = () => {
   } = useQuery({
     queryKey: ['shipping-methods'],
     queryFn: async () => {
-      // الحصول على الشركة الحالية
-      const companyData = localStorage.getItem('company');
-      if (!companyData) {
-        console.warn('لا توجد شركة محددة');
-        return [];
-      }
-
-      const company = JSON.parse(companyData);
-      console.log('🔍 جلب طرق الشحن للشركة:', company.name);
-
-      // جلب متاجر الشركة أولاً
-      const { data: stores, error: storesError } = await supabase
-        // TODO: Replace with MySQL API
-        // TODO: Replace with MySQL API
-        .eq('company_id', company.id)
-        .eq('is_active', true);
-
-      if (storesError) {
-        console.error('Error fetching stores:', storesError);
-        return [];
-      }
-
-      if (!stores || stores.length === 0) {
-        console.log('لا توجد متاجر للشركة الحالية');
-        return [];
-      }
-
-      const storeIds = stores.map(store => store.id);
-      console.log('🆔 معرفات المتاجر:', storeIds);
-
-      // جلب طرق الشحن المرتبطة بمتاجر الشركة
-      const { data, error } = await supabase
-        // TODO: Replace with MySQL API
-        // TODO: Replace with MySQL API
-        .in('store_id', storeIds)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching shipping methods:', error);
-        return [];
-      }
-
-      console.log('🚚 طرق الشحن المجلبة:', data?.length || 0);
-      return data as ShippingMethod[];
+      // TODO: Replace with MySQL API - جلب طرق الشحن
+      console.log('⚠️ MySQL API غير متاح - استخدام بيانات وهمية');
+      
+      const mockShippingMethods: ShippingMethod[] = [
+        {
+          id: '1',
+          store_id: 'store-1',
+          name: 'شحن عادي',
+          description: 'شحن عادي خلال 3-5 أيام',
+          type: 'flat_rate',
+          base_cost: 25,
+          estimated_days_min: 3,
+          estimated_days_max: 5,
+          is_active: true,
+          created_at: new Date().toISOString()
+        },
+        {
+          id: '2',
+          store_id: 'store-1',
+          name: 'شحن سريع',
+          description: 'شحن سريع خلال 1-2 أيام',
+          type: 'express',
+          base_cost: 50,
+          estimated_days_min: 1,
+          estimated_days_max: 2,
+          is_active: true,
+          created_at: new Date().toISOString()
+        }
+      ];
+      
+      return mockShippingMethods;
     },
+    staleTime: 5 * 60 * 1000,
   });
 
-  // جلب مناطق الشحن المرتبطة بالشركة الحالية فقط
+  // جلب مناطق الشحن - بيانات وهمية مؤقتة
   const {
     data: shippingZones = [],
     isLoading: zonesLoading,
@@ -130,175 +106,97 @@ export const useShipping = () => {
   } = useQuery({
     queryKey: ['shipping-zones'],
     queryFn: async () => {
-      // الحصول على الشركة الحالية
-      const companyData = localStorage.getItem('company');
-      if (!companyData) {
-        console.warn('لا توجد شركة محددة');
-        return [];
-      }
-
-      const company = JSON.parse(companyData);
-      console.log('🔍 جلب مناطق الشحن للشركة:', company.name);
-
-      // جلب متاجر الشركة أولاً
-      const { data: stores, error: storesError } = await supabase
-        // TODO: Replace with MySQL API
-        // TODO: Replace with MySQL API
-        .eq('company_id', company.id)
-        .eq('is_active', true);
-
-      if (storesError) {
-        console.error('Error fetching stores:', storesError);
-        return [];
-      }
-
-      if (!stores || stores.length === 0) {
-        console.log('لا توجد متاجر للشركة الحالية');
-        return [];
-      }
-
-      const storeIds = stores.map(store => store.id);
-      console.log('🆔 معرفات المتاجر:', storeIds);
-
-      // جلب مناطق الشحن المرتبطة بمتاجر الشركة
-      const { data, error } = await supabase
-        // TODO: Replace with MySQL API
-        // TODO: Replace with MySQL API
-        .in('store_id', storeIds)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching shipping zones:', error);
-        return [];
-      }
-
-      console.log('🗺️ مناطق الشحن المجلبة:', data?.length || 0);
-      return data as ShippingZone[];
+      // TODO: Replace with MySQL API - جلب مناطق الشحن
+      console.log('⚠️ MySQL API غير متاح - استخدام بيانات وهمية');
+      
+      const mockShippingZones: ShippingZone[] = [
+        {
+          id: '1',
+          store_id: 'store-1',
+          name: 'الرياض',
+          description: 'منطقة الرياض',
+          cities: ['الرياض', 'الخرج', 'الدرعية'],
+          additional_cost: 0,
+          is_active: true,
+          created_at: new Date().toISOString()
+        },
+        {
+          id: '2',
+          store_id: 'store-1',
+          name: 'جدة',
+          description: 'منطقة جدة',
+          cities: ['جدة', 'مكة', 'الطائف'],
+          additional_cost: 15,
+          is_active: true,
+          created_at: new Date().toISOString()
+        }
+      ];
+      
+      return mockShippingZones;
     },
+    staleTime: 5 * 60 * 1000,
   });
 
-  const isLoading = methodsLoading || zonesLoading;
-
-  // إنشاء طريقة شحن جديدة
+  // إضافة طريقة شحن جديدة
   const createShippingMethodMutation = useMutation({
     mutationFn: async (methodData: CreateShippingMethodData) => {
-      // الحصول على الشركة الحالية
-      const companyData = localStorage.getItem('company');
-      if (!companyData) {
-        throw new Error('لا توجد شركة محددة');
-      }
-
-      const company = JSON.parse(companyData);
-
-      // الحصول على متاجر الشركة الحالية
-      const { data: stores } = await supabase
-        // TODO: Replace with MySQL API
-        // TODO: Replace with MySQL API
-        .eq('company_id', company.id)
-        .eq('is_active', true)
-        .limit(1);
-
-      if (!stores || stores.length === 0) {
-        throw new Error('لا يوجد متجر متاح للشركة الحالية');
-      }
-
-      const newMethod = {
-        store_id: stores[0].id,
-        name: methodData.name,
-        description: methodData.description,
-        type: methodData.type,
-        base_cost: methodData.base_cost,
-        cost_per_kg: methodData.cost_per_kg || 0,
-        free_shipping_threshold: methodData.free_shipping_threshold,
-        estimated_days_min: methodData.estimated_days_min,
-        estimated_days_max: methodData.estimated_days_max,
-        zones: methodData.zones || [],
-        is_active: methodData.is_active ?? true
+      // TODO: Replace with MySQL API - إضافة طريقة شحن
+      console.log('⚠️ MySQL API غير متاح - محاكاة إضافة طريقة شحن');
+      
+      const newMethod: ShippingMethod = {
+        id: `method_${Date.now()}`,
+        store_id: 'store-1',
+        ...methodData,
+        is_active: methodData.is_active ?? true,
+        created_at: new Date().toISOString()
       };
 
-      const { data, error } = await supabase
-        // TODO: Replace with MySQL API
-        // TODO: Replace with MySQL API
-        // TODO: Replace with MySQL API
-        .single();
-
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      return data as ShippingMethod;
+      return newMethod;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['shipping-methods'] });
       toast({
-        title: "نجح",
-        description: "تم إنشاء طريقة الشحن بنجاح",
+        title: "تم بنجاح",
+        description: "تم إضافة طريقة الشحن بنجاح",
       });
     },
-    onError: (error: Error) => {
+    onError: (error: any) => {
       toast({
         title: "خطأ",
-        description: error.message || "فشل في إنشاء طريقة الشحن",
+        description: error.message || "فشل في إضافة طريقة الشحن",
         variant: "destructive",
       });
     },
   });
 
-  // إنشاء منطقة شحن جديدة
+  // إضافة منطقة شحن جديدة
   const createShippingZoneMutation = useMutation({
     mutationFn: async (zoneData: CreateShippingZoneData) => {
-      // الحصول على الشركة الحالية
-      const companyData = localStorage.getItem('company');
-      if (!companyData) {
-        throw new Error('لا توجد شركة محددة');
-      }
-
-      const company = JSON.parse(companyData);
-
-      // الحصول على متاجر الشركة الحالية
-      const { data: stores } = await supabase
-        // TODO: Replace with MySQL API
-        // TODO: Replace with MySQL API
-        .eq('company_id', company.id)
-        .eq('is_active', true)
-        .limit(1);
-
-      if (!stores || stores.length === 0) {
-        throw new Error('لا يوجد متجر متاح للشركة الحالية');
-      }
-
-      const newZone = {
-        store_id: stores[0].id,
-        name: zoneData.name,
-        description: zoneData.description,
-        cities: zoneData.cities,
+      // TODO: Replace with MySQL API - إضافة منطقة شحن
+      console.log('⚠️ MySQL API غير متاح - محاكاة إضافة منطقة شحن');
+      
+      const newZone: ShippingZone = {
+        id: `zone_${Date.now()}`,
+        store_id: 'store-1',
+        ...zoneData,
         additional_cost: zoneData.additional_cost || 0,
-        is_active: zoneData.is_active ?? true
+        is_active: zoneData.is_active ?? true,
+        created_at: new Date().toISOString()
       };
 
-      const { data, error } = await supabase
-        // TODO: Replace with MySQL API
-        // TODO: Replace with MySQL API
-        // TODO: Replace with MySQL API
-        .single();
-
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      return data as ShippingZone;
+      return newZone;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['shipping-zones'] });
       toast({
-        title: "نجح",
-        description: "تم إنشاء منطقة الشحن بنجاح",
+        title: "تم بنجاح",
+        description: "تم إضافة منطقة الشحن بنجاح",
       });
     },
-    onError: (error: Error) => {
+    onError: (error: any) => {
       toast({
         title: "خطأ",
-        description: error.message || "فشل في إنشاء منطقة الشحن",
+        description: error.message || "فشل في إضافة منطقة الشحن",
         variant: "destructive",
       });
     },
@@ -307,27 +205,18 @@ export const useShipping = () => {
   // تحديث طريقة شحن
   const updateShippingMethodMutation = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<CreateShippingMethodData> }) => {
-      const { data, error } = await supabase
-        // TODO: Replace with MySQL API
-        // TODO: Replace with MySQL API
-        .eq('id', id)
-        // TODO: Replace with MySQL API
-        .single();
-
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      return data as ShippingMethod;
+      // TODO: Replace with MySQL API - تحديث طريقة شحن
+      console.log('⚠️ MySQL API غير متاح - محاكاة تحديث طريقة شحن');
+      return { id, ...updates };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['shipping-methods'] });
       toast({
-        title: "نجح",
+        title: "تم بنجاح",
         description: "تم تحديث طريقة الشحن بنجاح",
       });
     },
-    onError: (error: Error) => {
+    onError: (error: any) => {
       toast({
         title: "خطأ",
         description: error.message || "فشل في تحديث طريقة الشحن",
@@ -339,25 +228,18 @@ export const useShipping = () => {
   // حذف طريقة شحن
   const deleteShippingMethodMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        // TODO: Replace with MySQL API
-        // TODO: Replace with MySQL API
-        .eq('id', id);
-
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      return id;
+      // TODO: Replace with MySQL API - حذف طريقة شحن
+      console.log('⚠️ MySQL API غير متاح - محاكاة حذف طريقة شحن');
+      return { id };
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['shipping-methods'] });
       toast({
-        title: "نجح",
+        title: "تم بنجاح",
         description: "تم حذف طريقة الشحن بنجاح",
       });
     },
-    onError: (error: Error) => {
+    onError: (error: any) => {
       toast({
         title: "خطأ",
         description: error.message || "فشل في حذف طريقة الشحن",
@@ -366,134 +248,38 @@ export const useShipping = () => {
     },
   });
 
-  // حساب تكلفة الشحن
-  const calculateShipping = async (
-    cartWeight: number, 
-    cartTotal: number, 
-    customerCity: string
-  ): Promise<ShippingCalculation[]> => {
-    const availableMethods = shippingMethods.filter(method => method.is_active);
-    const calculations: ShippingCalculation[] = [];
-
-    for (const method of availableMethods) {
-      let totalCost = method.base_cost;
-      let weightCost = 0;
-      let zoneCost = 0;
-
-      // حساب تكلفة الوزن
-      if (method.cost_per_kg && cartWeight > 0) {
-        weightCost = method.cost_per_kg * cartWeight;
-        totalCost += weightCost;
-      }
-
-      // حساب تكلفة المنطقة
-      const zone = shippingZones.find(z => 
-        z.is_active && z.cities.some(city => 
-          city.toLowerCase().includes(customerCity.toLowerCase())
-        )
-      );
-
-      if (zone) {
-        zoneCost = zone.additional_cost;
-        totalCost += zoneCost;
-      }
-
-      // التحقق من الشحن المجاني
-      const isFree = method.free_shipping_threshold && cartTotal >= method.free_shipping_threshold;
-      if (isFree) {
-        totalCost = 0;
-      }
-
-      calculations.push({
-        method_id: method.id,
-        method_name: method.name,
-        base_cost: method.base_cost,
-        weight_cost: weightCost,
-        zone_cost: zoneCost,
-        total_cost: Math.max(0, totalCost),
-        estimated_days: `${method.estimated_days_min}-${method.estimated_days_max}`,
-        is_free: isFree || false
-      });
-    }
-
-    return calculations.sort((a, b) => a.total_cost - b.total_cost);
-  };
-
-  // إحصائيات الشحن
-  const getShippingStats = () => {
-    const totalMethods = shippingMethods.length;
-    const totalZones = shippingZones.length;
-    const activeMethods = shippingMethods.filter(m => m.is_active).length;
-    const averageCost = totalMethods > 0 
-      ? Math.round(shippingMethods.reduce((sum, m) => sum + m.base_cost, 0) / totalMethods)
-      : 0;
-    const averageDeliveryTime = totalMethods > 0
-      ? Math.round(shippingMethods.reduce((sum, m) => sum + ((m.estimated_days_min + m.estimated_days_max) / 2), 0) / totalMethods)
-      : 0;
-
-    return {
-      totalMethods,
-      totalZones,
-      activeMethods,
-      averageCost,
-      averageDeliveryTime
-    };
-  };
-
-  // البحث والفلترة
-  const searchShippingMethods = (searchTerm: string, filter?: string) => {
-    return shippingMethods.filter(method => {
-      const matchesSearch = !searchTerm || 
-        method.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (method.description && method.description.toLowerCase().includes(searchTerm.toLowerCase()));
-
-      let matchesFilter = true;
-      if (filter && filter !== 'all') {
-        switch (filter) {
-          case 'active':
-            matchesFilter = method.is_active;
-            break;
-          case 'inactive':
-            matchesFilter = !method.is_active;
-            break;
-          case 'express':
-            matchesFilter = method.type === 'express' || method.type === 'same_day';
-            break;
-          case 'standard':
-            matchesFilter = method.type === 'flat_rate' || method.type === 'weight_based';
-            break;
-        }
-      }
-
-      return matchesSearch && matchesFilter;
-    });
-  };
-
   return {
     // البيانات
     shippingMethods,
     shippingZones,
-    isLoading,
-    error: methodsError || zonesError,
+    
+    // حالات التحميل
+    methodsLoading,
+    zonesLoading,
+    isLoading: methodsLoading || zonesLoading,
+    
+    // الأخطاء
+    methodsError,
+    zonesError,
     
     // العمليات
     createShippingMethod: createShippingMethodMutation.mutate,
     createShippingZone: createShippingZoneMutation.mutate,
     updateShippingMethod: updateShippingMethodMutation.mutate,
     deleteShippingMethod: deleteShippingMethodMutation.mutate,
-    calculateShipping,
     
-    // حالات التحميل
-    isCreating: createShippingMethodMutation.isPending || createShippingZoneMutation.isPending,
-    isUpdating: updateShippingMethodMutation.isPending,
-    isDeleting: deleteShippingMethodMutation.isPending,
+    // حالات العمليات
+    isCreatingMethod: createShippingMethodMutation.isPending,
+    isCreatingZone: createShippingZoneMutation.isPending,
+    isUpdatingMethod: updateShippingMethodMutation.isPending,
+    isDeletingMethod: deleteShippingMethodMutation.isPending,
     
-    // المساعدات
+    // إعادة التحميل
+    refetchMethods,
+    refetchZones,
     refetch: () => {
       refetchMethods();
       refetchZones();
-    },
-    getShippingStats,
-    searchShippingMethods
+    }
   };
 };

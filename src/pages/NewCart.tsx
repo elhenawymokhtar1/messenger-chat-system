@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { useCurrentCompany } from '@/hooks/useCurrentCompany';
+import { useCart } from '@/contexts/CartContext';
+import { useNewCart } from '@/hooks/useNewCart';
+import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -39,7 +43,6 @@ interface CartItem {
   quantity: number;
   total_price: number;
   stock_available: number;
-  session_id?: string;
   added_at?: string;
   updated_at?: string;
 }
@@ -64,26 +67,45 @@ interface Coupon {
 
 const NewCart: React.FC = () => {
   const { toast } = useToast();
+  const { company, loading: companyLoading, setCompany } = useCurrentCompany();
+  const { cartCount, isLoadingCount } = useCart();
 
-  // تسجيل دخول تلقائي للتأكد من عمل الصفحة
+  // استخدام useNewCart للتكامل مع صفحة Checkout
+  const {
+    cartItems: newCartItems,
+    getCartSummary,
+    clearCart: clearNewCart,
+    isLoading: newCartLoading,
+    addToCart,
+    updateQuantity,
+    removeFromCart,
+    isUpdating: newCartUpdating,
+    isRemoving: newCartRemoving,
+    refetch
+  } = useNewCart();
+
+  // تهيئة صفحة السلة
   useEffect(() => {
-    console.log('🔄 [CART] فحص تسجيل الدخول...');
+    console.log('🛒 [CART] تهيئة صفحة السلة...');
 
-    // إجبار استخدام الشركة التي تحتوي على البيانات
-    const testToken = 'test-token-c677b32f-fe1c-4c64-8362-a1c03406608d';
-    const companyId = 'c677b32f-fe1c-4c64-8362-a1c03406608d';
+    // إعداد شركة kok@kok.com الثابتة إذا لم تكن موجودة
+    if (!company && !companyLoading) {
+      const fixedCompany = {
+        id: '2d9b8887-0cca-430b-b61b-ca16cccfec63',
+        name: 'kok',
+        email: 'kok@kok.com',
+        status: 'active'
+      };
+      setCompany(fixedCompany);
+      console.log('✅ [CART] تم تعيين شركة kok@kok.com الثابتة:', fixedCompany.name);
+    }
+  }, [company, companyLoading, setCompany]);
 
-    localStorage.setItem('auth_token', testToken);
-    localStorage.setItem('company_id', companyId);
-
-    console.log('✅ [CART] تم تعيين معرف الشركة:', companyId);
-  }, []);
-
-  // الحالات الأساسية
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isUpdating, setIsUpdating] = useState<string | null>(null);
-  const [isRemoving, setIsRemoving] = useState<string | null>(null);
+  // الحالات الأساسية - استخدام البيانات من useNewCart
+  const cartItems = newCartItems || [];
+  const isLoading = newCartLoading;
+  const isUpdating = newCartUpdating;
+  const isRemoving = newCartRemoving;
   const [error, setError] = useState<string | null>(null);
 
   // حالات الكوبون
@@ -94,148 +116,16 @@ const NewCart: React.FC = () => {
   // حالات الطلب
   const [isCheckingOut, setIsCheckingOut] = useState(false);
 
-  // Session ID للسلة (يمكن ربطه بالمستخدم لاحقاً)
-  const [sessionId] = useState(() => {
-    const stored = localStorage.getItem('cart_session_id');
-    if (stored) return stored;
-    const newId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    localStorage.setItem('cart_session_id', newId);
-    return newId;
-  });
 
-  // Company ID ثابت للاختبار
-  const COMPANY_ID = 'c677b32f-fe1c-4c64-8362-a1c03406608d';
 
-  // دالة جلب عناصر السلة
-  const fetchCartItems = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      
-      console.log('🔍 جلب عناصر السلة للجلسة:', sessionId);
-      
-      const response = await fetch(`${API_BASE_URL}/api/companies/${COMPANY_ID}/cart/${sessionId}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+  // Company ID من React Query
+  const COMPANY_ID = company?.id || '2d9b8887-0cca-430b-b61b-ca16cccfec63';
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+  // تم استبدال fetchCartItems بـ useNewCart
 
-      const result = await response.json();
-      
-      if (result.success) {
-        setCartItems(result.data?.items || []);
-        console.log('✅ تم جلب عناصر السلة بنجاح:', result.data?.items?.length || 0);
-      } else {
-        throw new Error(result.message || 'فشل في جلب عناصر السلة');
-      }
-    } catch (error) {
-      console.error('❌ خطأ في جلب عناصر السلة:', error);
-      setError('فشل في تحميل السلة');
-      toast({
-        title: "خطأ",
-        description: "فشل في تحميل السلة",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // تم استبدال updateQuantity بـ useNewCart
 
-  // دالة تحديث كمية المنتج
-  const updateQuantity = async (itemId: string, newQuantity: number) => {
-    if (newQuantity < 1) return;
-
-    try {
-      setIsUpdating(itemId);
-      setError(null);
-
-      console.log('📝 تحديث كمية المنتج:', itemId, newQuantity);
-
-      const response = await fetch(`${API_BASE_URL}/api/companies/${COMPANY_ID}/cart/${sessionId}/${itemId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ quantity: newQuantity })
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      
-      if (result.success) {
-        setCartItems(prev => prev.map(item =>
-          item.id === itemId ? { ...item, quantity: newQuantity, total_price: (item.sale_price || item.unit_price) * newQuantity } : item
-        ));
-        toast({
-          title: "تم التحديث",
-          description: "تم تحديث كمية المنتج بنجاح",
-        });
-        console.log('✅ تم تحديث كمية المنتج بنجاح');
-      } else {
-        throw new Error(result.message || 'فشل في تحديث الكمية');
-      }
-    } catch (error) {
-      console.error('❌ خطأ في تحديث الكمية:', error);
-      toast({
-        title: "خطأ",
-        description: "فشل في تحديث كمية المنتج",
-        variant: "destructive"
-      });
-    } finally {
-      setIsUpdating(null);
-    }
-  };
-
-  // دالة حذف منتج من السلة
-  const removeItem = async (itemId: string) => {
-    try {
-      setIsRemoving(itemId);
-      setError(null);
-
-      console.log('🗑️ حذف منتج من السلة:', itemId);
-
-      const response = await fetch(`${API_BASE_URL}/api/companies/${COMPANY_ID}/cart/${sessionId}/${itemId}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      
-      if (result.success) {
-        setCartItems(prev => prev.filter(item => item.id !== itemId));
-        toast({
-          title: "تم الحذف",
-          description: "تم حذف المنتج من السلة",
-        });
-        console.log('✅ تم حذف المنتج من السلة بنجاح');
-      } else {
-        throw new Error(result.message || 'فشل في حذف المنتج');
-      }
-    } catch (error) {
-      console.error('❌ خطأ في حذف المنتج:', error);
-      toast({
-        title: "خطأ",
-        description: "فشل في حذف المنتج من السلة",
-        variant: "destructive"
-      });
-    } finally {
-      setIsRemoving(null);
-    }
-  };
+  // تم استبدال removeItem بـ useNewCart
 
   // دالة تطبيق كوبون الخصم
   const applyCoupon = async () => {
@@ -303,56 +193,35 @@ const NewCart: React.FC = () => {
     });
   };
 
-  // دالة حساب ملخص السلة
+  // دالة حساب ملخص السلة - استخدام getCartSummary من useNewCart
   const calculateSummary = (): CartSummary => {
-    const subtotal = cartItems.reduce((sum, item) => sum + item.total_price, 0);
-    const shipping = subtotal > 200 ? 0 : 25; // شحن مجاني للطلبات أكثر من 200 ر.س
-    const tax = subtotal * 0.15; // ضريبة القيمة المضافة 15%
+    const summary = getCartSummary();
 
+    // حساب الخصم إذا كان هناك كوبون مطبق
     let discount = 0;
     if (appliedCoupon) {
       if (appliedCoupon.discount_type === 'percentage') {
-        discount = subtotal * (appliedCoupon.discount_value / 100);
+        discount = summary.subtotal * (appliedCoupon.discount_value / 100);
       } else {
         discount = appliedCoupon.discount_value;
       }
     }
 
-    const total = subtotal + shipping + tax - discount;
-
+    // إضافة حقول إضافية للتوافق مع الكود الحالي
     return {
-      subtotal,
-      shipping,
-      tax,
+      ...summary,
       discount,
-      total: Math.max(0, total),
-      items_count: cartItems.reduce((sum, item) => sum + item.quantity, 0)
+      total: Math.max(0, summary.total - discount),
+      items_count: summary.items_count || cartItems.length
     };
   };
 
-  // دالة مسح السلة من الخادم
-  const clearCart = async () => {
+  // دالة مسح السلة من الخادم - استخدام clearNewCart
+  const clearCartFromServer = async () => {
     try {
       console.log('🗑️ مسح السلة من الخادم للجلسة:', sessionId);
-
-      const response = await fetch(`${API_BASE_URL}/api/companies/${COMPANY_ID}/cart/${sessionId}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-
-      if (result.success) {
-        console.log('✅ تم مسح السلة من الخادم بنجاح');
-      } else {
-        console.warn('⚠️ تحذير: فشل في مسح السلة من الخادم:', result.message);
-      }
+      clearNewCart();
+      console.log('✅ تم مسح السلة من الخادم بنجاح');
     } catch (error) {
       console.error('❌ خطأ في مسح السلة من الخادم:', error);
       // لا نوقف العملية حتى لو فشل مسح السلة من الخادم
@@ -370,10 +239,22 @@ const NewCart: React.FC = () => {
       console.log('💳 إتمام الطلب:', summary);
 
       const orderData = {
-        session_id: sessionId,
-        items: cartItems,
-        summary: summary,
-        coupon: appliedCoupon
+        // البيانات المطلوبة من الخادم
+        customer_name: 'عميل تجريبي',
+        customer_email: 'test@example.com',
+        customer_phone: '+966500000000',
+        customer_address: 'عنوان تجريبي، الرياض، السعودية',
+        total_amount: summary.total,
+        payment_method: 'cash_on_delivery',
+        payment_status: 'pending',
+        notes: 'طلب من المتجر الإلكتروني',
+        items: cartItems.map(item => ({
+          product_id: item.product_id,
+          product_name: item.product_name,
+          quantity: item.quantity,
+          price: item.price || item.product_price,
+          total_price: item.total_price || (item.quantity * (item.price || item.product_price))
+        }))
       };
 
       const response = await fetch(`${API_BASE_URL}/api/companies/${COMPANY_ID}/orders`, {
@@ -392,16 +273,15 @@ const NewCart: React.FC = () => {
       
       if (result.success) {
         // مسح السلة من الخادم والواجهة الأمامية
-        await clearCart();
+        await clearCartFromServer();
 
         // مسح السلة محلياً
         setCartItems([]);
+        setCartCount(0);
         setAppliedCoupon(null);
         setCouponCode('');
 
-        // مسح session ID وإنشاء جديد للطلبات القادمة
-        const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        localStorage.setItem('cart_session_id', newSessionId);
+        // تم إتمام الطلب بنجاح
 
         toast({
           title: "تم إتمام الطلب",
@@ -409,7 +289,6 @@ const NewCart: React.FC = () => {
         });
 
         console.log('✅ تم إتمام الطلب بنجاح:', result.data.order_number);
-        console.log('🆕 تم إنشاء جلسة جديدة:', newSessionId);
 
         // الانتقال لصفحة الشكر مع تفاصيل الطلب
         const thankYouUrl = `/thank-you?order=${result.data.order_number}&amount=${summary.total}&items=${summary.items_count}`;
@@ -433,10 +312,7 @@ const NewCart: React.FC = () => {
     }
   };
 
-  // تحميل البيانات عند بدء التشغيل
-  useEffect(() => {
-    fetchCartItems();
-  }, []);
+  // تم استبدال useEffect بـ useNewCart الذي يجلب البيانات تلقائياً
 
   // عرض شاشة التحميل
   if (isLoading) {
@@ -473,7 +349,7 @@ const NewCart: React.FC = () => {
             {summary.items_count} منتج
           </Badge>
           
-          <Button variant="outline" onClick={fetchCartItems}>
+          <Button variant="outline" onClick={() => refetch()}>
             <RefreshCw className="w-4 h-4 ml-2" />
             تحديث
           </Button>
@@ -563,7 +439,7 @@ const NewCart: React.FC = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => updateQuantity(item.id!, item.quantity - 1)}
+                        onClick={() => updateQuantity({ itemId: item.id!, quantity: item.quantity - 1 })}
                         disabled={item.quantity <= 1 || isUpdating === item.id}
                       >
                         <Minus className="w-4 h-4" />
@@ -580,7 +456,7 @@ const NewCart: React.FC = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => updateQuantity(item.id!, item.quantity + 1)}
+                        onClick={() => updateQuantity({ itemId: item.id!, quantity: item.quantity + 1 })}
                         disabled={item.quantity >= item.stock_available || isUpdating === item.id}
                       >
                         <Plus className="w-4 h-4" />
@@ -593,7 +469,7 @@ const NewCart: React.FC = () => {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => removeItem(item.id!)}
+                        onClick={() => removeFromCart(item.id!)}
                         disabled={isRemoving === item.id}
                         className="text-red-600 hover:text-red-700 hover:bg-red-50"
                       >
@@ -729,24 +605,41 @@ const NewCart: React.FC = () => {
                   </div>
                 )}
 
-                <Button
-                  onClick={checkout}
-                  disabled={isCheckingOut || cartItems.length === 0}
-                  className="w-full bg-green-600 hover:bg-green-700"
-                  size="lg"
-                >
-                  {isCheckingOut ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin ml-2" />
-                      جاري إتمام الطلب...
-                    </>
-                  ) : (
-                    <>
+                {/* خيارات إتمام الطلب */}
+                <div className="space-y-3">
+                  {/* الانتقال لصفحة Checkout المتطورة */}
+                  <Link to="/checkout">
+                    <Button
+                      disabled={cartItems.length === 0}
+                      className="w-full bg-blue-600 hover:bg-blue-700"
+                      size="lg"
+                    >
                       <CreditCard className="w-4 h-4 ml-2" />
-                      إتمام الطلب ({summary.total.toFixed(2)} ر.س)
-                    </>
-                  )}
-                </Button>
+                      الانتقال لصفحة الدفع ({summary.total.toFixed(2)} ر.س)
+                    </Button>
+                  </Link>
+
+                  {/* إتمام سريع (الطريقة الحالية) */}
+                  <Button
+                    onClick={checkout}
+                    disabled={isCheckingOut || cartItems.length === 0}
+                    variant="outline"
+                    className="w-full"
+                    size="lg"
+                  >
+                    {isCheckingOut ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin ml-2" />
+                        جاري إتمام الطلب...
+                      </>
+                    ) : (
+                      <>
+                        <Package className="w-4 h-4 ml-2" />
+                        إتمام سريع (بيانات تجريبية)
+                      </>
+                    )}
+                  </Button>
+                </div>
 
                 <Button
                   variant="outline"

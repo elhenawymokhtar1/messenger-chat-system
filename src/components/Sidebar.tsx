@@ -217,11 +217,6 @@ const menuItems: MenuItem[] = [
         path: '/orders'
       },
       {
-        title: 'الطلبات الجديدة',
-        icon: Package,
-        path: '/new-orders'
-      },
-      {
         title: '🔧 تشخيص الطلبات',
         icon: FileText,
         path: '/test-diagnosis'

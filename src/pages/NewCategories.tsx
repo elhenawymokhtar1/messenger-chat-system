@@ -69,11 +69,11 @@ const NewCategories: React.FC = () => {
     console.log('🔄 [CATEGORIES] فحص تسجيل الدخول...');
 
     // إجبار استخدام الشركة التي تحتوي على البيانات
-    const testToken = 'test-token-c677b32f-fe1c-4c64-8362-a1c03406608d';
-    const companyId = 'c677b32f-fe1c-4c64-8362-a1c03406608d';
+    const testToken = 'test-token-2d9b8887-0cca-430b-b61b-ca16cccfec63';
+    const companyId = '2d9b8887-0cca-430b-b61b-ca16cccfec63';
 
-    localStorage.setItem('auth_token', testToken);
-    localStorage.setItem('company_id', companyId);
+    /* localStorage.setItem معطل */
+    /* localStorage.setItem معطل */
 
     console.log('✅ [CATEGORIES] تم تعيين معرف الشركة:', companyId);
   }, []);
@@ -95,7 +95,7 @@ const NewCategories: React.FC = () => {
   const [selectedStatus, setSelectedStatus] = useState('all');
 
   // Company ID ثابت للاختبار
-  const COMPANY_ID = 'c677b32f-fe1c-4c64-8362-a1c03406608d';
+  const COMPANY_ID = '2d9b8887-0cca-430b-b61b-ca16cccfec63';
 
   // بيانات النموذج
   const [formData, setFormData] = useState<CategoryFormData>({

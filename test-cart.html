@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار السلة</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .button:hover {
+            background: #0056b3;
+        }
+        .result {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+        .success {
+            background: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛒 اختبار نظام السلة المبسط</h1>
+        
+        <div>
+            <h2>العمليات:</h2>
+            <button class="button" onclick="getCart()">جلب السلة</button>
+            <button class="button" onclick="addProduct1()">إضافة منتج 1</button>
+            <button class="button" onclick="addProduct2()">إضافة منتج 2</button>
+            <button class="button" onclick="clearCart()">مسح السلة</button>
+        </div>
+
+        <div id="result" class="result">
+            اضغط على أي زر لبدء الاختبار...
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3002';
+        const COMPANY_ID = '2d9b8887-0cca-430b-b61b-ca16cccfec63';
+        
+        function showResult(data, isError = false) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.className = `result ${isError ? 'error' : 'success'}`;
+            resultDiv.textContent = JSON.stringify(data, null, 2);
+        }
+
+        async function getCart() {
+            try {
+                const response = await fetch(`${API_BASE}/api/companies/${COMPANY_ID}/cart`);
+                const data = await response.json();
+                showResult(data);
+            } catch (error) {
+                showResult({ error: error.message }, true);
+            }
+        }
+
+        async function addProduct1() {
+            try {
+                const response = await fetch(`${API_BASE}/api/companies/${COMPANY_ID}/cart/add`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        product_id: '8c350c96-2d70-436e-b2e4-33cf456b2030',
+                        product_name: 'منتج تجريبي 3',
+                        product_sku: 'PROD003',
+                        price: 159.99,
+                        quantity: 1,
+                        image_url: 'https://example.com/image.jpg'
+                    })
+                });
+                const data = await response.json();
+                showResult(data);
+            } catch (error) {
+                showResult({ error: error.message }, true);
+            }
+        }
+
+        async function addProduct2() {
+            try {
+                const response = await fetch(`${API_BASE}/api/companies/${COMPANY_ID}/cart/add`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        product_id: '2489c8a5-2172-4123-922f-e23faf0abf6d',
+                        product_name: 'عناب',
+                        product_sku: 'PROD001',
+                        price: 15.50,
+                        quantity: 1,
+                        image_url: 'https://example.com/image2.jpg'
+                    })
+                });
+                const data = await response.json();
+                showResult(data);
+            } catch (error) {
+                showResult({ error: error.message }, true);
+            }
+        }
+
+        async function clearCart() {
+            try {
+                const response = await fetch(`${API_BASE}/api/companies/${COMPANY_ID}/cart/clear`, {
+                    method: 'DELETE'
+                });
+                const data = await response.json();
+                showResult(data);
+            } catch (error) {
+                showResult({ error: error.message }, true);
+            }
+        }
+
+        // اختبار أولي
+        getCart();
+    </script>
+</body>
+</html>

@@ -1079,7 +1079,7 @@ app.put('/api/gemini/settings', async (req, res) => {
       return res.status(400).json({ error: 'company_id is required' });
     }
 
-    const success = await GeminiService// TODO: Replace with MySQL API;
+    const success = await GeminiService.update(company_id, updateData);
 
     if (!success) {
       return res.status(404).json({ error: 'Gemini settings not found' });

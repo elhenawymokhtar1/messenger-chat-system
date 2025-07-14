@@ -96,7 +96,7 @@ const WhatsAppConversationsList = ({
 
     try {
       // الحصول على المنطقة الزمنية من الإعدادات
-      const savedSettings = localStorage.getItem('systemSettings');
+      const savedSettings = null /* localStorage معطل */;
       let timezone = 'Africa/Cairo';
       if (savedSettings) {
         const settings = JSON.parse(savedSettings);

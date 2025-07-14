@@ -1,5 +1,6 @@
 // 🗄️ طبقة الوصول لقاعدة البيانات (Database Access Layer)
 import { executeQuery, executeInsert, executeUpdate, executeTransaction } from '../config/mysql';
+import crypto from 'crypto';
 
 // ===================================
 // 🏢 خدمات الشركات
@@ -153,48 +154,7 @@ export class FacebookService {
     return pages;
   }
 
-  /**
-   * الحصول على إعدادات فيسبوك للشركة من الجداول القديمة (للمقارنة)
-   */
-  static async getByCompanyIdLegacy(companyId: string): Promise<FacebookSettings[]> {
-    // جلب الصفحات من جدول facebook_settings
-    const facebookSettings = await executeQuery<FacebookSettings>(
-      'SELECT * FROM facebook_settings WHERE company_id = ? ORDER BY created_at DESC',
-      [companyId]
-    );
-
-    // جلب الصفحات من جدول facebook_pages
-    const facebookPages = await executeQuery<any>(
-      'SELECT * FROM facebook_pages WHERE company_id = ? ORDER BY created_at DESC',
-      [companyId]
-    );
-
-    // دمج النتائج وتوحيد التنسيق
-    const allPages = [
-      ...facebookSettings.map(page => ({
-        ...page,
-        source: 'facebook_settings'
-      })),
-      ...facebookPages.map(page => ({
-        ...page,
-        page_id: page.page_id || page.facebook_page_id,
-        page_name: page.page_name || page.name,
-        source: 'facebook_pages',
-        // إضافة الحقول المفقودة مع قيم افتراضية
-        webhook_enabled: page.webhook_enabled || false,
-        webhook_url: page.webhook_url || null,
-        webhook_verify_token: page.webhook_verify_token || null,
-        auto_reply_enabled: page.auto_reply_enabled || false,
-        welcome_message: page.welcome_message || null
-      }))
-    ];
-
-    console.log(`📊 FacebookService Legacy: Found ${facebookSettings.length} pages in facebook_settings`);
-    console.log(`📊 FacebookService Legacy: Found ${facebookPages.length} pages in facebook_pages`);
-    console.log(`📊 FacebookService Legacy: Total ${allPages.length} pages for company ${companyId}`);
-
-    return allPages;
-  }
+  // تم حذف دالة getByCompanyIdLegacy - لم تعد مستخدمة
 
   /**
    * الحصول على إعدادات بمعرف الصفحة من الجدول الموحد
@@ -218,16 +178,7 @@ export class FacebookService {
     return settings[0] || null;
   }
 
-  /**
-   * الحصول على إعدادات بمعرف الصفحة من الجداول القديمة (للمقارنة)
-   */
-  static async getByPageIdLegacy(pageId: string): Promise<FacebookSettings | null> {
-    const settings = await executeQuery<FacebookSettings>(
-      'SELECT * FROM facebook_settings WHERE page_id = ?',
-      [pageId]
-    );
-    return settings[0] || null;
-  }
+  // تم حذف دالة getByPageIdLegacy - لم تعد مستخدمة
 
   /**
    * إنشاء إعدادات فيسبوك جديدة في الجدول الموحد
@@ -259,40 +210,19 @@ export class FacebookService {
     return id;
   }
 
-  /**
-   * إنشاء إعدادات فيسبوك جديدة في الجداول القديمة (للمقارنة)
-   */
-  static async createLegacy(data: Partial<FacebookSettings>): Promise<string> {
-    const result = await executeInsert(`
-      INSERT INTO facebook_settings (
-        id, company_id, page_id, page_name, access_token,
-        is_active, webhook_verified
-      ) VALUES (
-        UUID(), ?, ?, ?, ?, ?, ?
-      )
-    `, [
-      data.company_id,
-      data.page_id,
-      data.page_name,
-      data.access_token,
-      data.is_active || true,
-      data.webhook_verified || false
-    ]);
-
-    return result.insertId;
-  }
+  // تم حذف دالة createLegacy - لم تعد مستخدمة
 
   /**
-   * تحديث إعدادات فيسبوك
+   * تحديث إعدادات فيسبوك في الجدول الموحد
    */
   static async update(pageId: string, data: Partial<FacebookSettings>): Promise<boolean> {
     const result = await executeUpdate(`
-      UPDATE facebook_settings SET
+      UPDATE facebook_pages_unified SET
         page_name = COALESCE(?, page_name),
         access_token = COALESCE(?, access_token),
         is_active = COALESCE(?, is_active),
         webhook_verified = COALESCE(?, webhook_verified),
-        updated_at = CURRENT_TIMESTAMP
+        updated_at = NOW()
       WHERE page_id = ?
     `, [
       data.page_name,
@@ -302,6 +232,7 @@ export class FacebookService {
       pageId
     ]);
 
+    console.log(`📊 FacebookService: Updated page ${pageId} in unified table`);
     return result.affectedRows > 0;
   }
 
@@ -317,16 +248,7 @@ export class FacebookService {
     return result.affectedRows > 0;
   }
 
-  /**
-   * حذف إعدادات فيسبوك بمعرف الصفحة من الجداول القديمة (للمقارنة)
-   */
-  static async deleteByPageIdLegacy(pageId: string): Promise<boolean> {
-    const result = await executeUpdate(`
-      DELETE FROM facebook_settings WHERE page_id = ?
-    `, [pageId]);
-
-    return result.affectedRows > 0;
-  }
+  // تم حذف دالة deleteByPageIdLegacy - لم تعد مستخدمة
 }
 
 // ===================================
@@ -379,7 +301,7 @@ export class ConversationService {
     return await executeQuery<Conversation>(
       `SELECT
         c.*,
-        COALESCE(c.customer_name, CONCAT('مستخدم ', SUBSTRING(c.id, -4))) as customer_name,
+        c.customer_name,
 
         -- عدد الرسائل غير المقروءة (مؤقتاً نحسب كل الرسائل من العملاء)
         (SELECT COUNT(*)
@@ -460,7 +382,7 @@ export class ConversationService {
     const result = await executeQuery<Conversation>(
       `SELECT
         c.*,
-        COALESCE(c.customer_name, CONCAT('مستخدم ', SUBSTRING(c.id, -4))) as customer_name,
+        c.customer_name,
         c.updated_at as display_time,
 
         -- عدد الرسائل غير المقروءة (مؤقتاً نحسب كل الرسائل من العملاء)
@@ -554,26 +476,29 @@ export class ConversationService {
   }
 
   /**
-   * إنشاء محادثة جديدة
+   * إنشاء محادثة جديدة في الجدول الموحد
    */
   static async create(data: Partial<Conversation>): Promise<string> {
-    const result = await executeInsert(`
+    const conversationId = crypto.randomUUID();
+
+    await executeInsert(`
       INSERT INTO conversations (
-        id, company_id, facebook_page_id, user_id, user_name,
-        status, priority
+        id, company_id, facebook_page_id, participant_id, customer_name,
+        unread_count, created_at, updated_at
       ) VALUES (
-        UUID(), ?, ?, ?, ?, ?, ?
+        ?, ?, ?, ?, ?, ?, NOW(), NOW()
       )
     `, [
+      conversationId,
       data.company_id,
       data.facebook_page_id,
-      data.user_id,
-      data.user_name || null,
-      data.status || 'active',
-      data.priority || 'normal'
+      data.user_id || data.participant_id, // دعم كلا الاسمين للتوافق
+      data.user_name || data.customer_name || null,
+      1 // unread_count افتراضي
     ]);
 
-    return result.insertId;
+    console.log(`📊 ConversationService: Created conversation ${conversationId} in unified table`);
+    return conversationId;
   }
 
   /**
@@ -857,17 +782,15 @@ export class MessageService {
 export interface GeminiSettings {
   id: string;
   company_id: string;
+  provider: string;
   api_key?: string;
-  model: string;
-  is_enabled: boolean;
-  auto_reply: boolean;
-  response_delay: number;
+  model_name: string;
+  is_active: boolean;
   system_prompt?: string;
   temperature: number;
   max_tokens: number;
-  total_requests: number;
-  successful_requests: number;
-  failed_requests: number;
+  usage_limit: number;
+  usage_count: number;
   created_at: string;
   updated_at: string;
 }
@@ -878,7 +801,7 @@ export class GeminiService {
    */
   static async getByCompanyId(companyId: string): Promise<GeminiSettings | null> {
     const settings = await executeQuery<GeminiSettings>(
-      'SELECT * FROM gemini_settings WHERE company_id = ?',
+      'SELECT * FROM ai_settings WHERE company_id = ? AND provider = "gemini"',
       [companyId]
     );
     return settings[0] || null;
@@ -889,23 +812,19 @@ export class GeminiService {
    */
   static async update(companyId: string, data: Partial<GeminiSettings>): Promise<boolean> {
     const result = await executeUpdate(`
-      UPDATE gemini_settings SET
+      UPDATE ai_settings SET
         api_key = COALESCE(?, api_key),
-        model = COALESCE(?, model),
-        is_enabled = COALESCE(?, is_enabled),
-        auto_reply = COALESCE(?, auto_reply),
-        response_delay = COALESCE(?, response_delay),
+        model_name = COALESCE(?, model_name),
+        is_active = COALESCE(?, is_active),
         system_prompt = COALESCE(?, system_prompt),
         temperature = COALESCE(?, temperature),
         max_tokens = COALESCE(?, max_tokens),
         updated_at = CURRENT_TIMESTAMP
-      WHERE company_id = ?
+      WHERE company_id = ? AND provider = 'gemini'
     `, [
       data.api_key || null,
-      data.model || null,
-      data.is_enabled !== undefined ? data.is_enabled : null,
-      data.auto_reply !== undefined ? data.auto_reply : null,
-      data.response_delay || null,
+      data.model_name || null,
+      data.is_active !== undefined ? data.is_active : null,
       data.system_prompt || null,
       data.temperature || null,
       data.max_tokens || null,
@@ -1141,7 +1060,7 @@ export class DatabaseService {
         (SELECT COUNT(*) FROM conversations WHERE company_id = ?) as totalConversations,
         (SELECT COUNT(*) FROM messages WHERE company_id = ?) as totalMessages,
         (SELECT COUNT(*) FROM messages WHERE company_id = ? AND direction = 'incoming') as unreadMessages,
-        (SELECT COUNT(*) FROM facebook_settings WHERE company_id = ? AND is_active = TRUE) as activePages
+        (SELECT COUNT(*) FROM facebook_pages_unified WHERE company_id = ? AND is_active = TRUE) as activePages
     `, [companyId, companyId, companyId, companyId]);
 
     return {

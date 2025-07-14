@@ -7,18 +7,10 @@
 const DEFAULT_TIMEZONE = 'Africa/Cairo';
 
 /**
- * الحصول على المنطقة الزمنية من الإعدادات
+ * الحصول على المنطقة الزمنية الافتراضية (localStorage معطل)
  */
 function getUserTimezone(): string {
-  try {
-    const savedSettings = localStorage.getItem('systemSettings');
-    if (savedSettings) {
-      const settings = JSON.parse(savedSettings);
-      return settings.timezone || DEFAULT_TIMEZONE;
-    }
-  } catch (error) {
-    console.warn('خطأ في قراءة إعدادات المنطقة الزمنية:', error);
-  }
+  // إرجاع المنطقة الزمنية الافتراضية دائماً
   return DEFAULT_TIMEZONE;
 }
 

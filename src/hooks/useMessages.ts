@@ -213,7 +213,7 @@ export const useMessages = (conversationId: string | null) => {
       });
 
       // الحصول على company_id
-      const companyId = company?.id || 'c677b32f-fe1c-4c64-8362-a1c03406608d';
+      const companyId = company?.id || '2d9b8887-0cca-430b-b61b-ca16cccfec63';
 
       frontendLogger.info(`Sending message with company_id`, {
         requestId,

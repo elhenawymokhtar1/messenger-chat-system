@@ -29,22 +29,22 @@ export function needsNameReplacement(name: string | null | undefined): boolean {
  * @param customerId معرف العميل على فيسبوك
  */
 export function generateAlternativeName(
-  conversationId: string | undefined, 
+  conversationId: string | undefined,
   fallbackPageName?: string,
   customerId?: string | null
 ): string {
-  // إذا كان لدينا معرف المستخدم، نستخدمه
-  if (customerId) {
-    return `ID: ${customerId}`;
-  }
-  
-  // التعامل مع الحالات الخاصة
-  if (conversationId === undefined || conversationId === null || conversationId === '') {
-    return fallbackPageName ? `عميل ${fallbackPageName}` : 'عميل غير معروف';
+  // إذا كان لدينا معرف المستخدم، نستخدم آخر 4 أرقام فقط
+  if (customerId && customerId.length > 4) {
+    return `عميل ${customerId.slice(-4)}`;
   }
 
-  // استخدام معرف المحادثة
-  return `ID: ${conversationId}`;
+  // التعامل مع الحالات الخاصة
+  if (conversationId === undefined || conversationId === null || conversationId === '') {
+    return 'عميل غير معروف';
+  }
+
+  // استخدام آخر 4 أرقام من معرف المحادثة
+  return `عميل ${conversationId.slice(-4)}`;
 }
 
 /**
@@ -62,13 +62,16 @@ export function getDisplayName(
 ): string {
   // حالات خاصة معينة
   if (customerName === 'Mokhtar Elsnayy') return 'Mokhtar Elsnayy';
+  if (customerName === 'Mokhtar Elenawy') return 'Mokhtar Elenawy';
   if (customerId === '351400718067673') return 'Simple A42';
-  
-  // فحص ما إذا كان الاسم بحاجة إلى استبدال
-  if (needsNameReplacement(customerName)) {
-    return generateAlternativeName(conversationId, pageName || undefined, customerId);
+
+  // إذا كان لدينا اسم حقيقي وصالح، استخدمه
+  if (customerName &&
+      customerName.trim() !== '' &&
+      !needsNameReplacement(customerName)) {
+    return customerName;
   }
-  
-  // استخدام الاسم الحالي إذا كان صالحًا
-  return customerName || generateAlternativeName(conversationId, pageName || undefined, customerId);
+
+  // إذا لم يكن لدينا اسم صالح، استخدم معرف مختصر
+  return generateAlternativeName(conversationId, pageName || undefined, customerId);
 }

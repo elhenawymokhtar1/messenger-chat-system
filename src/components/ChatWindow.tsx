@@ -151,7 +151,7 @@ const ChatWindow = ({ conversationId }: ChatWindowProps) => {
               <h3 className="font-medium text-gray-900">
                 {getDisplayName(
                   conversation.customer_name,
-                  conversation.customer_facebook_id,
+                  conversation.participant_id,
                   conversation.id,
                   conversation.page_name
                 )}

@@ -29,6 +29,14 @@ export interface RealMessage {
 export const useRealMessages = (conversationId?: string, companyId?: string, recentOnly = true) => {
   const queryClient = useQueryClient();
 
+  console.log('🔧 [DEBUG] useRealMessages called with:', {
+    conversationId,
+    companyId,
+    recentOnly,
+    conversationIdType: typeof conversationId,
+    companyIdType: typeof companyId
+  });
+
   // جلب الرسائل
   const {
     data: messages = [],
@@ -38,7 +46,17 @@ export const useRealMessages = (conversationId?: string, companyId?: string, rec
   } = useQuery({
     queryKey: ['real-messages', conversationId, companyId, recentOnly],
     queryFn: async () => {
+      console.log('🚀 [DEBUG] Messages queryFn called with:', {
+        conversationId,
+        companyId,
+        recentOnly
+      });
+
       if (!conversationId || !companyId) {
+        console.warn('⚠️ [DEBUG] Missing conversationId or companyId:', {
+          conversationId,
+          companyId
+        });
         return [];
       }
 
@@ -56,16 +74,15 @@ export const useRealMessages = (conversationId?: string, companyId?: string, rec
         throw new Error(response.error);
       }
 
-      // التحقق من وجود البيانات
-      if (!response.data) {
-        console.warn('⚠️ [DEBUG] No messages data in response');
-        return [];
-      }
+      // التحقق من وجود البيانات - apiRequest يرجع { data: responseData }
+      // لذلك نحتاج للوصول إلى response.data.data
+      const messagesData = response.data?.data || response.data || [];
 
-      console.log('✅ تم جلب الرسائل:', response.data?.length || 0);
+      console.log('📊 [DEBUG] Extracted messages data:', messagesData);
+      console.log('✅ تم جلب الرسائل:', messagesData?.length || 0);
 
       // تحويل البيانات للتوافق مع Frontend
-      const transformedMessages = (response.data || []).map((msg: any) => {
+      const transformedMessages = (messagesData || []).map((msg: any) => {
         const transformed = {
           ...msg,
           message_text: msg.content || msg.message_text,  // تحويل content إلى message_text

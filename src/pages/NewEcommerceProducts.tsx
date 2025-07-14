@@ -29,7 +29,7 @@ import {
 } from 'lucide-react';
 
 // إعدادات API
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002';
+const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
 // نوع البيانات للمنتج
 interface Product {
@@ -74,16 +74,8 @@ const NewEcommerceProducts: React.FC = () => {
 
   // تسجيل دخول تلقائي للتأكد من عمل الصفحة
   useEffect(() => {
-    console.log('🔄 [PRODUCTS] فحص تسجيل الدخول...');
-
-    // إجبار استخدام الشركة التي تحتوي على البيانات
-    const testToken = 'test-token-c677b32f-fe1c-4c64-8362-a1c03406608d';
-    const companyId = 'c677b32f-fe1c-4c64-8362-a1c03406608d';
-
-    localStorage.setItem('auth_token', testToken);
-    localStorage.setItem('company_id', companyId);
-
-    console.log('✅ [PRODUCTS] تم تعيين معرف الشركة:', companyId);
+    console.log('🔄 [PRODUCTS] localStorage معطل - استخدام شركة kok@kok.com الثابتة');
+    console.log('✅ [PRODUCTS] معرف الشركة الثابت: 2d9b8887-0cca-430b-b61b-ca16cccfec63');
   }, []);
 
   // الحالات الأساسية
@@ -102,8 +94,8 @@ const NewEcommerceProducts: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
 
-  // الحصول على معرف الشركة من المستخدم المسجل دخوله
-  const COMPANY_ID = user?.id || 'c677b32f-fe1c-4c64-8362-a1c03406608d';
+  // الحصول على معرف الشركة من المستخدم المسجل دخوله (شركة kok@kok.com الثابتة)
+  const COMPANY_ID = user?.id || '2d9b8887-0cca-430b-b61b-ca16cccfec63';
 
   // تسجيل معلومات التشخيص
   console.log('🔍 [PRODUCTS] معلومات المستخدم:', user);
@@ -519,7 +511,10 @@ const NewEcommerceProducts: React.FC = () => {
                 <p className="text-sm font-medium text-gray-600">متوسط السعر</p>
                 <p className="text-2xl font-bold text-gray-900">
                   {products.length > 0 ?
-                    Math.round(products.reduce((sum, p) => sum + parseFloat(p.price || 0), 0) / products.length) : 0
+                    Math.round(products.reduce((sum, p) => {
+                      const price = parseFloat(p.price || 0);
+                      return sum + (isNaN(price) ? 0 : price);
+                    }, 0) / products.length) : 0
                   } ر.س
                 </p>
               </div>

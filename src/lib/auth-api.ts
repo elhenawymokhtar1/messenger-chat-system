@@ -54,7 +54,7 @@ export const companyAuthApi = {
         data: {
           token: 'dev_token_' + Date.now(),
           company: {
-            id: 'c677b32f-fe1c-4c64-8362-a1c03406608d',
+            id: '2d9b8887-0cca-430b-b61b-ca16cccfec63',
             name: 'شركة تجريبية للمحادثات',
             email: credentials.email,
             status: 'active',

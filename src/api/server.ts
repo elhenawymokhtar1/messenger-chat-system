@@ -1137,29 +1137,14 @@ app.get('/api/facebook/settings', async (req, res) => {
 
       console.log('✅ API Server: Found', allPages.length, 'unified pages for company', company_id);
     } else {
-      // جلب جميع الصفحات إذا لم يتم تحديد company_id
-      const [facebookSettings] = await pool.execute(
-        'SELECT * FROM facebook_settings ORDER BY created_at DESC'
+      // جلب جميع الصفحات من الجدول الموحد إذا لم يتم تحديد company_id
+      const [unifiedPages] = await pool.execute(
+        'SELECT * FROM facebook_pages_unified WHERE is_active = TRUE ORDER BY created_at DESC'
       );
 
-      const [facebookPages] = await pool.execute(
-        'SELECT * FROM facebook_pages ORDER BY created_at DESC'
-      );
+      allPages = unifiedPages;
 
-      allPages = [
-        ...facebookSettings.map(page => ({
-          ...page,
-          source: 'facebook_settings'
-        })),
-        ...facebookPages.map(page => ({
-          ...page,
-          page_id: page.page_id || page.facebook_page_id,
-          page_name: page.page_name || page.name,
-          source: 'facebook_pages'
-        }))
-      ];
-
-      console.log('✅ API Server: Found', allPages.length, 'total Facebook pages');
+      console.log('✅ API Server: Found', allPages.length, 'unified pages');
     }
 
     res.json(allPages);
@@ -1175,7 +1160,7 @@ app.post('/api/facebook/toggle/:pageId', async (req, res) => {
     const { pageId } = req.params;
     const { action } = req.body; // 'activate' or 'deactivate'
 
-    console.log(`🔧 ${action === 'activate' ? 'تفعيل' : 'إيقاف'} صفحة: ${pageId}`);
+    console.log(`[SETUP] ${action === 'activate' ? 'تفعيل' : 'إيقاف'} صفحة: ${pageId}`);
 
     const isActive = action === 'activate';
     const webhookEnabled = action === 'activate';

@@ -79,12 +79,8 @@ const CompaniesManagement: React.FC = () => {
   });
 
   useEffect(() => {
-    // التحقق من تسجيل دخول المستخدم الأساسي
-    const adminData = localStorage.getItem('superAdmin');
-    if (!adminData) {
-      navigate('/super-admin-login');
-      return;
-    }
+    // localStorage معطل - تخطي فحص المدير الأساسي
+    console.log('🔧 [COMPANIES] localStorage معطل - تخطي فحص المدير الأساسي');
 
     loadCompanies();
   }, [navigate]);

@@ -486,48 +486,59 @@ export class FacebookApiService {
     }
   }
 
-  // حفظ إعدادات Facebook في قاعدة البيانات
+  // حفظ إعدادات Facebook في الجدول الموحد
   static async saveFacebookSettings(pageId: string, accessToken: string, pageName?: string, companyId?: string): Promise<void> {
     try {
-      console.log('💾 بدء حفظ إعدادات Facebook:', {
+      console.log('💾 بدء حفظ إعدادات Facebook في الجدول الموحد:', {
         pageId,
         pageName,
         hasToken: !!accessToken,
         companyId
       });
 
-      const settingsData: any = {
-        page_id: pageId,
-        access_token: accessToken,
-        page_name: pageName || `صفحة ${pageId}`,
-        updated_at: new Date().toISOString(),
-        created_at: new Date().toISOString(),
-        is_active: true,
-        webhook_enabled: true
-      };
+      // استيراد pool من إعدادات MySQL
+      const mysql = require('mysql2/promise');
+      const pool = mysql.createPool({
+        host: '193.203.168.103',
+        user: 'u384034873_conversations',
+        password: 'Mokhtar123456',
+        database: 'u384034873_conversations',
+        charset: 'utf8mb4',
+        timezone: '+00:00'
+      });
 
-      // إضافة company_id إذا تم تمريره
-      if (companyId) {
-        settingsData.company_id = companyId;
-        console.log(`🏢 ربط الصفحة بالشركة: ${companyId}`);
-      }
+      const pageNameFinal = pageName || `صفحة ${pageId}`;
+      const companyIdFinal = companyId || 'default-company';
 
-      console.log('📝 بيانات الحفظ:', settingsData);
+      // استخدام UPSERT للجدول الموحد
+      await pool.execute(`
+        INSERT INTO facebook_pages_unified (
+          page_id, page_name, access_token, company_id,
+          is_active, webhook_enabled, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())
+        ON DUPLICATE KEY UPDATE
+          page_name = VALUES(page_name),
+          access_token = VALUES(access_token),
+          company_id = VALUES(company_id),
+          is_active = VALUES(is_active),
+          webhook_enabled = VALUES(webhook_enabled),
+          updated_at = NOW()
+      `, [
+        pageId,
+        pageNameFinal,
+        accessToken,
+        companyIdFinal,
+        true,  // is_active
+        true   // webhook_enabled
+      ]);
 
-      const { data, error } = await supabase
-        // TODO: Replace with MySQL API
-        .upsert(settingsData, {
-          onConflict: 'page_id'
-        })
-        // TODO: Replace with MySQL API;
+      console.log('✅ تم حفظ إعدادات Facebook في الجدول الموحد بنجاح:', {
+        pageId,
+        pageName: pageNameFinal,
+        companyId: companyIdFinal
+      });
 
-      if (error) {
-        console.error('❌ خطأ في حفظ إعدادات Facebook:', error);
-        throw new Error(`فشل في حفظ الصفحة: ${error.message}`);
-      }
-
-      console.log('✅ تم حفظ إعدادات Facebook بنجاح:', data);
-      return data;
+      await pool.end();
     } catch (error) {
       console.error('💥 خطأ عام في حفظ إعدادات Facebook:', error);
       throw error;

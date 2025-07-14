@@ -33,19 +33,31 @@ export const GeminiSettings: React.FC = () => {
     if (settings) {
       setFormData({
         api_key: settings.api_key || '',
-        model: settings.model || 'gemini-2.5-flash-lite-preview-06-17',
-        prompt_template: settings.prompt_template || '',
+        model: settings.model_name || settings.model || 'gemini-1.5-flash',
+        prompt_template: settings.system_prompt || settings.prompt_template || '',
         personality_prompt: settings.personality_prompt || '',
         products_prompt: settings.products_prompt || '',
-        is_enabled: settings.is_enabled || false,
+        is_enabled: settings.is_active || settings.is_enabled || false,
         max_tokens: settings.max_tokens || 1000,
-        temperature: settings.temperature || 0.7
+        temperature: parseFloat(settings.temperature) || 0.7
       });
     }
   }, [settings]);
 
   const handleSave = () => {
-    saveSettings.mutate(formData);
+    // تحويل البيانات للتنسيق المطلوب من الخادم
+    const dataToSave = {
+      api_key: formData.api_key,
+      model_name: formData.model,
+      system_prompt: formData.prompt_template,
+      personality_prompt: formData.personality_prompt,
+      products_prompt: formData.products_prompt,
+      is_active: formData.is_enabled,
+      max_tokens: formData.max_tokens,
+      temperature: formData.temperature
+    };
+
+    saveSettings.mutate(dataToSave);
   };
 
   const handleTest = () => {

@@ -1,17 +1,17 @@
 /**
- * 🧪 إعداد الاختبارات المحسن
+ * 🧪 إعداد الاختبارات المحسن - localStorage معطل
  */
 
 import '@testing-library/jest-dom';
 
-// Mock localStorage
+// Mock localStorage (معطل - للاختبارات فقط)
 const localStorageMock = (() => {
-  let store: Record<string, string> = {};
+  console.log('🧪 [TEST] localStorage mock معطل - يستخدم React state فقط');
   return {
-    getItem: jest.fn((key: string) => store[key] || null),
-    setItem: jest.fn((key: string, value: string) => { store[key] = value; }),
-    removeItem: jest.fn((key: string) => { delete store[key]; }),
-    clear: jest.fn(() => { store = {}; }),
+    getItem: jest.fn(() => null), // دائماً يرجع null
+    setItem: jest.fn(() => console.log('🧪 [TEST] localStorage.setItem معطل')),
+    removeItem: jest.fn(() => console.log('🧪 [TEST] localStorage.removeItem معطل')),
+    clear: jest.fn(() => console.log('🧪 [TEST] localStorage.clear معطل')),
   };
 })();
 
@@ -19,12 +19,12 @@ Object.defineProperty(window, 'localStorage', {
   value: localStorageMock
 });
 
-// Mock sessionStorage
+// Mock sessionStorage (معطل)
 const sessionStorageMock = {
-  getItem: jest.fn(),
-  setItem: jest.fn(),
-  removeItem: jest.fn(),
-  clear: jest.fn(),
+  getItem: jest.fn(() => null),
+  setItem: jest.fn(() => console.log('🧪 [TEST] sessionStorage معطل')),
+  removeItem: jest.fn(() => console.log('🧪 [TEST] sessionStorage معطل')),
+  clear: jest.fn(() => console.log('🧪 [TEST] sessionStorage معطل')),
 };
 Object.defineProperty(window, 'sessionStorage', {
   value: sessionStorageMock

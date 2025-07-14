@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { useCurrentCompany } from '@/hooks/useCurrentCompany';
+import { useCart } from '@/contexts/CartContext';
+import { useNewCart } from '@/hooks/useNewCart';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,7 +33,7 @@ import {
 } from 'lucide-react';
 
 // إعدادات API
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002';
+const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
 // نوع البيانات للمنتج
 interface Product {
@@ -70,20 +73,26 @@ interface CartItem {
 
 const NewShop: React.FC = () => {
   const { toast } = useToast();
+  const { company, loading: companyLoading, setCompany } = useCurrentCompany();
+  const { cartCount, setCartCount } = useCart();
+  const { addToCart: addToCartMutation } = useNewCart();
 
-  // تسجيل دخول تلقائي للتأكد من عمل الصفحة
+  // تهيئة صفحة المتجر
   useEffect(() => {
-    console.log('🔄 [SHOP] فحص تسجيل الدخول...');
+    console.log('🏪 [SHOP] تهيئة صفحة المتجر...');
 
-    // إجبار استخدام الشركة التي تحتوي على البيانات
-    const testToken = 'test-token-c677b32f-fe1c-4c64-8362-a1c03406608d';
-    const companyId = 'c677b32f-fe1c-4c64-8362-a1c03406608d';
-
-    localStorage.setItem('auth_token', testToken);
-    localStorage.setItem('company_id', companyId);
-
-    console.log('✅ [SHOP] تم تعيين معرف الشركة:', companyId);
-  }, []);
+    // إعداد شركة kok@kok.com الثابتة إذا لم تكن موجودة
+    if (!company && !companyLoading) {
+      const fixedCompany = {
+        id: '2d9b8887-0cca-430b-b61b-ca16cccfec63',
+        name: 'kok',
+        email: 'kok@kok.com',
+        status: 'active'
+      };
+      setCompany(fixedCompany);
+      console.log('✅ [SHOP] تم تعيين شركة kok@kok.com الثابتة:', fixedCompany.name);
+    }
+  }, [company, companyLoading, setCompany]);
 
   // الحالات الأساسية
   const [products, setProducts] = useState<Product[]>([]);
@@ -91,6 +100,8 @@ const NewShop: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isAddingToCart, setIsAddingToCart] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+
 
   // حالات البحث والفلترة
   const [searchTerm, setSearchTerm] = useState('');
@@ -103,10 +114,9 @@ const NewShop: React.FC = () => {
 
   // حالة السلة
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [cartCount, setCartCount] = useState(0);
 
-  // Company ID ثابت للاختبار
-  const COMPANY_ID = 'c677b32f-fe1c-4c64-8362-a1c03406608d';
+  // Company ID من React Query
+  const COMPANY_ID = company?.id || '2d9b8887-0cca-430b-b61b-ca16cccfec63';
 
   // دالة جلب المنتجات
   const fetchProducts = async () => {
@@ -130,10 +140,11 @@ const NewShop: React.FC = () => {
       const result = await response.json();
       
       if (result.success) {
-        // فلترة المنتجات النشطة فقط
-        const activeProducts = (result.data || []).filter((p: Product) => p.status === 'active' && p.stock_quantity > 0);
+        // فلترة المنتجات النشطة فقط (بدون شرط المخزون لعرض جميع المنتجات)
+        const activeProducts = (result.data || []).filter((p: Product) => p.status === 'active');
         setProducts(activeProducts);
         console.log('✅ تم جلب المنتجات بنجاح:', activeProducts.length);
+        console.log('📦 المنتجات المجلبة:', activeProducts.map(p => ({ name: p.name, stock: p.stock_quantity })));
       } else {
         throw new Error(result.message || 'فشل في جلب المنتجات');
       }
@@ -185,76 +196,19 @@ const NewShop: React.FC = () => {
       setIsAddingToCart(product.id);
 
       console.log('🛒 إضافة منتج للسلة:', product.name);
+      console.log('🔑 النظام المبسط - استخدام useNewCart!');
 
-      // الحصول على session ID من localStorage أو إنشاء جديد
-      let sessionId = localStorage.getItem('cart_session_id');
-      if (!sessionId) {
-        sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        localStorage.setItem('cart_session_id', sessionId);
-      }
-
-      // إرسال المنتج للخادم
-      const cartData = {
+      // استخدام useNewCart mutation
+      addToCartMutation({
         product_id: product.id,
         product_name: product.name,
         product_sku: product.sku,
-        price: product.sale_price || product.price,
+        price: parseFloat(product.sale_price || product.price),
         quantity: 1,
-        session_id: sessionId
-      };
-
-      console.log('📤 إرسال بيانات المنتج للخادم:', cartData);
-
-      // إرسال للخادم
-      const response = await fetch(`${API_BASE_URL}/api/companies/${COMPANY_ID}/cart/${sessionId}/add`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(cartData)
+        image_url: product.image_url || ''
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-
-      if (!result.success) {
-        throw new Error(result.message || 'فشل في إضافة المنتج للسلة');
-      }
-
-      console.log('✅ تم إرسال المنتج للخادم بنجاح:', result.data);
-
-      // محاكاة إضافة للسلة محلياً
-      const newItem: CartItem = {
-        product_id: product.id,
-        quantity: 1,
-        price: product.sale_price || product.price
-      };
-
-      setCartItems(prev => {
-        const existingItem = prev.find(item => item.product_id === product.id);
-        if (existingItem) {
-          return prev.map(item =>
-            item.product_id === product.id
-              ? { ...item, quantity: item.quantity + 1 }
-              : item
-          );
-        } else {
-          return [...prev, newItem];
-        }
-      });
-
-      setCartCount(prev => prev + 1);
-
-      toast({
-        title: "تم الإضافة للسلة",
-        description: `تم إضافة ${product.name} إلى السلة بنجاح`,
-      });
-
-      console.log('✅ تم إضافة المنتج للسلة:', product.name);
-      console.log('🛒 عدد العناصر في السلة:', cartCount + 1);
+      console.log('✅ تم إرسال المنتج للسلة باستخدام useNewCart');
 
     } catch (error) {
       console.error('❌ خطأ في إضافة المنتج للسلة:', error);
@@ -400,8 +354,11 @@ const NewShop: React.FC = () => {
               <DollarSign className="w-6 h-6 mx-auto mb-1 text-purple-600" />
               <p className="text-sm text-gray-600">متوسط السعر</p>
               <p className="font-bold text-gray-900">
-                {products.length > 0 ? 
-                  Math.round(products.reduce((sum, p) => sum + (p.sale_price || p.price), 0) / products.length) : 0
+                {products.length > 0 ?
+                  Math.round(products.reduce((sum, p) => {
+                    const price = parseFloat(p.sale_price || p.price || 0);
+                    return sum + (isNaN(price) ? 0 : price);
+                  }, 0) / products.length) : 0
                 } ر.س
               </p>
             </div>
@@ -610,6 +567,12 @@ const NewShop: React.FC = () => {
                   {product.sale_price && (
                     <Badge className="absolute top-2 left-2 bg-red-500">
                       خصم {Math.round(((product.price - product.sale_price) / product.price) * 100)}%
+                    </Badge>
+                  )}
+
+                  {product.stock_quantity <= 0 && (
+                    <Badge className="absolute bottom-2 left-2 bg-gray-500">
+                      نفد المخزون
                     </Badge>
                   )}
                 </div>

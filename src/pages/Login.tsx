@@ -76,12 +76,8 @@ const Login: React.FC = () => {
       const result = await response.json();
 
       if (result.success) {
-        // حفظ بيانات المصادقة
-        localStorage.setItem('auth_token', result.data.token);
-        localStorage.setItem('company_id', result.data.company.id);
-        localStorage.setItem('company_data', JSON.stringify(result.data.company));
-
-        console.log('✅ [LOGIN] تم تسجيل الدخول بنجاح');
+        // localStorage معطل - استخدام React state فقط
+        console.log('✅ [LOGIN] تم تسجيل الدخول بنجاح (localStorage معطل)');
         
         toast({
           title: "مرحباً بك",

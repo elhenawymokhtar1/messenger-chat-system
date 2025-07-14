@@ -82,6 +82,14 @@ const RealConversations = () => {
     companyId: company?.id
   });
 
+  // تشخيص تفصيلي للمحادثات
+  if (conversations && conversations.length > 0) {
+    console.log('🔍 [DEBUG] First conversation details:', conversations[0]);
+    console.log('🔍 [DEBUG] All conversations last_message_is_from_page values:',
+      conversations.map(c => ({ id: c.id, last_message_is_from_page: c.last_message_is_from_page, type: typeof c.last_message_is_from_page }))
+    );
+  }
+
   const {
     messages,
     isLoading: messagesLoading,
@@ -116,21 +124,32 @@ const RealConversations = () => {
 
   // دالة لتحديد إذا كانت المحادثة تحتاج رد
   const needsReply = (conv: any) => {
+    console.log('🔍 [DEBUG] needsReply check for conversation:', {
+      id: conv.id,
+      customer_name: conv.customer_name,
+      last_message_is_from_page: conv.last_message_is_from_page,
+      type: typeof conv.last_message_is_from_page,
+      unread_count: conv.unread_count
+    });
+
     // المحادثة تحتاج رد فقط إذا آخر رسالة كانت من العميل (ليس من الصفحة)
     // نتحقق من last_message_is_from_page
 
     // إذا كانت آخر رسالة من الصفحة (is_from_page = 1)، فلا تحتاج رد
     if (conv.last_message_is_from_page === 1 || conv.last_message_is_from_page === '1') {
+      console.log('❌ [DEBUG] Conversation does NOT need reply (from page):', conv.id);
       return false;
     }
 
     // إذا كانت آخر رسالة من العميل (is_from_page = 0)، فتحتاج رد
     if (conv.last_message_is_from_page === 0 || conv.last_message_is_from_page === '0') {
+      console.log('✅ [DEBUG] Conversation NEEDS reply (from customer):', conv.id);
       return true;
     }
 
     // إذا لم تكن هناك معلومات واضحة، نعتمد على عدد الرسائل غير المقروءة
     const hasUnreadMessages = conv.unread_count > 0 || conv.unread_messages > 0;
+    console.log('🤔 [DEBUG] Fallback to unread count:', { id: conv.id, hasUnreadMessages });
     return hasUnreadMessages;
   };
 

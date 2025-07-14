@@ -18,23 +18,22 @@ export interface CurrentCompany {
 // مفتاح ثابت للشركة الحالية
 const CURRENT_COMPANY_KEY = 'current-company';
 
-// دالة لحفظ الشركة في sessionStorage
+// تعطيل التخزين - استخدام React state فقط
 const saveCompanyToStorage = (company: CurrentCompany | null) => {
-  if (company) {
-    sessionStorage.setItem(CURRENT_COMPANY_KEY, JSON.stringify(company));
-  } else {
-    sessionStorage.removeItem(CURRENT_COMPANY_KEY);
-  }
+  // معطل - لا نحفظ في sessionStorage
+  console.log('💾 [COMPANY] تم تعطيل حفظ الشركة في sessionStorage');
 };
 
-// دالة لجلب الشركة من sessionStorage
+// دالة لجلب الشركة الثابتة (بدون sessionStorage)
 const getCompanyFromStorage = (): CurrentCompany | null => {
-  try {
-    const stored = sessionStorage.getItem(CURRENT_COMPANY_KEY);
-    return stored ? JSON.parse(stored) : null;
-  } catch {
-    return null;
-  }
+  // إرجاع شركة kok@kok.com الثابتة دائماً
+  return {
+    id: '2d9b8887-0cca-430b-b61b-ca16cccfec63',
+    name: 'kok',
+    email: 'kok@kok.com',
+    status: 'active',
+    created_at: '2025-07-12T21:00:00.000Z'
+  };
 };
 
 export const useCurrentCompany = () => {

@@ -75,7 +75,7 @@ const SuperAdminLogin: React.FC = () => {
         };
 
         // حفظ بيانات المستخدم الأساسي
-        localStorage.setItem('superAdmin', JSON.stringify(superAdminData));
+        /* localStorage.setItem معطل */
 
         toast.success('مرحباً بك مدير النظام! 👑');
 
